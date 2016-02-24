@@ -1,0 +1,45 @@
+== SULWatcher ==
+
+SULWatcher is an IRC bot that parses the RC feed for CentralAuth using regex
+and reports to a freenode channel.
+
+SULWatcher was written by:
+* Mike.lifeguard
+* Erwin
+* Dungodung (Filip Maljkovic)
+
+This software is licensed under the GPL.
+
+=== INSTALL ===
+
+You'll need MySQL and python.
+
+1)  Create a database for this bot.
+2)  In MySQL:
+        CREATE DATABASE <name>
+3)  Open SULWatcher.sql and replace all occurences of p_stewardbots_sulwatcher with the name of 
+    your database.
+    Execute SULWatcher.sql, in MySQL:
+        SOURCE SULWatcher.sql
+4)  (optional) To convert an old .ini configuration to a database configuration:
+    Open ini2mysql.py and replace all occurences of p_stewardbots_sulwatcher with the name of
+    your database.
+    Execute ini2mysql.py:
+        python ini2mysql.py
+    
+=== BACKUP ===
+
+To backup the database execute:
+    mysqldump <name> > <name>.sql
+    
+You can then re-import the database with:
+    mysql <name> < <name>.sql
+    
+=== Database layout ===
+The bot uses three tables to store its setup, regexes and log hits. At the
+toolserver these tables are in p_stewardbots_sulwatcher on sql-s3.
+
+Setup is stored in "setup", regexes in "regex" and logging is done in
+"logging". The table "unique_logging" is a [[View (database)|view]] on
+"logging" used by http://toolserver.org/~stewardbots/SULWatcher/, it is not
+used by the IRC bot itself.
