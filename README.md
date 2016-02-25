@@ -29,5 +29,4 @@ License
 Authors
 -------
 
-Current and former stewards, see attribution in each file respectivly.
-
+Current and former stewards, see attribution in each file respectively.
