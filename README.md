@@ -1,13 +1,21 @@
-Stewardbots - collection of tools for wikimedia stewards
-=================================
+Stewardbots - a collection of tools for Wikimedia Stewards
+==========================================================
 
 More about stewards can be found at [Meta Wiki](https://meta.wikimedia.org/wiki/Stewards)
 
 Included Tools
---------
+--------------
 
-- Stewardbot
-- SULwatcher
+- Elections: Breakdown of the steward elections.
+- Delete: Overview of open speedy deletion requests.
+- Projects: Overview of number of admins/crats/CU/OS on Wikimedia projects.
+- Userrights statistics: Number of users with a specific right per project.
+
+Help pages for the bots
+-----------------------
+
+- SULWatcher
+- StewardBot
 
 Requirements
 ------------
