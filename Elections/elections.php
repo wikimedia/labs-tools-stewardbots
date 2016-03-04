@@ -116,12 +116,7 @@ every minute. Please be patient.</p>';
     if($pages) {
         $content = $pages[0]['content'];
     }
-    #preg_match_all('/^\\{\\{[Ss]e[_ ]candidate[_
-]indexer\\|2016\\|(?<user>[^\\|\\}]+)(?:\\|(?<status>[^\\|\\}]+))?\\}\\}/m',
-$content, $m);
-    preg_match_all('/^\{\{[Ss]e[_ ]candidate[_
-]indexer\|2016\|(?<user>[^\|\}]+)(?:\|(?<status>[^\|\}]+))?\}\}/m', $content,
-$m);
+    preg_match_all('/^\{\{[Ss]e[_ ]candidate[_ ]indexer\|2016\|(?<user>[^\|\}]+)(?:\|(?<status>[^\|\}]+))?\}\}/m', $content, $m);
 
     // Loop users
     $titles = array();
@@ -132,6 +127,7 @@ $m);
         if(!$status || $status == 'yes')
             $titles[] = 'Stewards/Elections_2016/Votes/' . $user;
     }
+
     natcasesort($titles);
     
     $titles = array_chunk($titles, 40);
