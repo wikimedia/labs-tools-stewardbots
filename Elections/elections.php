@@ -3,7 +3,7 @@ function getPages($titles)
 {
     $URL =
 'https://meta.wikimedia.org/w/api.php?action=query&format=php&prop=revisions&rvprop=content&redirects&titles=';
-    
+
     if (is_array($titles)) {
         foreach ($titles as $t) {
             $URL .= urlencode($t) . '|';
@@ -20,7 +20,7 @@ function getPages($titles)
 https://tools.wmflabs.org/stewardbots');
     $result = unserialize(curl_exec($ch));
     curl_close($ch);
-    
+
     $output = array();
     if ($result['query']['pages']) {
         foreach($result['query']['pages'] as $page) {
@@ -48,7 +48,7 @@ $cacheFile = './cache/elections.php';
 <head>
     <title>Steward elections 2016</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="stylesheet" type="text/css" href="/stewardbots/Common.css" />
+    <link rel="stylesheet" type="text/css" href="/stewardbots/CSS/Common.css" />
     <link rel="stylesheet" type="text/css"
 href="/stewardbots/content/jquery.tablesorter/style.css" />
     <link rel="stylesheet" type="text/css"
@@ -58,14 +58,14 @@ src="jquery.js"></script>
     <script type="text/javascript" language="javascript"
 src="content/jquery.tablesorter/jquery.tablesorter.js"></script>
     <script type="text/javascript" language="javascript">
-    jQuery(document).ready(function() { 
+    jQuery(document).ready(function() {
        jQuery('table.sortable').tablesorter();
     } );
     </script>
 </head>
 <body>
     <div id="globalWrapper">
-        <div id="content" class="mw-body" role="main">           
+        <div id="content" class="mw-body" role="main">
             <h2>Steward elections</h2>
             <p>This page contains an unofficial tally of the votes in the <a
 href="//meta.wikimedia.org/wiki/Stewards/Elections_2016">steward elections
@@ -77,7 +77,7 @@ if ( file_exists($cacheFile) ) {
     if ( $_GET['action'] == 'purge' && ((time() - filemtime($cacheFile)) > 60)
 || $_GET['adm']) {
         $useCache = False;
-    }    
+    }
 } else {
     $useCache = False;
 }
@@ -86,13 +86,13 @@ if ( $useCache ) {
     echo '<p style="font-style:italic">Using cached data from ' .
 strftime('%H:%M, %e %B %Y', filemtime($cacheFile)) . ' (UTC), <a href="' .
 $_SERVER['php_self'] . '?action=purge">purge</a>.</p>';
-    
+
     // User tried to purge, but we decided to use the cache anyway.
     if ($_GET['action'] == 'purge') {
          echo '<p style="font-weight:bold;">Note: data can only be purged once
 every minute. Please be patient.</p>';
     }
-    
+
     include_once $cacheFile;
 } else {
     // Start output buffering to regenerate chache
@@ -112,7 +112,7 @@ every minute. Please be patient.</p>';
             <tbody>
 <?php
     $pages = getPages('Stewards/Elections_2016');
-    
+
     if($pages) {
         $content = $pages[0]['content'];
     }
@@ -129,13 +129,13 @@ every minute. Please be patient.</p>';
     }
 
     natcasesort($titles);
-    
+
     $titles = array_chunk($titles, 40);
     $i = 1;
     foreach($titles as $tchunk) {
         $pages = getPages($tchunk);
         usort($pages, 'titleSort');
-                
+
         // Treat pages
         foreach($pages as $page) {
             $title = $page['title'];
@@ -164,16 +164,16 @@ $offset['yes'], $offset['no'] - $offset['yes']), $m);
 $offset['no'], $offset['neutral'] - $offset['no']), $m);
                 $votes['neutral'] = preg_match_all($vote, substr($content,
 $offset['neutral']), $m);
-                
+
                 // Math
                 $support = $votes['yes'] / ($votes['yes'] + $votes['no']);
                 $perc = round($support * 100, 1);
-                
+
                 $bgyes = ($votes['yes'] < 30 ? '
 style="background-color:#FF9999"' : '');
                 $bgsup = ' style="background-color:' . ($support >= 0.8 ?
 '#99FF99' : '#FF9999') . '"';
-                
+
                 // Output row
 ?>
         <tr>
@@ -204,7 +204,7 @@ href="//meta.wikimedia.org/wiki/User_talk:Erwin">report</a> this.</td>
             </tbody>
         </table>
 <?php
-    // Save results to cache    
+    // Save results to cache
     $f = fopen($cacheFile, 'w');
     fwrite($f, ob_get_contents());
     fclose($f);
@@ -212,14 +212,14 @@ href="//meta.wikimedia.org/wiki/User_talk:Erwin">report</a> this.</td>
     // Send the output to the browser
     ob_end_flush();
 }
-?>    
+?>
         </div>
 
         <div id="column-one">
             <div class="portlet" id="p-logo">
                 <a style="background-image:
-url(//upload.wikimedia.org/wikipedia/commons/thumb/b/be/Wikimedia_Community_Logo-Toolserver.svg/135px-Wikimedia_Community_Logo-Toolserver.svg.png);"
-href="//toolserver.org/~stewardbots/elections.php" title="Elections"></a>
+url(//upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Tool_labs_logo.svg/135px-Tool_labs_logo.svg.png);"
+href="//tools.wmflabs.org/stewardbots/Elections/elections.php" title="Elections"></a>
             </div>
             <div class="portlet" id="p-navigation">
                 <h5>Stewards</h5>
@@ -252,19 +252,17 @@ href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Statistics">Statistics</
                 </div>
             </div>
         </div>
-        
+
         <div id="footer">
             <div id="f-poweredbyico">
                 <a href="/"><img style = "border:0; float:left; padding: 5px;"
 src="//upload.wikimedia.org/wikipedia/commons/a/a4/Tool_labs_logo.svg" alt="Powered by
-Wikimedia Toolserver" title="Powered by Wikimedia Toolserver" height="31"
+Wikimedia Labs" title="Powered by Wikimedia Labs" height="31"
 width="88" /></a>
             </div>
             <ul id="f-list">
-                <li id="lastmod">This page was last modified 20 January
-2016.</li>
-                <li id="about">This tool is written by <a
-href="//meta.wikimedia.org/wiki/User:Erwin">Erwin</a>.</li>
+                <li id="lastmod">This page was last modified 9 March 2016.</li>
+                <li id="about">This tool was written by <a href="//meta.wikimedia.org/wiki/User:Erwin">Erwin</a> and is mantained by the stewardbots project.</li>
             </ul>
         </div>
     </div>
