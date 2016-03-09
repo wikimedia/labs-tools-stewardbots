@@ -48,15 +48,11 @@ $cacheFile = './cache/elections.php';
 <head>
     <title>Steward elections 2016</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="stylesheet" type="text/css" href="/stewardbots/CSS/Common.css" />
-    <link rel="stylesheet" type="text/css"
-href="/stewardbots/content/jquery.tablesorter/style.css" />
-    <link rel="stylesheet" type="text/css"
-href="/stewardbots/content/stylesheet.css" />
-    <script type="text/javascript" language="javascript"
-src="jquery.js"></script>
-    <script type="text/javascript" language="javascript"
-src="content/jquery.tablesorter/jquery.tablesorter.js"></script>
+    <link rel="stylesheet" type="text/css" href="stewardbots/content/CSS/Common.css" />
+    <link rel="stylesheet" type="text/css" href="stewardbots/content/jquery.tablesorter/style.css" />
+    <link rel="stylesheet" type="text/css" href="stewardbots/content/stylesheet.css" />
+    <script type="text/javascript" language="javascript" src="stewardbots/content/jquery.js"></script>
+    <script type="text/javascript" language="javascript" src="stewardbots/content/jquery.tablesorter/jquery.tablesorter.js"></script>
     <script type="text/javascript" language="javascript">
     jQuery(document).ready(function() {
        jQuery('table.sortable').tablesorter();
@@ -67,9 +63,7 @@ src="content/jquery.tablesorter/jquery.tablesorter.js"></script>
     <div id="globalWrapper">
         <div id="content" class="mw-body" role="main">
             <h2>Steward elections</h2>
-            <p>This page contains an unofficial tally of the votes in the <a
-href="//meta.wikimedia.org/wiki/Stewards/Elections_2016">steward elections
-2016</a>.</p>
+            <p>This page contains an unofficial tally of the votes in the <a href="//meta.wikimedia.org/wiki/Stewards/Elections_2016">2016 steward elections</a>.</p>
 <?php
 // Used cached version?
 if ( file_exists($cacheFile) ) {
@@ -178,8 +172,7 @@ style="background-color:#FF9999"' : '');
 ?>
         <tr>
             <td><?=$i;?></td>
-            <td><a
-href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Votes/<?=$user;?>"><?=$user;?></a></td>
+            <td><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Votes/<?=$user;?>"><?=$user;?></a></td>
             <td<?=$bgyes;?>><?=$votes['yes'];?></td>
             <td><?=$votes['no'];?></td>
             <td><?=$votes['neutral'];?></td>
@@ -190,10 +183,8 @@ href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Votes/<?=$user;?>"><?=$u
 ?>
         <tr>
             <td><?=$i;?></td>
-            <td><a
-href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Votes/<?=$user;?>"><?=$user;?></a></td>
-            <td colspan="4">Could not get votes. Please <a
-href="//meta.wikimedia.org/wiki/User_talk:Erwin">report</a> this.</td>
+            <td><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Votes/<?=$user;?>"><?=$user;?></a></td>
+            <td colspan="4">Could not get votes. Please <a href="//phabricator.wikimedia.org/maniphest/task/create/?projects=Tool-Labs-tools-stewardbots">report</a> this.</td>
         </tr>
 <?php
             }
@@ -225,12 +216,9 @@ href="//tools.wmflabs.org/stewardbots/Elections/elections.php" title="Elections"
                 <h5>Stewards</h5>
                 <div class="pBody">
                     <ul>
-                        <li><a
-href="//meta.wikimedia.org/wiki/Stewards">Stewards</a></li>
-                        <li><a
-href="//meta.wikimedia.org/wiki/Stewards_policy">Policy</a></li>
-                        <li><a
-href="//meta.wikimedia.org/wiki/Steward_handbook">Handbook</a></li>
+                        <li><a ref="//meta.wikimedia.org/wiki/Stewards">Stewards</a></li>
+                        <li><a href="//meta.wikimedia.org/wiki/Stewards_policy">Policy</a></li>
+                        <li><a href="//meta.wikimedia.org/wiki/Steward_handbook">Handbook</a></li>
                     </ul>
                 </div>
             </div>
@@ -238,16 +226,11 @@ href="//meta.wikimedia.org/wiki/Steward_handbook">Handbook</a></li>
                 <h5>Steward elections</h5>
                 <div class="pBody">
                     <ul>
-                        <li><a
-href="//meta.wikimedia.org/wiki/Stewards/Elections_2016">Elections page</a></li>
-                        <li><a
-href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Guidelines">Guidelines</a></li>
-                        <li><a
-href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Statements">Statements</a></li>
-                        <li><a
-href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Questions">Questions</a></li>
-                        <li><a
-href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Statistics">Statistics</a></li>
+                        <li><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2016">Elections page</a></li>
+                        <li><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Guidelines">Guidelines</a></li>
+                        <li><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Statements">Statements</a></li>
+                        <li><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Questions">Questions</a></li>
+                        <li><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Statistics">Statistics</a></li>
                     </ul>
                 </div>
             </div>
@@ -256,7 +239,7 @@ href="//meta.wikimedia.org/wiki/Stewards/Elections_2016/Statistics">Statistics</
         <div id="footer">
             <div id="f-poweredbyico">
                 <a href="/"><img style = "border:0; float:left; padding: 5px;"
-src="//upload.wikimedia.org/wikipedia/commons/a/a4/Tool_labs_logo.svg" alt="Powered by
+src="//upload.wikimedia.org/wikipedia/commons/4/46/Powered_by_labs_button.png" alt="Powered by
 Wikimedia Labs" title="Powered by Wikimedia Labs" height="31"
 width="88" /></a>
             </div>
