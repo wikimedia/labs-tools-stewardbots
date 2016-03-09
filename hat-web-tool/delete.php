@@ -12,16 +12,16 @@ $(document).ready(function()
 );
 </script>
 <?php
-
+$loginData = require_once __DIR__ . '/../login.php';
 function titleLink ($title)
 {
     return str_replace('%2F', '/', urlencode(str_replace(' ', '_', $title)));
 }
 function get_post($var) { return mysql_real_escape_string($_POST[$var]); }
+    global $loginData;
 
-    require_once 'login.php';
+    $db_server = mysql_connect("metawiki.labsdb", $loginData['user'], $loginData['password']);
 
-    $db_server = mysql_connect("metawiki.labsdb", $db_username, $db_password);
     if (!$db_server) die ("Unable to connect to MySQL: " . mysql_error());
 
     mysql_select_db("meta_p", $db_server) or die ("Unable to select database: " . mysql_error());
@@ -62,7 +62,7 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 	{
         $row = mysql_fetch_row($result);
 
-        $db_server_temp = mysql_connect($row[2], $db_username, $db_password);
+        $db_server_temp = mysql_connect($row[2], $loginData['user'], $loginData['password']);
         if (!$db_server_temp) die ("Unable to connect to MySQL: " . mysql_error());
 
         mysql_select_db($row[0]."_p", $db_server_temp) or die ("Unable to select database: " . mysql_error());
