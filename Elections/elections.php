@@ -16,8 +16,7 @@ function getPages($titles)
 
     $ch = curl_init($URL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, True);
-    curl_setopt($ch, CURLOPT_USERAGENT, 'Labs Bot -
-https://tools.wmflabs.org/stewardbots');
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Labs Bot - https://tools.wmflabs.org/stewardbots');
     $result = unserialize(curl_exec($ch));
     curl_close($ch);
 
@@ -48,11 +47,11 @@ $cacheFile = './cache/elections.php';
 <head>
     <title>Steward elections 2016</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="stylesheet" type="text/css" href="stewardbots/content/CSS/Common.css" />
-    <link rel="stylesheet" type="text/css" href="stewardbots/content/jquery.tablesorter/style.css" />
-    <link rel="stylesheet" type="text/css" href="stewardbots/content/stylesheet.css" />
-    <script type="text/javascript" language="javascript" src="stewardbots/content/jquery.js"></script>
-    <script type="text/javascript" language="javascript" src="stewardbots/content/jquery.tablesorter/jquery.tablesorter.js"></script>
+    <link rel="stylesheet" type="text/css" href="/stewardbots/content/CSS/Common.css" />
+    <link rel="stylesheet" type="text/css" href="/stewardbots/content/jquery.tablesorter/style.css" />
+    <link rel="stylesheet" type="text/css" href="/stewardbots/content/stylesheet.css" />
+    <script type="text/javascript" language="javascript" src="/stewardbots/content/jquery.js"></script>
+    <script type="text/javascript" language="javascript" src="/stewardbots/content/jquery.tablesorter/jquery.tablesorter.js"></script>
     <script type="text/javascript" language="javascript">
     jQuery(document).ready(function() {
        jQuery('table.sortable').tablesorter();
@@ -83,8 +82,7 @@ $_SERVER['php_self'] . '?action=purge">purge</a>.</p>';
 
     // User tried to purge, but we decided to use the cache anyway.
     if ($_GET['action'] == 'purge') {
-         echo '<p style="font-weight:bold;">Note: data can only be purged once
-every minute. Please be patient.</p>';
+         echo '<p style="font-weight:bold;">Note: data can only be purged once every minute. Please be patient.</p>';
     }
 
     include_once $cacheFile;
@@ -145,8 +143,8 @@ $content, $m, PREG_OFFSET_CAPTURE);
                 preg_match('/\=\=\=[ ]*?\{\{sr-heading\|no\}\}[ ]*?\=\=\=/',
 $content, $m, PREG_OFFSET_CAPTURE);
                 $offset['no'] = $m[0][1];
-                preg_match('/\=\=\=[ ]*?\{\{sr-heading\|neutral\}\}[
-]*?\=\=\=/', $content, $m, PREG_OFFSET_CAPTURE);
+                preg_match('/\=\=\=[ ]*?\{\{sr-heading\|neutral\}\}[ ]*?\=\=\=/',
+$content, $m, PREG_OFFSET_CAPTURE);
                 $offset['neutral'] = $m[0][1];
 
                 // Find votes
