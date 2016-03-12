@@ -799,7 +799,7 @@ class WikimediaBot(SingleServerIRCBot):
                             changeda+=["unlocked"]
                         list.sort(changeda, reverse=True)
                         action2 = " and ".join(changeda)
-                        if ":" in comment: comment = re.sub("Set (.+?); Unset (.+?): ", "", comment)
+                        if ":" in comment: comment = re.sub("set (.+?); unset (.+?): ", "", comment)
                         else: comment=""
                     if comment!="":
                         comment = " with the following comment: 07" + comment.strip(" ") + ""
