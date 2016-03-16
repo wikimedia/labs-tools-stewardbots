@@ -41,7 +41,7 @@ This will be a replacement for erwin85's delete tool.<br />
 Number of admins (maximum 10): <input type="text" name="number" value="<?php $admins ?>"/><br />
 <input type="submit" />
 </form>
-<table id="projects">
+<table id="projects" class="tablesorter">
 <thead>
 <tr><th>Wiki</th><th>Admins</th><th>Last admin action</th><th>Page name</th><th>Last author</th><th>Last revision</th><th>Edit summary</th></tr>
 </thead>
