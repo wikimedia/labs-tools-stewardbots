@@ -2,14 +2,12 @@
 <head><title>Delete</title></head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <style type="text/css">@import "blue/style.css";</style>
-<script type="text/javascript" src="jquery-latest.js"></script>
-<script type="text/javascript" src="jquery.tablesorter.js"></script>
+<script src="https://tools-static.wmflabs.org/static/jquery/2.1.0/jquery.min.js"></script>
+<script src="https://tools-static.wmflabs.org/static/jquery-tablesorter/2.0.5/jquery.tablesorter.min.js"></script>
 <script type="text/javascript">
-$(document).ready(function()
-    {
-        $("#projects").tablesorter();
-    }
-);
+    jQuery(document).ready( function() {
+       jQuery('#projects').tablesorter();
+    } );
 </script>
 <?php
 $loginData = require_once __DIR__ . '/../login.php';
@@ -43,7 +41,7 @@ This will be a replacement for erwin85's delete tool.<br />
 Number of admins (maximum 10): <input type="text" name="number" value="<?php $admins ?>"/><br />
 <input type="submit" />
 </form>
-<table id="projects" class="tablesorter">
+<table id="projects">
 <thead>
 <tr><th>Wiki</th><th>Admins</th><th>Last admin action</th><th>Page name</th><th>Last author</th><th>Last revision</th><th>Edit summary</th></tr>
 </thead>

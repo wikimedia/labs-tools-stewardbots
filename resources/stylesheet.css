@@ -1,0 +1,14 @@
+th.header {
+	padding-right: 21px !important;
+	background-position: right center;
+	background-repeat: no-repeat;
+	background-image: url("data:image/gif;base64,R0lGODlhBwAJAIABACMtMP///yH5BAEKAAEALAAAAAAHAAkAAAINjGEJq8sOk4Qu0IZmKgA7");
+}
+
+th.headerSortUp {
+	background-image: url("data:image/gif;base64,R0lGODlhBwAEAIABACMtMP///yH5BAEKAAEALAAAAAAHAAQAAAIIhA+BGWoNWSgAOw==");
+}
+
+th.headerSortDown {
+	background-image :url("data:image/gif;base64,R0lGODlhBwAEAIABACMtMP///yH5BAEKAAEALAAAAAAHAAQAAAIHjGEJq8sOCwA7");
+}

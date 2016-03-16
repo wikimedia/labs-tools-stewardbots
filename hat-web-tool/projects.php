@@ -2,8 +2,8 @@
 <head><title>Projects</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <style type="text/css">@import "blue/style.css";</style>
-<script type="text/javascript" src="jquery-latest.js"></script>
-<script type="text/javascript" src="jquery.tablesorter.js"></script>
+<script src="https://tools-static.wmflabs.org/static/jquery/2.1.0/jquery.min.js"></script>
+<script src="https://tools-static.wmflabs.org/static/jquery-tablesorter/2.0.5/jquery.tablesorter.min.js"></script>
 <script type="text/javascript">
 $(document).ready(function()
     {

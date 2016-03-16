@@ -47,13 +47,12 @@ $cacheFile = './cache/elections.php';
 <head>
     <title>Steward elections 2016</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="stylesheet" type="text/css" href="/stewardbots/content/CSS/Common.css" />
-    <link rel="stylesheet" type="text/css" href="/stewardbots/content/jquery.tablesorter/style.css" />
-    <link rel="stylesheet" type="text/css" href="/stewardbots/content/stylesheet.css" />
-    <script type="text/javascript" language="javascript" src="/stewardbots/content/jquery.js"></script>
-    <script type="text/javascript" language="javascript" src="/stewardbots/content/jquery.tablesorter/jquery.tablesorter.js"></script>
-    <script type="text/javascript" language="javascript">
-    jQuery(document).ready(function() {
+    <link rel="stylesheet" type="text/css" href="/stewardbots/resources/Common.css" />
+    <link rel="stylesheet" type="text/css" href="/stewardbots/resources/stylesheet.css" />
+    <script src="https://tools-static.wmflabs.org/static/jquery/2.1.0/jquery.min.js"></script>
+    <script src="https://tools-static.wmflabs.org/static/jquery-tablesorter/2.0.5/jquery.tablesorter.min.js"></script>
+    <script lang="javascript">
+    jQuery(document).ready( function() {
        jQuery('table.sortable').tablesorter();
     } );
     </script>
@@ -87,7 +86,7 @@ $_SERVER['php_self'] . '?action=purge">purge</a>.</p>';
 
     include_once $cacheFile;
 } else {
-    // Start output buffering to regenerate chache
+    // Start output buffering to regenerate cache
     ob_start();
 ?>
             <table class="wikitable sortable">
