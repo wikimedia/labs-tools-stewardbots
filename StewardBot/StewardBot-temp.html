@@ -1,0 +1,308 @@
+<!doctype html>
+<html>
+<head>
+	<title>StewardBot help page</title>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<link rel="stylesheet" type="text/css" href="/stewardbots/resources/docs.css" />
+    <link rel="stylesheet" type="text/css" href="/stewardbots/resources/Common.css" />
+    <link rel="stylesheet" type="text/css" href="/stewardbots/resources/stylesheet.css" />
+</head>
+<body>
+<h1>StewardBot help page</h1>
+<p><span class="mw-headline">Basic settings</span></p>
+<!-- docs start -->
+<table class="wikitable">
+	<tbody>
+		<tr>
+			<th>Command</th>
+			<th>Description</th>
+			<th>Notes/Example</th>
+		</tr>
+		<tr>
+			<td><strong>!steward</strong></td>
+			<td>Pings all of the stewards (emergency)</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><strong>@steward</strong></td>
+			<td>Pings a group of stewards who have opted-in (non-emergency)</td>
+			<td>&lt;kibble&gt;@steward Az has gone rouge!<br />
+			&lt;StewardBot&gt;Stewards: Attention requested by kibble ( stewards names )</td>
+		</tr>
+		<tr>
+			<td><strong>@mlock</strong></td>
+			<td>Makes the bot be quiet and not speak for 10 seconds</td>
+			<td>&lt;dungodung&gt;@mlock<br />
+			&lt;StewardBot&gt;You have 10 seconds!</td>
+		</tr>
+		<tr>
+			<td><strong>@quiet</strong></td>
+			<td>Makes the bot be quiet and not speak. <tt>:&#39;(</tt></td>
+			<td>&lt;dungodung&gt;@quiet<br />
+			&lt;StewardBot&gt;I&#39;ll be quiet :(</td>
+		</tr>
+		<tr>
+			<td><strong>@speak</strong></td>
+			<td>Makes the bot talk again.</td>
+			<td>&lt;dungodung&gt;@speak<br />
+			&lt;StewardBot&gt;Back in action :)</td>
+		</tr>
+		<tr>
+			<td><strong>@notify on</strong></td>
+			<td>Turns notification (!steward) on</td>
+			<td>&lt;StewardBot&gt;Notification on</td>
+		</tr>
+		<tr>
+			<td><strong>@notify off</strong></td>
+			<td>Turns notification (!steward) off</td>
+			<td>&lt;StewardBot&gt;Notification off</td>
+		</tr>
+		<tr>
+			<td><strong>@stew</strong><br />
+			<strong>@privileged</strong><br />
+			<strong>@ignored</strong><br />
+			<strong>@stalked</strong><br />
+			<strong>@listen</strong></td>
+			<td>Advanced settings</td>
+			<td><em>See the <a href="#advanced" title="">section below</a> for more information.</em></td>
+		</tr>
+		<tr>
+			<td><strong>@help</strong></td>
+			<td>Displays a link to this help page</td>
+			<td>&lt;kibble&gt;@help<br />
+			&lt;StewardBot&gt;Help = <a class="external free" href="http://www.toolserver.org/~stewardbots/stewardbot.html" rel="nofollow" title="http://www.toolserver.org/~stewardbots/stewardbot.html">http://www.toolserver.org/~stewardbots/stewardbot.html</a></td>
+		</tr>
+		<tr>
+			<td><strong>@huggle</strong></td>
+			<td>The huggle command. <tt>:D</tt></td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><strong>@test</strong></td>
+			<td>Tests the rc reader and posts what was last received on irc.wikimedia.org</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><strong>@die</strong></td>
+			<td>Quits the bot (<a href="http://meta.wikimedia.org/wiki/User:Dungodung" title="User:Dungodung">owner</a>-only)</td>
+			<td>&lt;dungodung&gt; @die<br />
+			* StewardBot has left irc.freenode.net (&quot;Goodbye!&quot;)</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>&nbsp;</p>
+
+<p><a id="advancedsettings" name="advanced"></a></p>
+
+<h3><span class="mw-headline">Advanced settings</span></h3>
+
+<table class="wikitable">
+	<tbody>
+		<tr>
+			<th>Command</th>
+			<th>Subcommand</th>
+			<th>Parameters</th>
+			<th>Description</th>
+			<th>Notes/Example</th>
+		</tr>
+		<tr>
+			<td rowspan="7"><strong title="Stewards">stew</strong></td>
+			<td><strong>add</strong></td>
+			<td><em>username</em> [<em>nick</em> [<em>cloak</em> [<em>opt-in</em>]]]</td>
+			<td>Adds a new steward defined by username and optional parameters: nickname, cloak and <span title="Accepted values are 'true', 'yes' and '1'">boolean opt-in information</span>; special value &quot;-&quot; can be used for the <em>cloak</em> parameter if the user has no cloak</td>
+			<td>&lt;dungodung&gt;@stew add Cbrown1023 kibble wikimedia/Cbrown1023 true</td>
+		</tr>
+		<tr>
+			<td><strong>remove</strong><br />
+			<strong>delete</strong></td>
+			<td><em>username</em></td>
+			<td>Removes a steward (and all related info) by username</td>
+			<td>&lt;dungodung&gt;@stew remove Cbrown1023</td>
+		</tr>
+		<tr>
+			<td><strong>change</strong><br />
+			<strong>edit</strong><br />
+			<strong>modify</strong><br />
+			<strong>rename</strong></td>
+			<td><em>username</em> [<em>username</em> [<em>nick</em> [<em>cloak</em> [<em>opt-in</em>]]]]</td>
+			<td>Changes the username, nick, cloak and/or opt-in information of a steward; special value &quot;-&quot; can be used for all but the first parameter</td>
+			<td>&lt;dungodung&gt;@stew change Cbrown1023 - worby - 0</td>
+		</tr>
+		<tr>
+			<td><strong>users</strong></td>
+			<td>&nbsp;</td>
+			<td>Lists all stewards by username</td>
+			<td>&lt;dungodung&gt;@stew users</td>
+		</tr>
+		<tr>
+			<td><strong>nicks</strong></td>
+			<td>&nbsp;</td>
+			<td>Lists all stewards by nicknames</td>
+			<td>&lt;dungodung&gt;@stew nicks</td>
+		</tr>
+		<tr>
+			<td><strong>optin</strong></td>
+			<td>&nbsp;</td>
+			<td>Lists all stewards who have opted-in for @steward notification by nicknames</td>
+			<td>&lt;dungodung&gt;@stew optin</td>
+		</tr>
+		<tr>
+			<td><strong>info</strong></td>
+			<td><em>user</em></td>
+			<td>Provides information about the specified steward</td>
+			<td>&lt;dungodung&gt;@stew info Cbrown1023<br />
+			&lt;StewardBot&gt;Steward Cbrown1023 uses nick kibble with the cloak wikimedia/Cbrown1023. kibble is in the list of opt-in nicks.</td>
+		</tr>
+		<tr>
+			<td rowspan="5"><strong title="Privileged users, defined with a nick and a cloak, can give restricted commands to the bot">privileged</strong></td>
+			<td><strong>add</strong></td>
+			<td><em>nick cloak</em></td>
+			<td>Adds a nick to the list of privileged users</td>
+			<td>&lt;kibble&gt;@privileged add Az1568 wikipedia/Az1568</td>
+		</tr>
+		<tr>
+			<td><strong>remove</strong><br />
+			<strong>delete</strong></td>
+			<td><em>nick</em></td>
+			<td>Removes a nick from the list of privileged users</td>
+			<td>&lt;kibble&gt;@privileged remove Az1568</td>
+		</tr>
+		<tr>
+			<td><strong>change</strong><br />
+			<strong>edit</strong><br />
+			<strong>modify</strong><br />
+			<strong>rename</strong></td>
+			<td><em>nick</em> (<em>nick</em>|<em>cloak</em>)</td>
+			<td>Changes the nick or the cloak of a privileged user</td>
+			<td>&lt;kibble&gt;@privileged edit Az1568 wikimedia/Az1568</td>
+		</tr>
+		<tr>
+			<td><strong>list</strong></td>
+			<td>[(<em>all</em>|<em>*</em>)]</td>
+			<td>Lists all privileged users; with optional parameter, lists stewards as well</td>
+			<td>&lt;kibble&gt;@privileged list *</td>
+		</tr>
+		<tr>
+			<td><strong>get</strong></td>
+			<td><em>nick</em></td>
+			<td>Cloaks who can give restricted commands to the bot</td>
+			<td>&lt;kibble&gt;@privileged get Az1568<br />
+			&lt;StewardBot&gt;The cloak of privileged user Az1568 is wikimedia/az1568</td>
+		</tr>
+		<tr>
+			<td rowspan="4"><strong title="Ignored users are those whose edits will not trigger a report by the bot">ignored</strong></td>
+			<td><strong>add</strong></td>
+			<td><em>username</em></td>
+			<td>Adds a user to the list of ignored users</td>
+			<td>&lt;kibble&gt;@ignored add Az1568</td>
+		</tr>
+		<tr>
+			<td><strong>remove</strong><br />
+			<strong>delete</strong></td>
+			<td><em>username</em></td>
+			<td>Removes a user from the list of ignored users</td>
+			<td>&lt;kibble&gt;@ignored remove Az1568</td>
+		</tr>
+		<tr>
+			<td><strong>change</strong><br />
+			<strong>edit</strong><br />
+			<strong>modify</strong><br />
+			<strong>rename</strong></td>
+			<td><em>username username</em></td>
+			<td>Changes the username of an ignored user</td>
+			<td>&lt;Az1568&gt;@ignored modify kibble worby</td>
+		</tr>
+		<tr>
+			<td><strong>list</strong></td>
+			<td>[(<em>all</em>|<em>*</em>)]</td>
+			<td>Lists all ignored users; with optional parameter, lists stewards as well</td>
+			<td>&lt;kibble&gt;@ignored list all</td>
+		</tr>
+		<tr>
+			<td rowspan="4"><strong title="Stalked pages are those that the bot reports edits of">stalked</strong></td>
+			<td><strong>add</strong></td>
+			<td><em>page</em></td>
+			<td>Adds a <em title="All pages begining with the prefix will be stalked">page prefix</em> to the list of stalked pages</td>
+			<td>&lt;kibble&gt;@stalked add Steward_handbook</td>
+		</tr>
+		<tr>
+			<td><strong>remove</strong><br />
+			<strong>delete</strong></td>
+			<td><em>page</em></td>
+			<td>Removes a page prefix from the list of stalked pages</td>
+			<td>&lt;kibble&gt;@stalked remove Steward_handbook</td>
+		</tr>
+		<tr>
+			<td><strong>change</strong><br />
+			<strong>edit</strong><br />
+			<strong>modify</strong><br />
+			<strong>rename</strong></td>
+			<td><em>page page</em></td>
+			<td>Changes the page name of a stalked page</td>
+			<td>&lt;kibble&gt;@stalked rename Steward_handbook Stewards&#39;_handbook</td>
+		</tr>
+		<tr>
+			<td><strong>list</strong></td>
+			<td>&nbsp;</td>
+			<td>Lists all stalked pages</td>
+			<td>&lt;kibble&gt;@stalked list</td>
+		</tr>
+		<tr>
+			<td rowspan="6"><strong title="Channels that the bot listens for !steward commands">listen</strong></td>
+			<td><strong>add</strong></td>
+			<td><em>channel</em></td>
+			<td>Adds a channel to the list of &#39;listen&#39; channels</td>
+			<td>&lt;kibble&gt;@listen add #cvn-sw</td>
+		</tr>
+		<tr>
+			<td><strong>remove</strong><br />
+			<strong>delete</strong></td>
+			<td><em>channel</em></td>
+			<td>Removes a channel from the list of &#39;listen&#39; channels</td>
+			<td>&lt;kibble&gt;@listen remove #cvn-sw</td>
+		</tr>
+		<tr>
+			<td><strong>change</strong><br />
+			<strong>edit</strong><br />
+			<strong>modify</strong><br />
+			<strong>rename</strong></td>
+			<td><em>channel channel</em></td>
+			<td>Changes the channel name of a &#39;listen&#39; channel</td>
+			<td>&lt;kibble&gt;@listen rename #cvn-sw #cvn-swmt</td>
+		</tr>
+		<tr>
+			<td><strong>list</strong></td>
+			<td>&nbsp;</td>
+			<td>Lists all &#39;listen&#39; channels</td>
+			<td>&lt;kibble&gt;@listen list</td>
+		</tr>
+		<tr>
+			<td><strong>on</strong></td>
+			<td>&nbsp;</td>
+			<td>Joins all &#39;listen&#39; channels</td>
+			<td>&lt;kibble&gt;@listen on</td>
+		</tr>
+		<tr>
+			<td><strong>off</strong></td>
+			<td>&nbsp;</td>
+			<td>Parts all &#39;listen&#39; channels</td>
+			<td>&lt;kibble&gt;@listen off</td>
+		</tr>
+	</tbody>
+</table>
+
+<p><strong>Note:</strong> <em>username</em> and <em>page</em> parameters should always use underscore (<tt>_</tt>) instead of space.</p>
+<!-- end docs, cue pretty stuff! -->
+
+<div id="footer">
+	<div id="f-poweredbyico">
+		<a href="/"><img style = "border:0; float:left; padding: 10px;" src="//upload.wikimedia.org/wikipedia/commons/4/46/Powered_by_labs_button.png" alt="Powered by Wikimedia Labs" title="Powered by Wikimedia Labs" height="31" width="88" /></a>
+	</div>
+	<ul id="f-list">
+		<li id="about">This tool was written by <a href="//meta.wikimedia.org/wiki/User:Dungodung">Dungodung</a> and is mantained by the stewardbots project.</li>
+	</ul>
+	</div>
+</div>
+</body>
+</html>
