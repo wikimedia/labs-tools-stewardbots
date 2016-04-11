@@ -265,10 +265,10 @@ class FreenodeBot(SingleServerIRCBot):
             who=who.split(" ")[0]
             if who in ["all", "*"]:
                 privnicks = query("(select p_nick from privileged) union (select s_nick from stewards)")
-            	self.msg("privileged nicks (including stewards): "+", ".join(privnicks), nick)
+                self.msg("privileged nicks (including stewards): "+", ".join(privnicks), nick)
             else:
                 privnicks = query("select p_nick from privileged")
-            	self.msg("privileged nicks: "+", ".join(privnicks), nick)
+                self.msg("privileged nicks: "+", ".join(privnicks), nick)
         elif cmd.lower().startswith("get"):
             who=re.sub("(?i)^get", "", cmd).strip(" ")
             who=who.split(" ")[0]
@@ -288,12 +288,12 @@ class FreenodeBot(SingleServerIRCBot):
             else:
                 pnick = wholist[0]
                 pcloak = wholist[1].lower()
-            	if len(query('select p_nick from privileged where p_nick="%s"' % pnick))>0:
-            	    if not self.quiet: self.msg("%s is already privileged!" % pnick, target)
-            	else:
-            	    modquery('insert into privileged values (0, "%s", "%s")' % (pnick, pcloak))
+                if len(query('select p_nick from privileged where p_nick="%s"' % pnick))>0:
+                    if not self.quiet: self.msg("%s is already privileged!" % pnick, target)
+                else:
+                    modquery('insert into privileged values (0, "%s", "%s")' % (pnick, pcloak))
                     self.privileged = query(queries["privcloaks"]) # update the list of privileged cloaks
-            	    if not self.quiet: self.msg("%s added to the list of privileged users!" % pnick, target)
+                    if not self.quiet: self.msg("%s added to the list of privileged users!" % pnick, target)
         elif self.startswitharray(cmd.lower(), ["remove", "delete"]):
             who=re.sub("(?i)^(remove|delete)", "", cmd).strip(" ")
             who=who.split(" ")[0]
@@ -301,9 +301,9 @@ class FreenodeBot(SingleServerIRCBot):
                 if not self.quiet: self.msg("You have to specify a nick", target)
             else:
                 if len(query('select p_nick from privileged where p_nick="%s"' % who))==0:
-            	    if not self.quiet: self.msg("%s is not in the list of privileged users!" % who, target)
-            	else:
-            	    modquery('delete from privileged where p_nick="%s"' % who)
+                    if not self.quiet: self.msg("%s is not in the list of privileged users!" % who, target)
+                else:
+                    modquery('delete from privileged where p_nick="%s"' % who)
                     self.privileged = query(queries["privcloaks"]) # update the list of privileged cloaks
                     if not self.quiet: self.msg("%s removed from the list of privileged users!" % who, target)
         elif self.startswitharray(cmd.lower(), ["change", "edit", "modify", "rename"]):
@@ -318,16 +318,16 @@ class FreenodeBot(SingleServerIRCBot):
                 if "/" in pcloak:
                     pcloak = pcloak.lower()
                     renamecloak = True
-            	if len(query('select p_nick from privileged where p_nick="%s"' % pnick))==0:
-            	    if not self.quiet: self.msg("%s is not in the list of privileged users!" % pnick, target)
-            	else:
-            	    if renamecloak:
-            	    	modquery('update privileged set p_cloak = "%s" where p_nick = "%s"' % (pcloak, pnick))
-                    	self.privileged = query(queries["privcloaks"]) # update the list of privileged cloaks
-            	    	if not self.quiet: self.msg("Changed the cloak for %s in the list of privileged users!" % pnick, target)
-            	    else:
-            	    	modquery('update privileged set p_nick = "%s" where p_nick = "%s"' % (pcloak, pnick))
-                    	if not self.quiet: self.msg("Changed the privileged user from %s to %s!" % (pnick, pcloak), target)
+                if len(query('select p_nick from privileged where p_nick="%s"' % pnick))==0:
+                    if not self.quiet: self.msg("%s is not in the list of privileged users!" % pnick, target)
+                else:
+                    if renamecloak:
+                        modquery('update privileged set p_cloak = "%s" where p_nick = "%s"' % (pcloak, pnick))
+                        self.privileged = query(queries["privcloaks"]) # update the list of privileged cloaks
+                        if not self.quiet: self.msg("Changed the cloak for %s in the list of privileged users!" % pnick, target)
+                    else:
+                        modquery('update privileged set p_nick = "%s" where p_nick = "%s"' % (pcloak, pnick))
+                        if not self.quiet: self.msg("Changed the privileged user from %s to %s!" % (pnick, pcloak), target)
         else:
             if not self.quiet: self.msg(self.badsyntax, target)
 
@@ -337,10 +337,10 @@ class FreenodeBot(SingleServerIRCBot):
             who=who.split(" ")[0]
             if who in ["all", "*"]:
                 ignoredusers = query(queries["ignoredusers"])
-            	self.msg("ignored users (including stewards): "+", ".join(ignoredusers), nick)
+                self.msg("ignored users (including stewards): "+", ".join(ignoredusers), nick)
             else:
                 ignoredusers = query("select i_username from ignored")
-            	self.msg("ignored users: "+", ".join(ignoredusers), nick)
+                self.msg("ignored users: "+", ".join(ignoredusers), nick)
         elif cmd.lower().startswith("add"):
             who=re.sub("(?i)^add", "", cmd).strip(" ")
             who=who.split(" ")[0]
@@ -348,13 +348,13 @@ class FreenodeBot(SingleServerIRCBot):
             if not who:
                 if not self.quiet: self.msg("You have to specify a username", target)
             else:
-            	who=who[0].upper()+who[1:]
-            	if len(query('select i_username from ignored where i_username="%s"' % who))>0:
-            	    if not self.quiet: self.msg("%s is already ignored!" % who, target)
-            	else:
-            	    modquery('insert into ignored values (0, "%s")' % who)
+                who=who[0].upper()+who[1:]
+                if len(query('select i_username from ignored where i_username="%s"' % who))>0:
+                    if not self.quiet: self.msg("%s is already ignored!" % who, target)
+                else:
+                    modquery('insert into ignored values (0, "%s")' % who)
                     bot2.ignored = query(queries["ignoredusers"]) # update the list of ignored users
-            	    if not self.quiet: self.msg("%s added to the list of ignored users!" % who, target)
+                    if not self.quiet: self.msg("%s added to the list of ignored users!" % who, target)
         elif self.startswitharray(cmd.lower(), ["remove", "delete"]):
             who=re.sub("(?i)^(remove|delete)", "", cmd).strip(" ")
             who=who.split(" ")[0]
@@ -362,11 +362,11 @@ class FreenodeBot(SingleServerIRCBot):
             if not who:
                 if not self.quiet: self.msg("You have to specify a username", target)
             else:
-            	who=who[0].upper()+who[1:]
+                who=who[0].upper()+who[1:]
                 if len(query('select i_username from ignored where i_username="%s"' % who))==0:
-            	    if not self.quiet: self.msg("%s is not in the list of ignored users!" % who, target)
-            	else:
-            	    modquery('delete from ignored where i_username="%s"' % who)
+                    if not self.quiet: self.msg("%s is not in the list of ignored users!" % who, target)
+                else:
+                    modquery('delete from ignored where i_username="%s"' % who)
                     bot2.ignored = query(queries["ignoredusers"]) # update the list of ignored users
                     if not self.quiet: self.msg("%s removed from the list of ignored users!" % who, target)
         elif self.startswitharray(cmd.lower(), ["change", "edit", "modify", "rename"]):
@@ -377,16 +377,16 @@ class FreenodeBot(SingleServerIRCBot):
             else:
                 iuser1 = wholist[0]
                 iuser2 = wholist[1]
-            	iuser1=iuser1[0].upper()+iuser1[1:]
-            	iuser2=iuser2[0].upper()+iuser2[1:]
+                iuser1=iuser1[0].upper()+iuser1[1:]
+                iuser2=iuser2[0].upper()+iuser2[1:]
                 iuser1=iuser1.replace("_", " ")
                 iuser2=iuser2.replace("_", " ")
                 if len(query('select i_username from ignored where i_username="%s"' % iuser1))==0:
-            	    if not self.quiet: self.msg("%s is not in the list of ignored users!" % iuser1, target)
-            	else:
-            	    modquery('update ignored set i_username = "%s" where i_username = "%s"' % (iuser2, iuser1))
+                    if not self.quiet: self.msg("%s is not in the list of ignored users!" % iuser1, target)
+                else:
+                    modquery('update ignored set i_username = "%s" where i_username = "%s"' % (iuser2, iuser1))
                     bot2.ignored = query(queries["ignoredusers"]) # update the list of ignored users
-            	    if not self.quiet: self.msg("Changed the username of %s in the list of ignored users!" % iuser1, target)
+                    if not self.quiet: self.msg("Changed the username of %s in the list of ignored users!" % iuser1, target)
         else:
             if not self.quiet: self.msg(self.badsyntax, target)
 
@@ -401,13 +401,13 @@ class FreenodeBot(SingleServerIRCBot):
             if not who:
                 if not self.quiet: self.msg("You have to specify a page name", target)
             else:
-            	who=who[0].upper()+who[1:]
-            	if len(query('select f_page from followed where f_page="%s"' % who))>0:
-            	    if not self.quiet: self.msg("%s is already stalked!" % who, target)
-            	else:
-            	    modquery('insert into followed values (0, "%s")' % who)
+                who=who[0].upper()+who[1:]
+                if len(query('select f_page from followed where f_page="%s"' % who))>0:
+                    if not self.quiet: self.msg("%s is already stalked!" % who, target)
+                else:
+                    modquery('insert into followed values (0, "%s")' % who)
                     bot2.stalked = query(queries["stalkedpages"]) # update the list of stalked pages
-            	    if not self.quiet: self.msg("%s added to the list of stalked pages!" % who, target)
+                    if not self.quiet: self.msg("%s added to the list of stalked pages!" % who, target)
         elif self.startswitharray(cmd.lower(), ["remove", "delete"]):
             who=re.sub("(?i)^(remove|delete)", "", cmd).strip(" ")
             who=who.split(" ")[0]
@@ -415,11 +415,11 @@ class FreenodeBot(SingleServerIRCBot):
             if not who:
                 if not self.quiet: self.msg("You have to specify a page name", target)
             else:
-            	who=who[0].upper()+who[1:]
+                who=who[0].upper()+who[1:]
                 if len(query('select f_page from followed where f_page="%s"' % who))==0:
-            	    if not self.quiet: self.msg("%s is not in the list of stalked pages!" % who, target)
-            	else:
-            	    modquery('delete from followed where f_page="%s"' % who)
+                    if not self.quiet: self.msg("%s is not in the list of stalked pages!" % who, target)
+                else:
+                    modquery('delete from followed where f_page="%s"' % who)
                     bot2.stalked = query(queries["stalkedpages"]) # update the list of stalked pages
                     if not self.quiet: self.msg("%s removed from the list of stalked pages!" % who, target)
         elif self.startswitharray(cmd.lower(), ["change", "edit", "modify", "rename"]):
@@ -430,16 +430,16 @@ class FreenodeBot(SingleServerIRCBot):
             else:
                 ipage1 = wholist[0]
                 ipage2 = wholist[1]
-            	ipage1=ipage1[0].upper()+ipage1[1:]
-            	ipage2=ipage2[0].upper()+ipage2[1:]
+                ipage1=ipage1[0].upper()+ipage1[1:]
+                ipage2=ipage2[0].upper()+ipage2[1:]
                 ipage1=ipage1.replace("_", " ")
                 ipage2=ipage2.replace("_", " ")
                 if len(query('select f_page from followed where f_page="%s"' % ipage1))==0:
-            	    if not self.quiet: self.msg("%s is not in the list of stalked pages!" % ipage1, target)
-            	else:
-            	    modquery('update followed set f_page = "%s" where f_page = "%s"' % (ipage2, ipage1))
+                    if not self.quiet: self.msg("%s is not in the list of stalked pages!" % ipage1, target)
+                else:
+                    modquery('update followed set f_page = "%s" where f_page = "%s"' % (ipage2, ipage1))
                     bot2.stalked = query(queries["stalkedpages"]) # update the list of stalked pages
-            	    if not self.quiet: self.msg("Changed the username of %s in the list of stalked pages!" % ipage1, target)
+                    if not self.quiet: self.msg("Changed the username of %s in the list of stalked pages!" % ipage1, target)
         else:
             if not self.quiet: self.msg(self.badsyntax, target)
 
@@ -454,12 +454,12 @@ class FreenodeBot(SingleServerIRCBot):
                 if not self.quiet: self.msg("You have to specify a channel", target)
             else:
                 if not who.startswith("#"): who = "#"+who
-            	if len(query('select l_channel from listen where l_channel="%s"' % who))>0:
-            	    if not self.quiet: self.msg("%s is already in the list of 'listen' channels!" % who, target)
-            	else:
-            	    modquery('insert into listen values (0, "%s")' % who)
+                if len(query('select l_channel from listen where l_channel="%s"' % who))>0:
+                    if not self.quiet: self.msg("%s is already in the list of 'listen' channels!" % who, target)
+                else:
+                    modquery('insert into listen values (0, "%s")' % who)
                     self.listened = query(queries["listenedchannels"]) # update the list of listened channels
-            	    if not self.quiet: self.msg("%s added to the list of 'listen' channels!" % who, target)
+                    if not self.quiet: self.msg("%s added to the list of 'listen' channels!" % who, target)
                     self.connection.join(who)
         elif self.startswitharray(cmd.lower(), ["remove", "delete"]):
             who=re.sub("(?i)^(remove|delete)", "", cmd).strip(" ")
@@ -469,9 +469,9 @@ class FreenodeBot(SingleServerIRCBot):
             else:
                 if not who.startswith("#"): who = "#"+who
                 if len(query('select l_channel from listen where l_channel="%s"' % who))==0:
-            	    if not self.quiet: self.msg("%s is not in the list of 'listen' channels!" % who, target)
-            	else:
-            	    modquery('delete from listen where l_channel="%s"' % who)
+                    if not self.quiet: self.msg("%s is not in the list of 'listen' channels!" % who, target)
+                else:
+                    modquery('delete from listen where l_channel="%s"' % who)
                     self.listened = query(queries["listenedchannels"]) # update the list of listened channels
                     if not self.quiet: self.msg("%s removed from the list of 'listen' channels!" % who, target)
                     self.connection.part(who, "Requested by "+nick+" in "+self.channel)
@@ -486,11 +486,11 @@ class FreenodeBot(SingleServerIRCBot):
                 if not chan1.startswith("#"): chan1 = "#"+chan1
                 if not chan2.startswith("#"): chan2 = "#"+chan2
                 if len(query('select l_channel from listen where l_channel="%s"' % chan1))==0:
-            	    if not self.quiet: self.msg("%s is not in the list of stalked pages!" % chan1, target)
-            	else:
-            	    modquery('update listen set l_channel = "%s" where l_channel = "%s"' % (chan2, chan1))
+                    if not self.quiet: self.msg("%s is not in the list of stalked pages!" % chan1, target)
+                else:
+                    modquery('update listen set l_channel = "%s" where l_channel = "%s"' % (chan2, chan1))
                     bot2.stalked = query(queries["listenedchannels"]) # update the list of listened channels
-            	    if not self.quiet: self.msg("Changed the name of %s in the list of 'listen' channels!" % chan1, target)
+                    if not self.quiet: self.msg("Changed the name of %s in the list of 'listen' channels!" % chan1, target)
                     self.connection.part(chan1, "Requested by "+nick+" in "+self.channel)
                     self.connection.join(chan2)
         elif cmd.lower().startswith("on"):
@@ -523,7 +523,7 @@ class FreenodeBot(SingleServerIRCBot):
             if not who:
                 if not self.quiet: self.msg("You have to specify a username", target)
             else:
-            	who = who[0].upper()+who[1:]
+                who = who[0].upper()+who[1:]
                 stewinfo = query('select s_nick, s_cloak, s_optin from stewards where s_username="%s"' % who, False)
                 if len(stewinfo)==0:
                     self.msg("%s is not a steward!" % who, target)
@@ -549,31 +549,31 @@ class FreenodeBot(SingleServerIRCBot):
             if wllen==0:
                 if not self.quiet: self.msg("You have to specify username, and optionally nick, cloak and opt-in preference", target)
             else:
-            	suser = wholist[0]
-            	suser = suser[0].upper()+suser[1:]
+                suser = wholist[0]
+                suser = suser[0].upper()+suser[1:]
                 suser = suser.replace("_", " ")
-            	snick = "null"
-            	scloak = "null"
-            	soptin = "0"
-            	if wllen>=2:
-            	    snick = '"%s"' % wholist[1]
-            	    if wllen>=3:
-            	        if wholist[2] != "-":
-            	    	    scloak = '"%s"' % wholist[2].lower()
-            	        if wllen>=4:
-            	            if wholist[3].lower() in ["yes", "true", "1"]:
-            	            	soptin = "1"
-            	            elif wholist[3].lower() in ["no", "false", "0"]:
-            	            	soptin = "0"
-            	if len(query('select s_username from stewards where s_username="%s"' % suser))>0:
-            	    if not self.quiet: self.msg("%s is already in the list of stewards!" % suser, target)
-            	else:
-            	    modquery('insert into stewards values (0, "%s", %s, %s, %s)' % (suser, snick, scloak, soptin))
+                snick = "null"
+                scloak = "null"
+                soptin = "0"
+                if wllen>=2:
+                    snick = '"%s"' % wholist[1]
+                    if wllen>=3:
+                        if wholist[2] != "-":
+                            scloak = '"%s"' % wholist[2].lower()
+                        if wllen>=4:
+                            if wholist[3].lower() in ["yes", "true", "1"]:
+                                soptin = "1"
+                            elif wholist[3].lower() in ["no", "false", "0"]:
+                                soptin = "0"
+                if len(query('select s_username from stewards where s_username="%s"' % suser))>0:
+                    if not self.quiet: self.msg("%s is already in the list of stewards!" % suser, target)
+                else:
+                    modquery('insert into stewards values (0, "%s", %s, %s, %s)' % (suser, snick, scloak, soptin))
                     self.steward = query(queries["stewardnicks"]) # update the list of steward nicks
                     self.optin = query(queries["stewardoptin"]) # update the list of steward opt-in nicks
                     self.privileged = query(queries["privcloaks"]) # update the list of privileged cloaks
                     bot2.ignored = query(queries["ignoredusers"]) # update the list of ignored users
-            	    if not self.quiet: self.msg("%s added to the list of stewards!" % suser, target)
+                    if not self.quiet: self.msg("%s added to the list of stewards!" % suser, target)
         elif self.startswitharray(cmd.lower(), ["remove", "delete"]):
             who=re.sub("(?i)^(remove|delete)", "", cmd).strip(" ")
             who=who.split(" ")[0]
@@ -581,11 +581,11 @@ class FreenodeBot(SingleServerIRCBot):
             if not who:
                 if not self.quiet: self.msg("You have to specify a username", target)
             else:
-            	who = who[0].upper()+who[1:]
+                who = who[0].upper()+who[1:]
                 if len(query('select s_username from stewards where s_username="%s"' % who))==0:
-            	    if not self.quiet: self.msg("%s is not a steward!" % who, target)
-            	else:
-            	    modquery('delete from stewards where s_username="%s"' % who)
+                    if not self.quiet: self.msg("%s is not a steward!" % who, target)
+                else:
+                    modquery('delete from stewards where s_username="%s"' % who)
                     self.steward = query(queries["stewardnicks"]) # update the list of steward nicks
                     self.optin = query(queries["stewardoptin"]) # update the list of steward opt-in nicks
                     self.privileged = query(queries["privcloaks"]) # update the list of privileged cloaks
@@ -606,23 +606,23 @@ class FreenodeBot(SingleServerIRCBot):
                 if suser2!="-":
                     setlist += ['s_username = "%s"' % suser2]
                 if wllen>=3:
-            	    if wholist[2] != "-":
-            	    	setlist += ['s_nick = "%s"' % wholist[2]]
-            	    if wllen>=4:
-            	        if wholist[3] != "-":
-            	    	    setlist += ['s_cloak = "%s"' % wholist[3].lower()]
-            	        if wllen>=5:
-            	            if wholist[4].lower() in ["yes", "true", "1"]:
-            	            	setlist += ['s_optin = 1']
-            	            elif wholist[4].lower() in ["no", "false", "0"]:
-            	            	setlist += ['s_optin = 0']
+                    if wholist[2] != "-":
+                        setlist += ['s_nick = "%s"' % wholist[2]]
+                    if wllen>=4:
+                        if wholist[3] != "-":
+                            setlist += ['s_cloak = "%s"' % wholist[3].lower()]
+                        if wllen>=5:
+                            if wholist[4].lower() in ["yes", "true", "1"]:
+                                setlist += ['s_optin = 1']
+                            elif wholist[4].lower() in ["no", "false", "0"]:
+                                setlist += ['s_optin = 0']
                 if len(query('select s_username from stewards where s_username="%s"' % suser1))==0:
-            	    if not self.quiet: self.msg("%s is not a steward!" % suser1, target)
-            	else:
-            	    if len(setlist)==0:
-            	        if not self.quiet: self.msg("No change necessary!")
-            	    else:
-            	        modquery('update stewards set %s where s_username = "%s"' % (", ".join(setlist), suser1))
+                    if not self.quiet: self.msg("%s is not a steward!" % suser1, target)
+                else:
+                    if len(setlist)==0:
+                        if not self.quiet: self.msg("No change necessary!")
+                    else:
+                        modquery('update stewards set %s where s_username = "%s"' % (", ".join(setlist), suser1))
                         self.steward = query(queries["stewardnicks"]) # update the list of steward nicks
                         self.optin = query(queries["stewardoptin"]) # update the list of steward opt-in nicks
                         self.privileged = query(queries["privcloaks"]) # update the list of privileged cloaks
@@ -809,13 +809,13 @@ class WikimediaBot(SingleServerIRCBot):
                 if hid: usertarget="a global account"
                 else: usertarget="global account %s" % usertarget
                 # HARCODED PART; TO BE REDESIGNED INTO AN EXCEPTION SYSTEM
-		print usersource, origcomment
-		#if usersource == 'Quentinv57' and 'spambot' in origcomment:
-		#	pass
-		if True: #else:
-			bot1.msg("%s03%s %s %s%s" % (selff, usersource, action2, usertarget, comment))
+        print usersource, origcomment
+        #if usersource == 'Quentinv57' and 'spambot' in origcomment:
+        #   pass
+        if True: #else:
+            bot1.msg("%s03%s %s %s%s" % (selff, usersource, action2, usertarget, comment))
             elif "Special:Log/gblrights" in a:
-            	#14[[07Special:Log/gblrights14]]4 groupprms210 02 5* 03Dungodung 5*  10changed group permissions for Special:GlobalUsers/test.Added move, patrol;Removed (none): testing
+                #14[[07Special:Log/gblrights14]]4 groupprms210 02 5* 03Dungodung 5*  10changed group permissions for Special:GlobalUsers/test.Added move, patrol;Removed (none): testing
                 #14[[07Special:Log/gblrights14]]4 ***action***10 02 5* 03***who*** 5*  10***text***: ***opt-comment***
                 comp = re.compile("14\[\[07Special:Log/gblrights14\]\]4 (?P<action>.+?)10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<text>.+)", re.DOTALL)
                 found = comp.search(a)
@@ -947,7 +947,7 @@ if __name__ == "__main__":
     except IOError:
         print "No config file! You should start this script from its directory like 'python stewardbot.py'"
     except:
-    	raise
+        raise
         bot1.die()
         bot2.die()
         sys.exit()
