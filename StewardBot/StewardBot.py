@@ -45,7 +45,7 @@ def query(sqlquery, one=True):
                 res2 += [i[0]]
         return res2
     else: return res
-        
+
 def modquery(sqlquery):
     db = MySQLdb.connect(db=SQLdb, host=SQLhost, user=SQLuser, passwd=SQLpassword)
     cursor = db.cursor()
@@ -70,11 +70,11 @@ class FreenodeBot(SingleServerIRCBot):
         self.listen = True
         self.badsyntax = "Unrecognized command. Type @help for more info."
         SingleServerIRCBot.__init__(self, [(self.server, 6667)], self.nickname, self.nickname)
-        
+
     def on_error(self, c, e):
         print e.target()
         self.die()
-    
+
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
         time.sleep(1) # latency problem?
@@ -100,7 +100,7 @@ class FreenodeBot(SingleServerIRCBot):
     def on_action(self, c, e):
         who = "<"+self.channel+"/"+nm_to_n(e.source())+"> "
         print "["+time.strftime("%d.%m.%Y %H:%M:%S")+"] * "+who+e.arguments()[0]
-        
+
     def on_privmsg(self, c, e):
         nick = nm_to_n(e.source())
         a = e.arguments()[0]
@@ -124,7 +124,7 @@ class FreenodeBot(SingleServerIRCBot):
                 self.connection.action(self.channel, a[1:])
             else:
                 self.msg(a)
-        
+
     def on_pubmsg(self, c, e):
         timestamp = "["+time.strftime("%d.%m.%Y %H:%M:%S", time.localtime(time.time()))+"] "
         nick = nm_to_n(e.source())
@@ -154,12 +154,12 @@ class FreenodeBot(SingleServerIRCBot):
             if where!=self.channel: print timestamp+who+a
             reason=re.sub("(?i)!steward", "", a).strip(" ")
             self.attention(nick, where, reason)
-        
+
     def do_command(self, e, cmd, target=None):
         nick = nm_to_n(e.source())
         if not target: target = self.channel
         c = self.connection
-        
+
         #On/Off
         if cmd.lower() == "quiet":
             if not self.quiet:
@@ -191,7 +191,7 @@ class FreenodeBot(SingleServerIRCBot):
             if self.randmess:
                 self.msg("Message notification off", target)
                 self.randmess=False
-                
+
         #Notifications
         elif cmd.lower().startswith("steward"):
             self.msg("Stewards: Attention requested by %s ( %s )" % (nick, " ".join(self.optin)))
@@ -199,7 +199,7 @@ class FreenodeBot(SingleServerIRCBot):
         #Privileged
         elif cmd.lower().startswith("privileged"):
             self.do_privileged(re.sub("(?i)^privileged", "", cmd).strip(" "), target, nick)
-            
+
         #Ignored
         elif cmd.lower().startswith("ignored"):
             self.do_ignored(re.sub("(?i)^ignored", "", cmd).strip(" "), target, nick)
@@ -207,28 +207,28 @@ class FreenodeBot(SingleServerIRCBot):
         #Stalked
         elif cmd.lower().startswith("stalked"):
             self.do_stalked(re.sub("(?i)^stalked", "", cmd).strip(" "), target, nick)
-        
+
         #Listen
         elif cmd.lower().startswith("listen"):
             self.do_listen(re.sub("(?i)^listen", "", cmd).strip(" "), target, nick)
-        
+
         #Stewards
         elif cmd.lower().startswith("stew"):
             self.do_steward(re.sub("(?i)^stew", "", cmd).strip(" "), target, nick)
-        
+
         #Help
         elif cmd.lower() == "help":
-            self.msg("Help = https://tools.wmflabs.org/stewardbots/stewardbot.html", nick)
-            
+            self.msg("Help = https://tools.wmflabs.org/stewardbots/StewardBot/StewardBot.html", nick)
+
         #Test
         elif cmd.lower() == "test":
             if bot2.testregister: self.msg(bot2.testregister, nick)
-            
+
         #Huggle
         elif cmd.lower().startswith("huggle"):
             who=cmd[6:].strip(" ")
             self.connection.action(self.channel, "huggles " + who)
-            
+
         #Die
         elif cmd.lower() == "die":
             if self.getcloak(e.source()) != self.owner:
@@ -244,7 +244,7 @@ class FreenodeBot(SingleServerIRCBot):
                 c.quit()
                 self.disconnect()
                 os._exit(os.EX_OK)
-                
+
         #Other
         elif not self.quiet:
             pass #self.msg(self.badsyntax, target)
@@ -258,7 +258,7 @@ class FreenodeBot(SingleServerIRCBot):
                 messg="Attention requested by %s on %s" % (nick, channel)
                 if reason: messg+=" with the following reason: " + reason
                 self.msg(messg)
-    
+
     def do_privileged(self, cmd, target, nick):
         if cmd.lower().startswith("list"):
             who=re.sub("(?i)^list", "", cmd).strip(" ")
@@ -505,7 +505,7 @@ class FreenodeBot(SingleServerIRCBot):
                 self.listen = False
         else:
             if not self.quiet: self.msg(self.badsyntax, target)
-    
+
     def do_steward(self, cmd, target, nick):
         if cmd.lower().startswith("users"):
             stewusers = query(queries["stewardusers"])
@@ -634,10 +634,10 @@ class FreenodeBot(SingleServerIRCBot):
     def msg(self, poruka, target=None):
         if not target: target=self.channel
         self.connection.privmsg(target, poruka)
-    
+
     def getcloak(self, doer):
         if re.search("/", doer) and re.search("@", doer): return doer.split("@")[1]
-        
+
     def startswitharray(self, a, l):
         for i in l:
             if a.startswith(i): return True
@@ -656,7 +656,7 @@ class WikimediaBot(SingleServerIRCBot):
     def on_error(self, c, e):
         print e.target()
         self.die()
-    
+
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
 
@@ -668,11 +668,11 @@ class WikimediaBot(SingleServerIRCBot):
             c.ctcp_reply(nm_to_n(e.source()), "Logging bot for #wikimedia-stewards")
         elif e.arguments()[0] == "PING":
             if len(e.arguments()) > 1: c.ctcp_reply(nm_to_n(e.source()), "PING " + e.arguments()[1])
-        
+
     def on_privmsg(self, c, e):
         nick = nm_to_n(e.source())
         a = e.arguments()[0]
-        if nick.lower()!="dungodung":           
+        if nick.lower()!="dungodung":
             c.privmsg(nick, "Please don't talk to me!")
         elif a.startswith(config.passwordhash):
             c.privmsg(nick, "Terminating the bot!")
@@ -691,9 +691,9 @@ class WikimediaBot(SingleServerIRCBot):
             os._exit(os.EX_OK)
         else:
             c.privmsg(nick, "Type 'echo <password> | md5sum' to your linux terminal and paste the output here.")
-        print "["+time.strftime("%d.%m.%Y %H:%M:%S")+"] <!private/"+nick+"> "+a 
-        
-        
+        print "["+time.strftime("%d.%m.%Y %H:%M:%S")+"] <!private/"+nick+"> "+a
+
+
     def on_pubmsg(self, c, e):
         self.randmess()
         timestamp = "["+time.strftime("%d.%m.%Y %H:%M:%S", time.localtime(time.time()))+"] "
@@ -812,7 +812,7 @@ class WikimediaBot(SingleServerIRCBot):
 		print usersource, origcomment
 		#if usersource == 'Quentinv57' and 'spambot' in origcomment:
 		#	pass
-		if True: #else:  
+		if True: #else:
 			bot1.msg("%s03%s %s %s%s" % (selff, usersource, action2, usertarget, comment))
             elif "Special:Log/gblrights" in a:
             	#14[[07Special:Log/gblrights14]]4 groupprms210 02 5* 03Dungodung 5*  10changed group permissions for Special:GlobalUsers/test.Added move, patrol;Removed (none): testing
@@ -913,15 +913,15 @@ class WikimediaBot(SingleServerIRCBot):
                     if rccomment.replace(" ", "") == "": comment=""
                     else: comment=" with the following comment: 07" + rccomment.strip(" ") + ""
                 bot1.msg("03%s edited 10[[%s%s]] 02https://meta.wikimedia.org/wiki/?diff=prev&oldid=%s%s" % (rcuser, rcpage, section, rcdiff, comment))
-                
+
     def randmess(self):
         if bot1.randmess:
             a=int(random.random()*5000)
             b=int(random.random()*5000)
             message="Steward elections are on! Please vote @ https://meta.wikimedia.org/wiki/Stewards/elections_2011 and comment @ https://meta.wikimedia.org/wiki/Stewards/confirm. Live updates: #wikimedia-stewards-elections"
             if a==b: bot1.msg(message)
-        
-    
+
+
 class BotThread(threading.Thread):
     def __init__ (self, bot):
         self.b=bot
