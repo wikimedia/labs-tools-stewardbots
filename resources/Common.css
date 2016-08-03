@@ -1,6 +1,6 @@
-@import "//bits.wikimedia.org/static-current/skins/MonoBook/main.css";
-@import "//bits.wikimedia.org/static-current/resources/src/mediawiki.legacy/shared.css";
-@import "//meta.wikimedia.org/w/index.php?title=MediaWiki:Common.css&action=raw&ctype=text/css";
+@import "https://www.wikimedia.org/static/current/skins/MonoBook/main.css";
+@import "https://www.wikimedia.org/static/current/resources/src/mediawiki.legacy/shared.css";
+@import "https://meta.wikimedia.org/w/index.php?title=MediaWiki:Common.css&action=raw&ctype=text/css";
 
 #column-one {
 	position: absolute;
