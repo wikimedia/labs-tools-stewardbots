@@ -1,0 +1,336 @@
+
+
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="Stewie, Dungodung, StewardBot, Wikimedia, tools, stewardbots" />
+<title>StewardBot</title>
+<!-- Begin loading our css... etc.-->
+<link rel="stylesheet" href="http://meta.wikimedia.org/skins-1.5/common/shared.css?165" type="text/css" media="screen" />
+<style type="text/css" media="screen">
+/*<![CDATA[*/
+                        @import
+                "http://meta.wikimedia.org/skins-1.5/monobook/main.css?5";
+                body {
+                        font-size: 8pt;
+                }
+                div.header {
+                        margin: 15px 15px 15px 150px;
+                        border: #7B68EE solid 1px;
+                        background-color: #FFFFFF;
+                        font-family: Trebuchet MS, Tahoma, Arial;
+                        padding: 1px;
+                }
+                div.content {
+                        padding: 0px 15px 0px 15px;
+                        border: #CCCCCC solid 1px;
+                        background-color: #FFFFFF;
+                        margin: 20px 0px 0px 150px;
+                }
+/*]]>*/
+</style>
+<link rel="stylesheet" href="http://meta.wikimedia.org/w/index.php?title=MediaWiki:Common.css&amp;usemsgcache=yes&amp;ctype=text%2Fcss&amp;smaxage=2678400&amp;action=raw&amp;maxage=2678400&amp;ts=20080818041814" type="text/css" />
+<link rel="stylesheet" href="http://meta.wikimedia.org/w/index.php?title=MediaWiki:Monobook.css&amp;usemsgcache=yes&amp;ctype=text%2Fcss&amp;smaxage=2678400&amp;action=raw&amp;maxage=2678400&amp;ts=20080818041814" type="text/css" media="screen" />
+<style type="text/css">
+/*<![CDATA[*/
+ a.c2 {background-image: url(http://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Wikimedia_Community_Logo-Toolserver.svg/130px-Wikimedia_Community_Logo-Toolserver.svg.png);}
+ th.c1 {background-color:black;color:white}
+/*]]>*/
+</style>
+</head>
+<body class="mediawiki ltr ns-2 ns-subject page-User_Cbrown1023_Stewie skin-monobook">
+<div id="globalWrapper">
+<div id="column-content">
+<div id="content"><!-- Content section begins -->
+<a name="top" id="top"></a>
+<h1 class="firstHeading">StewardBot - Help</h1>
+<p><strong>StewardBot</strong> (<em><a href="http://en.wiktionary.org/wiki/AKA" class="extiw" title="wikt:AKA">aka</a></em> Stewie) is nice little bot who spends his life in <a href="irc://irc.freenode.net/wikimedia-stewards" class="external text" title="irc://irc.freenode.net/wikimedia-stewards" rel="nofollow"><tt>#wikimedia-stewards</tt></a>. He makes life easier for the stewards and everyone else; he is a good bot!</p>
+<p><a name="Commands" id="Commands"></a></p>
+<h3><span class="mw-headline">Commands</span></h3>
+<table class="prettytable">
+<tr>
+<th>Command</th>
+<th>Description</th>
+<th>Notes/Example</th>
+</tr>
+<tr>
+<td><strong>!steward</strong></td>
+<td>Pings all of the stewards (emergency)</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>@steward</strong></td>
+<td>Pings a group of stewards who have opted-in (non-emergency)</td>
+<td>&lt;kibble&gt;@steward Az has gone rouge!<br />
+&lt;StewardBot&gt;Stewards: Attention requested by kibble ( DerHexer Dungodung )</td>
+</tr>
+<tr>
+<td><strong>@quiet</strong></td>
+<td>Makes Stewie be quiet and not speak. <tt>:'(</tt></td>
+<td>&lt;dungodung&gt;@quiet<br />
+&lt;StewardBot&gt;I'll be quiet :(</td>
+</tr>
+<tr>
+<td><strong>@speak</strong></td>
+<td>Makes Stewie talk again.</td>
+<td>&lt;dungodung&gt;@speak<br />
+&lt;StewardBot&gt;Back in action :)</td>
+</tr>
+<tr>
+<td><strong>@notify on</strong></td>
+<td>Turns notification (!steward) on</td>
+<td>&lt;StewardBot&gt;Notification on</td>
+</tr>
+<tr>
+<td><strong>@notify off</strong></td>
+<td>Turns notification (!steward) off</td>
+<td>&lt;StewardBot&gt;Notification off</td>
+</tr>
+<tr>
+<td><strong>@stew</strong><br />
+<strong>@privileged</strong><br />
+<strong>@ignored</strong><br />
+<strong>@stalked</strong><br />
+<strong>@listen</strong></td>
+<td>Advanced settings</td>
+<td><em>See the <a href="#advanced" title="">section below</a> for more information.</em></td>
+</tr>
+<tr>
+<td><strong>@help</strong></td>
+<td>Displays a link to this help page</td>
+<td>&lt;kibble&gt;@help<br />
+&lt;StewardBot&gt;Help = <a href="http://www.toolserver.org/~stewardbots/stewardbot.html" class="external free" title="http://www.toolserver.org/~stewardbots/stewardbot.html" rel="nofollow">http://www.toolserver.org/~stewardbots/stewardbot.html</a></td>
+</tr>
+<tr>
+<td><strong>@huggle</strong></td>
+<td>The huggle command. <tt>:D</tt></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>@test</strong></td>
+<td>Tests the rc reader and posts what was last received on irc.wikimedia.org</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>@die</strong></td>
+<td>Quits the bot (<a href="http://meta.wikimedia.org/wiki/User:Dungodung" title="User:Dungodung">owner</a>-only)</td>
+<td>&lt;dungodung&gt; @die<br />
+* StewardBot has left irc.freenode.net ("Goodbye!")</td>
+</tr>
+</table>
+<p><span id="advanced"></span></p>
+<p><a name="advanced" id="advancedsettings"></a></p>
+<h3><span class="mw-headline">Advanced settings</span></h3>
+<table class="prettytable">
+<tr>
+<th>Command</th>
+<th>Subcommand</th>
+<th>Parameters</th>
+<th>Description</th>
+<th>Notes/Example</th>
+</tr>
+<tr>
+<td rowspan="7"><strong title="Stewards">stew</strong></td>
+<td><strong>add</strong></td>
+<td><em>username</em> [<em>nick</em> [<em>cloak</em> [<em>opt-in</em>]]]</td>
+<td>Adds a new steward defined by username and optional parameters: nickname, cloak and <span title="Accepted values are 'true', 'yes' and '1'">boolean opt-in information</span>; special value "-" can be used for the <em>cloak</em> parameter if the user has no cloak</td>
+<td>&lt;dungodung&gt;@stew add Cbrown1023 kibble wikimedia/Cbrown1023 true</td>
+</tr>
+<tr>
+<td><strong>remove</strong><br /><strong>delete</strong></td>
+<td><em>username</em></td>
+<td>Removes a steward (and all related info) by username</td>
+<td>&lt;dungodung&gt;@stew remove Cbrown1023</td>
+</tr>
+<tr>
+<td><strong>change</strong><br /><strong>edit</strong><br /><strong>modify</strong><br /><strong>rename</strong></td>
+<td><em>username</em> [<em>username</em> [<em>nick</em> [<em>cloak</em> [<em>opt-in</em>]]]]</td>
+<td>Changes the username, nick, cloak and/or opt-in information of a steward; special value "-" can be used for all but the first parameter</td>
+<td>&lt;dungodung&gt;@stew change Cbrown1023 - worby - 0</td>
+</tr>
+<tr>
+<td><strong>users</strong></td>
+<td></td>
+<td>Lists all stewards by username</td>
+<td>&lt;dungodung&gt;@stew users</td>
+</tr>
+<tr>
+<td><strong>nicks</strong></td>
+<td></td>
+<td>Lists all stewards by nicknames</td>
+<td>&lt;dungodung&gt;@stew nicks</td>
+</tr>
+<tr>
+<td><strong>optin</strong></td>
+<td></td>
+<td>Lists all stewards who have opted-in for @steward notification by nicknames</td>
+<td>&lt;dungodung&gt;@stew optin</td>
+</tr>
+<tr>
+<td><strong>info</strong></td>
+<td><em>user</em></td>
+<td>Provides information about the specified steward</td>
+<td>&lt;dungodung&gt;@stew info Cbrown1023<br />&lt;StewardBot&gt;Steward Cbrown1023 uses nick kibble with the cloak wikimedia/Cbrown1023. kibble is in the list of opt-in nicks.</td>
+</tr>
+<tr>
+<td rowspan="5"><strong title="Privileged users, defined with a nick and a cloak, can give restricted commands to the bot">privileged</strong></td>
+<td><strong>add</strong></td>
+<td><em>nick cloak</em></td>
+<td>Adds a nick to the list of privileged users</td>
+<td>&lt;kibble&gt;@privileged add Az1568 wikipedia/Az1568</td>
+</tr>
+<tr>
+<td><strong>remove</strong><br /><strong>delete</strong></td>
+<td><em>nick</em></td>
+<td>Removes a nick from the list of privileged users</td>
+<td>&lt;kibble&gt;@privileged remove Az1568</td>
+</tr>
+<tr>
+<td><strong>change</strong><br /><strong>edit</strong><br /><strong>modify</strong><br /><strong>rename</strong></td>
+<td><em>nick</em> (<em>nick</em>|<em>cloak</em>)</td>
+<td>Changes the nick or the cloak of a privileged user</td>
+<td>&lt;kibble&gt;@privileged edit Az1568 wikimedia/Az1568</td>
+</tr>
+<tr>
+<td><strong>list</strong></td>
+<td>[(<em>all</em>|<em>*</em>)]</td>
+<td>Lists all privileged users; with optional parameter, lists stewards as well</td>
+<td>&lt;kibble&gt;@privileged list *</td>
+</tr>
+<tr>
+<td><strong>get</strong></td>
+<td><em>nick</em></td>
+<td>Cloaks who can give restricted commands to the bot</td>
+<td>&lt;kibble&gt;@privileged get Az1568<br />&lt;StewardBot&gt;The cloak of privileged user Az1568 is wikimedia/az1568</td>
+</tr>
+<td rowspan="4"><strong title="Ignored users are those whose edits will not trigger a report by the bot">ignored</strong></td>
+<td><strong>add</strong></td>
+<td><em>username</em></td>
+<td>Adds a user to the list of ignored users</td>
+<td>&lt;kibble&gt;@ignored add Az1568</td>
+</tr>
+<tr>
+<td><strong>remove</strong><br /><strong>delete</strong></td>
+<td><em>username</em></td>
+<td>Removes a user from the list of ignored users</td>
+<td>&lt;kibble&gt;@ignored remove Az1568</td>
+</tr>
+<tr>
+<td><strong>change</strong><br /><strong>edit</strong><br /><strong>modify</strong><br /><strong>rename</strong></td>
+<td><em>username username</td>
+<td>Changes the username of an ignored user</td>
+<td>&lt;Az1568&gt;@ignored modify kibble worby</td>
+</tr>
+<tr>
+<td><strong>list</strong></td>
+<td>[(<em>all</em>|<em>*</em>)]</td>
+<td>Lists all ignored users; with optional parameter, lists stewards as well</td>
+<td>&lt;kibble&gt;@ignored list all</td>
+</tr>
+<td rowspan="4"><strong title="Stalked pages are those that the bot reports edits of">stalked</strong></td>
+<td><strong>add</strong></td>
+<td><em>page</em></td>
+<td>Adds a <em title="All pages begining with the prefix will be stalked">page prefix</em> to the list of stalked pages</td>
+<td>&lt;kibble&gt;@stalked add Steward_handbook</td>
+</tr>
+<tr>
+<td><strong>remove</strong><br /><strong>delete</strong></td>
+<td><em>page</em></td>
+<td>Removes a page prefix from the list of stalked pages</td>
+<td>&lt;kibble&gt;@stalked remove Steward_handbook</td>
+</tr>
+<tr>
+<td><strong>change</strong><br /><strong>edit</strong><br /><strong>modify</strong><br /><strong>rename</strong></td>
+<td><em>page page</td>
+<td>Changes the page name of a stalked page</td>
+<td>&lt;kibble&gt;@stalked rename Steward_handbook Stewards'_handbook</td>
+</tr>
+<tr>
+<td><strong>list</strong></td>
+<td></td>
+<td>Lists all stalked pages</td>
+<td>&lt;kibble&gt;@stalked list</td>
+</tr>
+<td rowspan="6"><strong title="Channels that the bot listens for !steward commands">listen</strong></td>
+<td><strong>add</strong></td>
+<td><em>channel</em></td>
+<td>Adds a channel to the list of 'listen' channels</td>
+<td>&lt;kibble&gt;@listen add #cvn-sw</td>
+</tr>
+<tr>
+<td><strong>remove</strong><br /><strong>delete</strong></td>
+<td><em>channel</em></td>
+<td>Removes a channel from the list of 'listen' channels</td>
+<td>&lt;kibble&gt;@listen remove #cvn-sw</td>
+</tr>
+<tr>
+<td><strong>change</strong><br /><strong>edit</strong><br /><strong>modify</strong><br /><strong>rename</strong></td>
+<td><em>channel channel</td>
+<td>Changes the channel name of a 'listen' channel</td>
+<td>&lt;kibble&gt;@listen rename #cvn-sw #cvn-swmt</td>
+</tr>
+<tr>
+<td><strong>list</strong></td>
+<td></td>
+<td>Lists all 'listen' channels</td>
+<td>&lt;kibble&gt;@listen list</td>
+</tr>
+<tr>
+<td><strong>on</strong></td>
+<td></td>
+<td>Joins all 'listen' channels</td>
+<td>&lt;kibble&gt;@listen on</td>
+</tr>
+<tr>
+<td><strong>off</strong></td>
+<td></td>
+<td>Parts all 'listen' channels</td>
+<td>&lt;kibble&gt;@listen off</td>
+</tr>
+</table>
+<p><strong>Note:</strong> <em>username</em> and <em>page</em> parameters should always use underscore (<tt>_</tt>) instead of space.</p>
+<!-- end docs, cue pretty stuff! -->
+<div class="visualClear"></div>
+</div>
+</div>
+</div>
+<div id="column-one">
+<div class="portlet" id="p-logo"><a class="c2" href="http://meta.wikimedia.org/wiki/User:Dungodung" title="Visit the Dungodung! [alt-shift-z]" accesskey="z"></a></div>
+<script type="text/javascript">
+//<![CDATA[
+ if (window.isMSIE55) fixalpha(); 
+//]]>
+</script>
+<div class='generated-sidebar portlet' id='p-meta'>
+<h5>meta</h5>
+<div class='pBody'>
+<ul>
+<li id="n-currentevents"><a href="http://meta.wikimedia.org/wiki/Wikimedia_News" title="Find background information on current events">Wikimedia News</a></li>
+<li id="n-planet"><a href="http://en.planet.wikimedia.org/" title="Weblog aggregator of Wikimedia-related posts">Planet Wikimedia</a></li>
+<li id="n-Events-text"><a href="http://meta.wikimedia.org/wiki/Events">Events</a></li>
+<li id="n-Chapters-text"><a href="http://meta.wikimedia.org/wiki/Wikimedia_chapters">Chapters</a></li>
+<li id="n-sitesupport"><a href="http://wikimediafoundation.org/wiki/Donate" title="Support us">Donate</a></li>
+</ul>
+</div>
+</div>
+<div class="visualClear"></div>
+<!-- End of the "pretty stuff". Footer section begins -->
+<div id="footer">
+<div id="f-poweredbyico"><a href="http://tools.wikimedia.de/"><img src="http://toolserver.org/images/wikimedia-toolserver-button.png" alt="Powered by Wikimedia Toolserver" /></a></div>
+<!-- Fixme: TSLogo slightly overlaps footer -Az -->
+<ul id="f-list">
+<li id="copyright">This page was last modified on 31 January 2010, at 00:10 UTC.</li>
+</ul>
+</div>
+</div>
+<script type="text/javascript">
+//<![CDATA[
+if (window.runOnloadHook) runOnloadHook();
+//]]>
+</script><!-- Written and designed by Cbrown1023 (with help /w html and fixes from Az1568  ); Subsequently edited and enhanced by Dungodung -->
+</body>
+</html>
+
+
