@@ -1,167 +1,134 @@
-SULWatcher
-==========
+<!doctype html>
+<html>
+<head>
+	<title>SULWatcher help page</title>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<link href="/stewardbots/resources/docs.css" rel="stylesheet" type="text/css" />
+	<link href="/stewardbots/resources/stylesheet.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<h2>SULWatcher help page</h2>
 
-**SULWatcher** notifies 
-[`#cvn-unifications`](irc://irc.freenode.net/cvn-unifications) of 
-[account unifications](http://meta.wikimedia.org/wiki/Help:Unified_login).
+<hr />
+<p><strong>SULWatcher</strong> notifies <tt>#cvn-unifications</tt> of account unifications across Wikimedia Foundation public wikis.</p>
 
-Commands
---------
+<h3>Commands</h3>
 
-You need to be voiced in IRC to be able to use these commands. Note that 
-the commands start with the bot's nickname, whatever it is, plus a 
-colon. Normally the bot runs using two nicks (SULWatcher and WatcherSUL) 
-- issuing a command to either one has the same effect. `SULWatcher:` is 
-used for these examples.
+<p>You need to be voiced in IRC to be able to use these commands. Note that the commands start with the bot&#39;s nickname, whatever it is, plus a colon. Normally the bot runs using two nicks (SULWatcher and WatcherSUL) and issuing a command to either one has the same effect. <code>SULWatcher:</code>&nbsp;is used for these examples.</p>
 
 <table class="wikitable" style="font-size:85%">
-<tr>
-<th> Command </th><th> Description </th><th> Example
-</th></tr>
-<tr>
-<td> SULWatcher:&nbsp;test </td><td> Test if the bot is alive </td><td>
-SULWatcher:&nbsp;test
-
-</td></tr>
-<tr>
-<td>
-SULWatcher:&nbsp;test&nbsp;<i>[string]</i>&nbsp;regex&nbsp;<i>[regex]</i></td><td>
-Test the regex against the string </td><td>
-SULWatcher:&nbsp;test&nbsp;grawp&nbsp;regex&nbsp;<code>\bpoop\b</code>
-
-</td></tr>
-<tr>
-<td> SULWatcher:&nbsp;find&nbsp;regex&nbsp;<i>[regex]</i> </td><td> Find
-information on a given regex </td><td>
-SULWatcher:&nbsp;find&nbsp;regex&nbsp;<code>\bpoop\b</code>
-</td></tr>
-
-<tr>
-<td> SULWatcher:&nbsp;find&nbsp;match&nbsp;<i>[string]</i> </td><td> Find the
-regex which matches the provided string </td><td>
-SULWatcher:&nbsp;find&nbsp;match&nbsp;<code>\bpoop\b</code>
-</td></tr>
-<tr>
-
-<td> SULWatcher:&nbsp;find&nbsp;adder&nbsp;<i>[cloak]</i> </td><td> Find the
-regexes attributed to a given cloak </td><td>
-SULWatcher:&nbsp;find&nbsp;adder&nbsp;<i>wikimedia/mikelifeguard</i>
-</td></tr>
-<tr>
-<td> SULWatcher:&nbsp;find&nbsp;number&nbsp;<i>[#]</i> </td><td> Find
-information on a given entry </td><td> SULWatcher:&nbsp;find&nbsp;number&nbsp;3
-
-</td></tr>
-<tr>
-<td> SULWatcher:&nbsp;add&nbsp;reason&nbsp;<i>[#]</i>&nbsp;<i>[reason]</i>
-</td><td> Add a reason for a certain entry if it is attributed to you</td><td>
-SULWatcher:&nbsp;add&nbsp;reason&nbsp;1&nbsp;suspicious&nbsp;-&nbsp;matches&nbsp;pattern&nbsp;vandalism
-
-</td></tr>
-<tr>
-<td>
-SULWatcher:&nbsp;add&nbsp;reason&nbsp;<i>[#]</i>&nbsp;<b>!</b>&nbsp;<i>[reason]</i>
-</td><td> Re-attribute the entry to you with a given reason </td><td>
-SULWatcher:&nbsp;add&nbsp;reason&nbsp;1&nbsp;!&nbsp;I&nbsp;want&nbsp;to&nbsp;take&nbsp;credit&nbsp;for&nbsp;someone&nbsp;else's&nbsp;work
-
-</td></tr>
-<tr>
-<td>
-SULWatcher:&nbsp;(add&#124;remove&#124;list)&nbsp;badword&nbsp;<i>[regex]</i>
-</td><td> Add/remove/list regexes to match against unifications </td><td>
-SULWatcher:&nbsp;add&nbsp;badword&nbsp;<code>\bpoop\b</code><br
-/>SULWatcher:&nbsp;list&nbsp;badword
-
-</td></tr>
-<tr>
-<td>
-SULWatcher:&nbsp;(add&#124;remove&#124;list)&nbsp;whitelist&nbsp;<i>[username]</i>
-</td><td> Add/remove/list users who are whitelisted </td><td>
-SULWatcher:&nbsp;add&nbsp;whitelist&nbsp;Mike.lifeguard<br
-/>SULWatcher:&nbsp;list&nbsp;whitelist
-
-</td></tr>
-<tr>
-<td> SULWatcher:&nbsp;edit&nbsp;<i>[#]</i>&nbsp;enable&nbsp </td><td> Re-enable
-an existing regex </td><td> SULWatcher:&nbsp;edit&nbsp;2&nbsp;enable</code>
-
-</td></tr>
-<tr>
-<td>
-SULWatcher:&nbsp;edit&nbsp;<i>[#]</i>&nbsp;(regex&#124;reason)&nbsp;<i>[whatever]</i>
-</td><td> Change the regex/reason for an entry, if it is attributed to you
-</td><td> SULWatcher:&nbsp;edit&nbsp;2&nbsp;regex&nbsp;<code>\bpoop\b</code>
-
-</td></tr>
-<tr>
-<td>
-SULWatcher:&nbsp;edit&nbsp;<i>[#]</i>&nbsp;(regex&#124;reason)&nbsp;<b>!</b>&nbsp;<i>[whatever]</i>
-</td><td> Change the regex/reason for an entry, re-attributing it to
-you</td><td>
-SULWatcher:&nbsp;edit&nbsp;2&nbsp;reason&nbsp;!&nbsp;Added&nbsp;word&nbsp;boundaries&nbsp;for&nbsp;fewer&nbsp;false&nbsp;positives
-
-</td></tr>
-<tr>
-<td>
-SULWatcher:&nbsp;edit&nbsp;<i>[#]</i>&nbsp;case&nbsp;<i>(true&#124;false)</i>
-</td><td> Make an entry either case sensitive or insensitive</td><td>
-SULWatcher:&nbsp;edit&nbsp;2&nbsp;case&nbsp;true
-
-</td></tr>
-<tr>
-<td align="center" colspan="3"> <b>For <i>list</i> commands, don't provide a
-(regex&#124;cloak&#124;nick&#124;username).</b>
-</td></tr>
-<tr>
-<td align="center" colspan="3"> The following commands are restricted to opped
-users.
-</td></tr>
-<tr>
-
-<th> Restricted command </th><th> Description </th><th> Example
-</th></tr>
-<tr>
-<td> SULWatcher:&nbsp;restart </td><td> Restart the bots
-</td><td>SULWatcher:&nbsp;restart
-</td></tr>
-<tr>
-
-<td> SULWatcher:&nbsp;restart&nbsp;rc </td><td> Restart the <a
-href="http://meta.wikimedia.org/wiki/Help:Recent_changes">RC</a> reader
-</td><td> SULWatcher:&nbsp;restart&nbsp;rc
-</td></tr>
-<tr>
-<td> SULWatcher:&nbsp;die </td><td> Kill all the bots </td><td>
-SULWatcher:&nbsp;die<span style="color:grey;">*</span>
-
-</td></tr>
-<tr>
-<td align="center" colspan="3"> <span style="color:grey;">*Note that the bot
-uses <a href="https://wiki.toolserver.org/view/Cron">cron</a> and <a 
-href="https://wiki.toolserver.org/view/Phoenix">phoenix</a> to stay up - if you
-kill it, it will come back in <a href="/~stewardbots/docs/crontab-linux">about
-10 minutes</a>. Use this for a hard restart in case the soft restart above
-fails.</span>
-</td></tr>
+	<tbody>
+		<tr>
+			<th>Command</th>
+			<th>Description</th>
+			<th>Example</th>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;test</td>
+			<td>Test if the bot is alive</td>
+			<td>SULWatcher:&nbsp;test</td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;test&nbsp;<i>[string]</i>&nbsp;regex&nbsp;<i>[regex]</i></td>
+			<td>Test the regex against the string</td>
+			<td>SULWatcher:&nbsp;test&nbsp;grawp&nbsp;regex&nbsp;<code>\bpoop\b</code></td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;find&nbsp;regex&nbsp;<i>[regex]</i></td>
+			<td>Find information on a given regex</td>
+			<td>SULWatcher:&nbsp;find&nbsp;regex&nbsp;<code>\bpoop\b</code></td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;find&nbsp;match&nbsp;<i>[string]</i></td>
+			<td>Find the regex which matches the provided string</td>
+			<td>SULWatcher:&nbsp;find&nbsp;match&nbsp;<code>\bpoop\b</code></td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;find&nbsp;adder&nbsp;<i>[cloak]</i></td>
+			<td>Find the regexes attributed to a given cloak</td>
+			<td>SULWatcher:&nbsp;find&nbsp;adder&nbsp;<i>wikimedia/mikelifeguard</i></td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;find&nbsp;number&nbsp;<i>[#]</i></td>
+			<td>Find information on a given entry</td>
+			<td>SULWatcher:&nbsp;find&nbsp;number&nbsp;3</td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;add&nbsp;reason&nbsp;<i>[#]</i>&nbsp;<i>[reason]</i></td>
+			<td>Add a reason for a certain entry if it is attributed to you</td>
+			<td>SULWatcher:&nbsp;add&nbsp;reason&nbsp;1&nbsp;suspicious&nbsp;-&nbsp;matches&nbsp;pattern&nbsp;vandalism</td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;add&nbsp;reason&nbsp;<i>[#]</i>&nbsp;<b>!</b>&nbsp;<i>[reason]</i></td>
+			<td>Re-attribute the entry to you with a given reason</td>
+			<td>SULWatcher:&nbsp;add&nbsp;reason&nbsp;1&nbsp;!&nbsp;I&nbsp;want&nbsp;to&nbsp;take&nbsp;credit&nbsp;for&nbsp;someone&nbsp;else&#39;s&nbsp;work</td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;(add|remove|list)&nbsp;badword&nbsp;<i>[regex]</i></td>
+			<td>Add/remove/list regexes to match against unifications</td>
+			<td>SULWatcher:&nbsp;add&nbsp;badword&nbsp;<code>\bpoop\b</code><br />
+			SULWatcher:&nbsp;list&nbsp;badword</td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;(add|remove|list)&nbsp;whitelist&nbsp;<i>[username]</i></td>
+			<td>Add/remove/list users who are whitelisted</td>
+			<td>SULWatcher:&nbsp;add&nbsp;whitelist&nbsp;Mike.lifeguard<br />
+			SULWatcher:&nbsp;list&nbsp;whitelist</td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;edit&nbsp;<i>[#]</i>&nbsp;enable&nbsp;</td>
+			<td>Re-enable an existing regex</td>
+			<td>SULWatcher:&nbsp;edit&nbsp;2&nbsp;enable</td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;edit&nbsp;<i>[#]</i>&nbsp;(regex|reason)&nbsp;<i>[whatever]</i></td>
+			<td>Change the regex/reason for an entry, if it is attributed to you</td>
+			<td>SULWatcher:&nbsp;edit&nbsp;2&nbsp;regex&nbsp;<code>\bpoop\b</code></td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;edit&nbsp;<i>[#]</i>&nbsp;(regex|reason)&nbsp;<b>!</b>&nbsp;<i>[whatever]</i></td>
+			<td>Change the regex/reason for an entry, re-attributing it to you</td>
+			<td>SULWatcher:&nbsp;edit&nbsp;2&nbsp;reason&nbsp;!&nbsp;Added&nbsp;word&nbsp;boundaries&nbsp;for&nbsp;fewer&nbsp;false&nbsp;positives</td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;edit&nbsp;<i>[#]</i>&nbsp;case&nbsp;<i>(true|false)</i></td>
+			<td>Make an entry either case sensitive or insensitive</td>
+			<td>SULWatcher:&nbsp;edit&nbsp;2&nbsp;case&nbsp;true</td>
+		</tr>
+		<tr>
+			<td align="center" colspan="3"><b>For <i>list</i> commands, don&#39;t provide a (regex|cloak|nick|username).</b></td>
+		</tr>
+		<tr>
+			<td align="center" colspan="3">The following commands are restricted to opped users.</td>
+		</tr>
+		<tr>
+			<th>Restricted command</th>
+			<th>Description</th>
+			<th>Example</th>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;restart</td>
+			<td>Restart the bots</td>
+			<td>SULWatcher:&nbsp;restart</td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;restart&nbsp;rc</td>
+			<td>Restart the <a href="https://meta.wikimedia.org/wiki/Help:Recent_changes">RC</a> reader</td>
+			<td>SULWatcher:&nbsp;restart&nbsp;rc</td>
+		</tr>
+		<tr>
+			<td>SULWatcher:&nbsp;die</td>
+			<td>Kill all the bots</td>
+			<td>SULWatcher:&nbsp;die<span style="color:grey;">*</span></td>
+		</tr>
+	</tbody>
 </table>
 
-Reports
--------
+<hr />
+<div id="footer">
+<div id="f-poweredbyico"><a href="/"><img alt="Powered by Wikimedia Labs" height="31" src="//upload.wikimedia.org/wikipedia/commons/4/46/Powered_by_labs_button.png" style="border:0; float:left; padding: 10px;" title="Powered by Wikimedia Labs" width="88" /></a></div>
 
-[Reports](/~stewardbots/SULWatcher/index.php) of SULWatcher's regexes 
-and matches are available for privileged users.
-
-Regex help
-----------
-
-If you don't know [regex](http://en.wikipedia.org/wiki/Regex), you can 
-simply enter strings with nothing fancy, and that will work pretty well. 
-Although the bot isn't a wiki, people can still edit - ask for help, or 
-someone will come along behind you and make your rule better by using 
-fancier regex. If you're inclined to learn, here are some starting 
-points:
-
-* <http://etext.lib.virginia.edu/services/helpsheets/unix/regex.html>
-* <http://codeproject.com/dotnet/RegexTutorial.asp>
-* <http://docs.python.org/howto/regex.html>
-
+<div id="f-list" style="text-align:right">This tool was written by <a href="//meta.wikimedia.org/wiki/User:Mike.lifeguard">Mike.lifeguard</a> and is currently mantained by the stewardbots project.</div>
+</div>
+</body>
+</html>
