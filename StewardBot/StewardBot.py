@@ -809,11 +809,11 @@ class WikimediaBot(SingleServerIRCBot):
                 if hid: usertarget="a global account"
                 else: usertarget="global account %s" % usertarget
                 # HARCODED PART; TO BE REDESIGNED INTO AN EXCEPTION SYSTEM
-        print usersource, origcomment
-        #if usersource == 'Quentinv57' and 'spambot' in origcomment:
-        #   pass
-        if True: #else:
-            bot1.msg("%s03%s %s %s%s" % (selff, usersource, action2, usertarget, comment))
+                print usersource, origcomment
+                #if usersource == 'Quentinv57' and 'spambot' in origcomment:
+                #   pass
+                if True: #else:
+                    bot1.msg("%s03%s %s %s%s" % (selff, usersource, action2, usertarget, comment))
             elif "Special:Log/gblrights" in a:
                 #14[[07Special:Log/gblrights14]]4 groupprms210 02 5* 03Dungodung 5*  10changed group permissions for Special:GlobalUsers/test.Added move, patrol;Removed (none): testing
                 #14[[07Special:Log/gblrights14]]4 ***action***10 02 5* 03***who*** 5*  10***text***: ***opt-comment***
@@ -951,6 +951,3 @@ if __name__ == "__main__":
         bot1.die()
         bot2.die()
         sys.exit()
-
-
-
