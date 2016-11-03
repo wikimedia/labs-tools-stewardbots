@@ -6,15 +6,18 @@
 # CREDITS:      Erwin
 #
 
-import ConfigParser, time
-import MySQLdb, MySQLdb.cursors
+import ConfigParser
+import MySQLdb
+import MySQLdb.cursors
+import time
+
 
 class querier:
     """A wrapper for MySQLdb"""
-    
+
     def __init__(self, *args, **kwargs):
         if 'read_default_file' not in kwargs:
-             kwargs['read_default_file'] = '~/.my.cnf'
+            kwargs['read_default_file'] = '~/.my.cnf'
 
         kwargs['cursorclass'] = MySQLdb.cursors.DictCursor
 
@@ -22,9 +25,9 @@ class querier:
         self.db.autocommit(True) # Autocommit transactions
 
         self.cursor = None
-    
+
     # Execute a query
-    def do(self, *args, **kwargs):          
+    def do(self, *args, **kwargs):
         self.cursor = self.db.cursor()
         self.cursor.execute(*args, **kwargs)
 
@@ -34,12 +37,13 @@ class querier:
 
         return results
 
+
 def main():
     config = ConfigParser.ConfigParser()
     config.read('SULWatcher.ini')
-    
+
     db = querier(host = 'sql')
-       
+
     for section in config.sections():
         if section == 'Setup':
             for option in config.options(section):
@@ -72,8 +76,8 @@ def main():
             else:
                 sql = 'INSERT IGNORE INTO p_stewardbots_sulwatcher.regex (r_regex, r_cloak, r_timestamp) VALUES (%s, %s, %s)'
                 args = (regex, cloak, timestamp)
-        
+
             db.do(sql, args)
-            
+
 if __name__ == "__main__":
     main()
