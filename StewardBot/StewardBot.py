@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, os
-import re, string
-import threading, thread
-import random, time
+import os
+import random
+import re
+import string
+import sys
+import threading
+import time
+
 import MySQLdb
 import config
+
 #needs python-irclib
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n
@@ -22,14 +27,15 @@ SQLdb='YOURDBNAME'
 
 #common queries
 queries = {
-           "privcloaks":       "(select p_cloak from privileged) union (select s_cloak from stewards)",
-           "ignoredusers":     "(select i_username from ignored) union (select s_username from stewards)",
-           "stalkedpages":     "select f_page from followed",
+           "privcloaks": "(select p_cloak from privileged) union (select s_cloak from stewards)",
+           "ignoredusers": "(select i_username from ignored) union (select s_username from stewards)",
+           "stalkedpages": "select f_page from followed",
            "listenedchannels": "select l_channel from listen",
-           "stewardusers":     "select s_username from stewards",
-           "stewardnicks":     "select s_nick from stewards",
-           "stewardoptin":     "select s_nick from stewards where s_optin=1",
+           "stewardusers": "select s_username from stewards",
+           "stewardnicks": "select s_nick from stewards",
+           "stewardoptin": "select s_nick from stewards where s_optin=1",
           }
+
 
 def query(sqlquery, one=True):
     db = MySQLdb.connect(db=SQLdb, host=SQLhost, user=SQLuser, passwd=SQLpassword)
@@ -46,12 +52,14 @@ def query(sqlquery, one=True):
         return res2
     else: return res
 
+
 def modquery(sqlquery):
     db = MySQLdb.connect(db=SQLdb, host=SQLhost, user=SQLuser, passwd=SQLpassword)
     cursor = db.cursor()
     cursor.execute(sqlquery)
     db.commit()
     db.close()
+
 
 class FreenodeBot(SingleServerIRCBot):
     def __init__(self):
@@ -81,14 +89,14 @@ class FreenodeBot(SingleServerIRCBot):
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
         time.sleep(1) # latency problem?
-        c.privmsg("NickServ",'GHOST '+self.nickname+' '+self.password)
+        c.privmsg("NickServ", 'GHOST '+self.nickname+' '+self.password)
         c.nick(self.nickname)
         time.sleep(1) # latency problem?
-        c.privmsg("NickServ",'IDENTIFY '+self.password)
+        c.privmsg("NickServ", 'IDENTIFY '+self.password)
 
     def on_welcome(self, c, e):
-        c.privmsg("NickServ",'GHOST '+self.nickname+' '+self.password)
-        c.privmsg("NickServ",'IDENTIFY '+self.password)
+        c.privmsg("NickServ", 'GHOST '+self.nickname+' '+self.password)
+        c.privmsg("NickServ", 'IDENTIFY '+self.password)
         time.sleep(5) #let identification succeed before joining channels
         c.join(self.channel)
         if self.listen and self.listened:
@@ -96,9 +104,9 @@ class FreenodeBot(SingleServerIRCBot):
 
     def on_ctcp(self, c, e):
         if e.arguments()[0] == "VERSION":
-            c.ctcp_reply(nm_to_n(e.source()),"Bot for informing Wikimedia stewards on " + self.channel)
+            c.ctcp_reply(nm_to_n(e.source()), "Bot for informing Wikimedia stewards on " + self.channel)
         elif e.arguments()[0] == "PING":
-            if len(e.arguments()) > 1: c.ctcp_reply(nm_to_n(e.source()),"PING " + e.arguments()[1])
+            if len(e.arguments()) > 1: c.ctcp_reply(nm_to_n(e.source()), "PING " + e.arguments()[1])
 
     def on_action(self, c, e):
         who = "<"+self.channel+"/"+nm_to_n(e.source())+"> "
@@ -552,11 +560,11 @@ class FreenodeBot(SingleServerIRCBot):
                     self.msg("%s is not a steward!" % who, target)
                 else:
                     stewout = "Steward "+who
-                    if stewinfo[0][0] == None:
+                    if stewinfo[0][0] is None:
                         stewout += " doesn't have a registered nickname on IRC."
                     else:
                         stewout += " uses nick "+stewinfo[0][0]
-                        if stewinfo[0][1] == None:
+                        if stewinfo[0][1] is None:
                             stewout += " and doesn't have a cloak set"
                         else:
                             stewout += " with the cloak "+stewinfo[0][1]
@@ -666,6 +674,7 @@ class FreenodeBot(SingleServerIRCBot):
             if a.startswith(i): return True
         return False
 
+
 class WikimediaBot(SingleServerIRCBot):
     def __init__(self):
         self.server = config.server2
@@ -716,13 +725,12 @@ class WikimediaBot(SingleServerIRCBot):
             c.privmsg(nick, "Type 'echo <password> | md5sum' to your linux terminal and paste the output here.")
         print "["+time.strftime("%d.%m.%Y %H:%M:%S")+"] <!private/"+nick+"> "+a
 
-
     def on_pubmsg(self, c, e):
         self.randmess()
         timestamp = "["+time.strftime("%d.%m.%Y %H:%M:%S", time.localtime(time.time()))+"] "
         who = "<"+self.channel+"/"+nm_to_n(e.source())+"> "
         a = (e.arguments()[0])
-        nick = nm_to_n(e.source())
+        # nick = nm_to_n(e.source())
         self.testregister=timestamp+a
         if not bot1.quiet:
             #Parsing the rcbot output
@@ -946,15 +954,16 @@ class WikimediaBot(SingleServerIRCBot):
 
 
 class BotThread(threading.Thread):
-    def __init__ (self, bot):
+    def __init__(self, bot):
         self.b=bot
-        threading.Thread.__init__ (self)
+        threading.Thread.__init__(self)
 
-    def run (self):
+    def run(self):
         self.startbot(self.b)
 
     def startbot(self, bot):
         bot.start()
+
 
 def main():
     global bot1, bot2

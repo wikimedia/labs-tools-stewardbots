@@ -10,4 +10,3 @@ channel="#wikimedia-stewards"
 channel2="#meta.wikimedia"
 server="irc.freenode.net"
 server2="irc.wikimedia.org"
-
