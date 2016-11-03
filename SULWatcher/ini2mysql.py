@@ -22,7 +22,7 @@ class querier:
         kwargs['cursorclass'] = MySQLdb.cursors.DictCursor
 
         self.db = MySQLdb.connect(*args, **kwargs)
-        self.db.autocommit(True) # Autocommit transactions
+        self.db.autocommit(True)  # Autocommit transactions
 
         self.cursor = None
 
@@ -42,7 +42,7 @@ def main():
     config = ConfigParser.ConfigParser()
     config.read('SULWatcher.ini')
 
-    db = querier(host = 'sql')
+    db = querier(host='sql')
 
     for section in config.sections():
         if section == 'Setup':
