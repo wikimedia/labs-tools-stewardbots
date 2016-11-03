@@ -69,9 +69,6 @@ class FreenodeBot(SingleServerIRCBot):
         self.randmess = False
         self.listen = True
         self.badsyntax = "Unrecognized command. Type @help for more info."
-        self.ignore_attention = {}
-        self.attention_delay = 900  # 15 minutes
-        self.execute_every(self.attention_delay, do_clean_ignore_attention)
         SingleServerIRCBot.__init__(self, [(self.server, 6667)], self.nickname, self.nickname)
 
     def on_error(self, c, e):
@@ -120,7 +117,7 @@ class FreenodeBot(SingleServerIRCBot):
             else:
                 self.msg(self.badsyntax, nick)
         elif a.lower().startswith("!steward"):
-            # Reject !steward messages sent as private messages to the bot
+            #self.attention(nick)
             self.msg(nocando, nick)
         elif self.getcloak(e.source()).lower()==self.owner:
             if a[0]=="!":
@@ -197,7 +194,7 @@ class FreenodeBot(SingleServerIRCBot):
 
         #Notifications
         elif cmd.lower().startswith("steward"):
-            self.attention(nick, ping=self.optin)
+            self.msg("Stewards: Attention requested by %s ( %s )" % (nick, " ".join(self.optin)))
 
         #Privileged
         elif cmd.lower().startswith("privileged"):
@@ -252,33 +249,15 @@ class FreenodeBot(SingleServerIRCBot):
         elif not self.quiet:
             pass #self.msg(self.badsyntax, target)
 
-    def attention(self, nick, channel=None, reason=None, ping=self.steward):
+    def attention(self, nick, channel=None, reason=None):
         if self.notify:
-            now = time.time()
-            if nick in self.ignore_attention:
-                if self.ignore_attention[nick] > now:
-                    print "[%s] ignoring attention from %s until @%d" % (
-                        time.strftime("%d.%m.%Y %H:%M:%S"),
-                        nick,
-                        self.ignore_attention[nick]
-                    )
-                    return
-            self.ignore_attention[nick] = now + self.attention_delay
-
             if not channel or channel==self.channel:
-                self.msg("Stewards: Attention requested by %s ( %s )" % (nick, " ".join(ping)))
+                self.msg("Stewards: Attention requested by %s ( %s )" % (nick, " ".join(self.steward)))
             else:
-                self.msg("Stewards: Attention requested ( %s )" % (" ".join(ping)))
+                self.msg("Stewards: Attention requested ( %s )" % (" ".join(self.steward)))
                 messg="Attention requested by %s on %s" % (nick, channel)
                 if reason: messg+=" with the following reason: " + reason
                 self.msg(messg)
-
-    def do_clean_ignore_attention(self):
-        """Clean expired items out of the ignore_attention cache."""
-        now = time.time()
-        for nick in self.ignore_attention.keys():
-            if self.ignore_attention[nick] <= now:
-                del self.ignore_attention[nick]
 
     def do_privileged(self, cmd, target, nick):
         if cmd.lower().startswith("list"):
