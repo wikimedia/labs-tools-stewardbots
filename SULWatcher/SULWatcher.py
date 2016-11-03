@@ -12,9 +12,7 @@ import sys
 import os
 import re
 import time
-import string
 import threading
-#import thread
 import traceback
 import urllib
 import MySQLdb
@@ -24,6 +22,7 @@ import MySQLdb.cursors
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n
 
+
 class querier:
     """A wrapper for MySQLdb"""
 
@@ -32,8 +31,8 @@ class querier:
         self.kwargs = kwargs
 
         if 'read_default_file' not in self.kwargs:
-             self.kwargs['read_default_file'] = '~/.my.cnf'
-           
+            self.kwargs['read_default_file'] = '~/.my.cnf'
+
         self.kwargs['cursorclass'] = MySQLdb.cursors.DictCursor
 
         self.connect()
@@ -63,30 +62,38 @@ class querier:
         self.cursor.close()
         return results
 
+
 class SULWatcherException(Exception):
     """A single base exception class for all other SULWatcher errors."""
     pass
 
+
 class CommanderError(SULWatcherException):
     """This exception is raised when the command parser fails."""
-    def __init__(self,value):
+    def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
 
+
 class BotConnectionError(SULWatcherException):
     """This exception is raised when a bot has some connection error."""
-    def __init(self,value):
+    def __init(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
+
 
 class ParseHostMaskError(SULWatcherException):
     """This exception is raised when a hostmask can't be parsed."""
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
+
 
 class FreenodeBot(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, password, port=6667):
@@ -232,7 +239,7 @@ class FreenodeBot(SingleServerIRCBot):
                     self.do_command(e, command, target)
                 else:
                     self.msg('Sorry, you need to be voiced to give the '
-                            'bot commands.' , nick)
+                            'bot commands.', nick)
 
     def do_command(self, e, cmd, target):
         """
@@ -245,7 +252,6 @@ class FreenodeBot(SingleServerIRCBot):
         print "do_command(self, e, '%s', '%s')" % (cmd, target)
         global badwords, whitelist
         nick = nm_to_n(e.source())
-        c = self.connection
         args = cmd.split(' ') # Should use regex to parse here
         if args[0] == '_': # I forget why this was needed :(
             args.remove('_')
@@ -259,10 +265,10 @@ class FreenodeBot(SingleServerIRCBot):
                     probe = ' '.join(args[i+1:])
                     if (re.search(probe, string, re.IGNORECASE)):
                         self.msg('"%s" matches case insensitive regex "%s"'
-                                % (string, probe) , target)
+                                % (string, probe), target)
                     else:
                         self.msg('"%s" does not match regex "%s"'
-                                % (string, probe) , target)
+                                % (string, probe), target)
                 except IndexError, e:
                     print 'IndexError: %s' % sys.exc_info()[1]
                     raise CommanderError("You didn't use the right format for "
@@ -308,7 +314,7 @@ class FreenodeBot(SingleServerIRCBot):
                             % string, target)
                 else:
                     self.msg('"%s" matches "%s".'
-                            % (string, '", "'.join(matches)) , target)
+                            % (string, '", "'.join(matches)), target)
             elif args[1] == 'adder':
                 adder = args[2]
                 regexes = []
@@ -562,7 +568,7 @@ class FreenodeBot(SingleServerIRCBot):
         print "addRegex(self, '%s', '%s', '%s')" % (regex, cloak, target)
         sql = ('SELECT r_id FROM regex WHERE r_regex=%s;')
         args = (regex,)
-        result = db.do(sql,args)
+        result = db.do(sql, args)
         if not result:
             sql = ('INSERT IGNORE INTO regex (r_regex,r_cloak,r_timestamp) '
                     'VALUES (%s,%s,%s)')
@@ -590,7 +596,7 @@ class FreenodeBot(SingleServerIRCBot):
             args = (time.strftime('%Y%m%d%H%M%S'), index)
         else:
             return
-        db.do(sql,args)
+        db.do(sql, args)
         if db.cursor.rowcount > 0:
             if regex:
                 self.msg('Disabled regex %s.' % (regex), target)
@@ -616,22 +622,22 @@ class FreenodeBot(SingleServerIRCBot):
     def getRegex(self, regex=None, index=None):
         print "getRegex(self, '%s', '%s')" % (regex, index)
         if regex:
-            sql =   """
-                    SELECT r_id, r_regex, r_active, r_case, r_cloak, r_reason, r_timestamp, sum(if(l_id, 1, 0)) AS hits
-                    FROM regex
-                    LEFT JOIN logging
-                    ON l_regex = r_regex
-                    WHERE r_regex = %s;
-                    """
+            sql = """
+                  SELECT r_id, r_regex, r_active, r_case, r_cloak, r_reason, r_timestamp, sum(if(l_id, 1, 0)) AS hits
+                  FROM regex
+                  LEFT JOIN logging
+                  ON l_regex = r_regex
+                  WHERE r_regex = %s;
+                  """
             args = (regex,)
         elif index:
-            sql =   """
-                    SELECT r_id, r_regex, r_active, r_case, r_cloak, r_reason, r_timestamp, sum(if(l_id, 1, 0)) AS hits
-                    FROM regex
-                    LEFT JOIN logging
-                    ON l_regex = r_regex
-                    WHERE r_id = %s;
-                    """
+            sql = """
+                  SELECT r_id, r_regex, r_active, r_case, r_cloak, r_reason, r_timestamp, sum(if(l_id, 1, 0)) AS hits
+                  FROM regex
+                  LEFT JOIN logging
+                  ON l_regex = r_regex
+                  WHERE r_id = %s;
+                  """
             args = (index,)
         else:
             return None
@@ -641,7 +647,7 @@ class FreenodeBot(SingleServerIRCBot):
         #'r_timestamp': None, 'r_case': None, 'r_reason': None,
         #'r_active': None}
         # So: check if r_regex is None - if it is, the row returned is bogus
-        if result[0]['r_regex'] == None:
+        if result[0]['r_regex'] is None:
             return None
         if result:
             return result[0]
@@ -680,7 +686,7 @@ class FreenodeBot(SingleServerIRCBot):
         l = getConfig(groupname)
         if not l:
             self.msg("Could not find '%s'." % (groupname), target)
-        elif not who in l:
+        elif who not in l:
             sql = ('INSERT INTO setup (s_param,s_value) '
                     'VALUES (%s,%s);')
             args = (groupname, who)
@@ -753,6 +759,7 @@ class FreenodeBot(SingleServerIRCBot):
         else:
             raise ParseHostMaskError("Hostmask %s seems invalid." % mask)
 
+
 class WikimediaBot(SingleServerIRCBot):
     def __init__(self, rcfeed, nickname, server, port=6667):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
@@ -775,7 +782,7 @@ class WikimediaBot(SingleServerIRCBot):
     def on_ctcp(self, c, e):
         if e.arguments()[0] == 'VERSION':
             c.ctcp_reply(nm_to_n(e.source()),
-                         "Bot for filtering account unifications in %s" % channel)
+                         "Bot for filtering account unifications in %s" % self.rcfeed)
         elif e.arguments()[0] == 'PING':
             if len(e.arguments()) > 1: c.ctcp_reply(nm_to_n(e.source()),
                                                 "PING " + e.arguments()[1])
@@ -787,9 +794,9 @@ class WikimediaBot(SingleServerIRCBot):
         # Parsing the rcbot output: \x0314[[\x0307Usu\xc3\xa1rio:Liliaan\x0314]]\x034@ptwiki\x0310 \x0302http://pt.wikipedia.org/wiki/Usu%C3%A1rio:Liliaan\x03 \x035*\x03 \x0303Liliaan\x03 \x035*\x03
         parse = re.compile("\\x0314\[\[\\x0307(?P<localname>.*)\\x0314\]\]"
                            "\\x034@(?P<sulwiki>.*)\\x0310.*\\x0303(?P<sulname>"
-                           ".*)\\x03 \\x035\*\\x03",re.UNICODE)
+                           ".*)\\x03 \\x035\*\\x03", re.UNICODE)
         try:
-            localname = parse.search(a).group('localname')
+            # localname = parse.search(a).group('localname')
             sulwiki = parse.search(a).group('sulwiki')
             sulname = parse.search(a).group('sulname')
             if (not globals()['lastsulname'] or
@@ -848,16 +855,18 @@ class WikimediaBot(SingleServerIRCBot):
             print ('RC reader error: %s %s %s'
                     % (sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
 
-class BotThread(threading.Thread):
-    def __init__ (self, bot):
-        self.b=bot
-        threading.Thread.__init__ (self)
 
-    def run (self):
+class BotThread(threading.Thread):
+    def __init__(self, bot):
+        self.b=bot
+        threading.Thread.__init__(self)
+
+    def run(self):
         self.startbot(self.b)
 
     def startbot(self, bot):
         bot.start()
+
 
 def getConfig(param):
     print "getConfig(self, '%s')" % (param)
@@ -871,6 +880,7 @@ def getConfig(param):
         return result[0]
     else:
         return None
+
 
 def main():
     global bot1, bot2, rcreader, nickname, alias, password, mainchannel, mainserver, wmserver, rcfeed, db
@@ -891,7 +901,7 @@ def main():
     wmserver = getConfig('wmserver')
     rcfeed = getConfig('rcfeed')
     bot1 = FreenodeBot(mainchannel, nickname, mainserver, password, 8001)
-    bot2 = FreenodeBot(mainchannel, alias,    mainserver, password, 8001)
+    bot2 = FreenodeBot(mainchannel, alias, mainserver, password, 8001)
     rcreader = WikimediaBot(rcfeed, 'SULW', wmserver, 8001)
     try:
         BotThread(bot1).start()
@@ -923,4 +933,3 @@ if __name__ == "__main__":
         rcreader.die()
         bot2.die()
         sys.exit()
-
