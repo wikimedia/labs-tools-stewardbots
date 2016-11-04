@@ -83,10 +83,22 @@ class FreenodeBot(SingleServerIRCBot):
         self.badsyntax = "Unrecognized command. Type @help for more info."
         self.ignore_attention = {}
         self.attention_delay = 900  # 15 minutes
-        self.execute_every(self.attention_delay,
-                           self.do_clean_ignore_attention)
+        self.execute_every(
+            self.attention_delay, self.do_clean_ignore_attention)
         SingleServerIRCBot.__init__(
             self, [(self.server, 6667)], self.nickname, self.nickname)
+
+    def execute_every(self, period, func):
+        """Monkey patch execute_every into irclib 0.4.8."""
+        # FIXME: run a modern irclib from a virtualenv instead
+        self._execute_and_schedule(period, func, do_exec=False)
+
+    def _execute_and_schedule(self, period, func, do_exec=True):
+        """Execute a function and then schedule another execution."""
+        if do_exec:
+            func()
+        self.execute_delayed(
+            period, self._execute_and_schedule, (period, func))
 
     def on_error(self, c, e):
         print e.target()
