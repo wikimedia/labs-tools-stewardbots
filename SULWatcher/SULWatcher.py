@@ -926,6 +926,7 @@ def main():
     except KeyboardInterrupt:
         raise
 
+
 if __name__ == "__main__":
     global bot1, rcreader, bot2
 # main()

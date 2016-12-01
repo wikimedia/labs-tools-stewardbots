@@ -79,5 +79,6 @@ def main():
 
             db.do(sql, args)
 
+
 if __name__ == "__main__":
     main()
