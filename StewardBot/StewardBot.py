@@ -310,7 +310,7 @@ class FreenodeBot(SingleServerIRCBot):
         # Help
         elif cmd.lower() == "help":
             self.msg(
-                "Help = http://tools.wmflabs.org/stewardbots/stewardbot.html",
+                "Help = https://tools.wmflabs.org/stewardbots/StewardBot/StewardBot.html",
                 nick)
 
         # Test
