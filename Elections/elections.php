@@ -233,7 +233,7 @@ Wikimedia Labs" title="Powered by Wikimedia Labs" height="31"
 width="88" /></a>
             </div>
             <ul id="f-list">
-                <li id="lastmod">This page was last modified 10 December 2017.</li>
+                <li id="lastmod">This page was last modified 12 January 2017.</li>
                 <li id="about">This tool was written by <a href="//meta.wikimedia.org/wiki/User:Erwin">Erwin</a> and is mantained by the stewardbots project.</li>
             </ul>
         </div>
