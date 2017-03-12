@@ -1238,11 +1238,11 @@ class WikimediaBot(SingleServerIRCBot):
                 comment = ""
                 if action == "groupprms2":
                     outtext = re.sub(
-                        r"Special:GlobalUsers/(.+?)\.", r"\1: ", outtext)
+                        r"Special:GlobalUsers/(.+?)\:", r"\1: ", outtext)
                     outtext = re.sub(
-                        r"Added (.+?);", r"added 04\1; ", outtext)
+                        r"added (.+?);", r"added 04\1; ", outtext)
                     outtext = re.sub(
-                        r"Removed (.+)", r"removed 04\1", outtext)
+                        r"removed (.+)", r"removed 04\1", outtext)
                     noco = len(re.findall(":", outtext))
                     if noco >= 2:
                         niz = outtext.split(":")[2:]
