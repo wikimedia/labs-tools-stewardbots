@@ -1,4 +1,12 @@
 {
+	"description": "Tools for stewards' work",
+	"license": "GPL-3.0",
+	"support": {
+		"issues": "https://phabricator.wikimedia.org/",
+		"irc": "irc://irc.freenode.net/wikimedia-stewards",
+		"wiki": "https://wikitech.wikimedia.org/",
+		"source": "https://phabricator.wikimedia.org/diffusion/TSTW/"
+	},
 	"require-dev": {
 		"jakub-onderka/php-parallel-lint": "0.9"
 	},
