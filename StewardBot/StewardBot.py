@@ -3,6 +3,7 @@
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n
+from datetime import datetime
 import MySQLdb
 import os
 import random
@@ -11,6 +12,8 @@ import string
 import sys
 import threading
 import time
+import urllib
+import json
 
 import config
 
@@ -1073,6 +1076,43 @@ class WikimediaBot(SingleServerIRCBot):
                 state1 = found.group('state1')
                 state2 = found.group('state2')
                 extra = found.group('extra')
+                # check expiry via api
+                urlapi = ("https://meta.wikimedia.org/w/api.php?action=query&format=json&list=logevents&letype=rights&letitle=User:" + usertarget + "&lelimit=1")
+                response = urllib.urlopen(urlapi)
+                data = json.loads(response.read())
+                oldright = data['query']['logevents'][0]['params']['oldgroups']
+                newright = data['query']['logevents'][0]['params']['newgroups']
+                lennewrights = len(newright) + 1
+                lenoldrights = len(oldright) + 1
+                chrightsn = ""
+                chrightso = ""
+                n = 1
+                o = 1
+                while o < lenoldrights:
+                    oldrightfield = data['query']['logevents'][0]['params']['oldgroups'][o-1]
+                    oldrightfieldexpiry = data['query']['logevents'][0]['params']['oldmetadata'][o-1]['expiry']
+                    if oldrightfieldexpiry != "infinity":
+                        chrightso = chrightso + oldrightfield + " (expiry: " + datetime.strptime(oldrightfieldexpiry, "%Y-%m-%dT%H:%M:%SZ").strftime('%H:%M, %d %B %Y') + ")"
+                    else:
+                        chrightso = chrightso + oldrightfield
+                    if o != lenoldrights - 1:
+                        chrightso = chrightso + ", "
+                    o = o+1
+                if chrightso == "":
+                    chrightso = "(none)"
+                while n < lennewrights:
+                    newrightfield = data['query']['logevents'][0]['params']['newgroups'][n-1]
+                    newrightfieldexpiry = data['query']['logevents'][0]['params']['newmetadata'][n-1]['expiry']
+                    if newrightfieldexpiry != "infinity":
+                        chrightsn = chrightsn + newrightfield + " (expiry: " + datetime.strptime(newrightfieldexpiry, "%Y-%m-%dT%H:%M:%SZ").strftime('%H:%M, %d %B %Y') + ")"
+                    else:
+                        chrightsn = chrightsn + newrightfield
+                    if n != lennewrights - 1:
+                        chrightsn = chrightsn + ", "
+                    n = n+1
+                if chrightsn == "":
+                    chrightsn = "(none)"
+                # end of check expiry
                 if extra:
                     print "!!! There are extra parameters!"
                 comment = found.group('comment')
@@ -1092,7 +1132,7 @@ class WikimediaBot(SingleServerIRCBot):
                     bott = "06(bot) "
                 bot1.msg(
                     "%s%s03%s changed user rights for %s from 04%s to 04%s%s" %
-                    (selff, bott, usersource, usertarget, state1, state2, comment))
+                    (selff, bott, usersource, usertarget, chrightso, chrightsn, comment))
             elif "Special:Log/gblblock" in a:
                 if "gblock2" in a:
                     # [[Special:Log/gblblock]] gblock2  * Pathoschild *  globally blocked [[User:190.198.116.53]] (anonymous only, expires 15:18, 28 April 2009): crosswiki abuse, likely proxy
