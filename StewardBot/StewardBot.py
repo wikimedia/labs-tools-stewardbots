@@ -1132,7 +1132,7 @@ class WikimediaBot(SingleServerIRCBot):
                     bott = "06(bot) "
                 bot1.msg(
                     "%s%s03%s changed user rights for %s from 04%s to 04%s%s" %
-                    (selff, bott, usersource, usertarget, chrightso, chrightsn, comment))
+                    (selff, bott, usersource, usertarget, chrightso.encode('utf8', 'strict'), chrightsn.encode('utf8', 'strict'), comment))
             elif "Special:Log/gblblock" in a:
                 if "gblock2" in a:
                     # [[Special:Log/gblblock]] gblock2  * Pathoschild *  globally blocked [[User:190.198.116.53]] (anonymous only, expires 15:18, 28 April 2009): crosswiki abuse, likely proxy
