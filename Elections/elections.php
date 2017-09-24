@@ -14,7 +14,7 @@ function getPages( $titles ) {
     echo "<!-- $URL -->";
     $ch = curl_init( $URL );
     curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-    curl_setopt( $ch, CURLOPT_USERAGENT, 'Labs Bot - https://tools.wmflabs.org/stewardbots' );
+    curl_setopt( $ch, CURLOPT_USERAGENT, 'Toolforge Bot - https://tools.wmflabs.org/stewardbots' );
     $result = unserialize( curl_exec( $ch ) );
     curl_close( $ch );
     $resultPages = $result['query']['pages'];
@@ -170,7 +170,7 @@ if ( $useCache ) {
                 <tr>
                     <td><?=$i; ?></td>
                     <td><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2017/Votes/<?=$user;?>"><?=$user; ?></a></td>
-                    <td colspan="4">Could not get votes. Please <a href="//phabricator.wikimedia.org/maniphest/task/create/?projects=Tool-Labs-tools-stewardbots">report</a> this.</td>
+                    <td colspan="4">Could not get votes. Please <a href="//phabricator.wikimedia.org/maniphest/task/create/?projects=Tool-stewardbots">report</a> this.</td>
                 </tr>
 <?php
             }
@@ -198,7 +198,7 @@ if ( $useCache ) {
         <div id="column-one">
             <div class="portlet" id="p-logo">
                 <a style="background-image:
-url(//upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Tool_labs_logo.svg/135px-Tool_labs_logo.svg.png);"
+url(//upload.wikimedia.org/wikipedia/commons/thumb/8/89/Toolforge_logo_with_text.svg/135px-Toolforge_logo_with_text.svg.png);"
 href="//tools.wmflabs.org/stewardbots/Elections/elections.php" title="Elections"></a>
             </div>
             <div class="portlet" id="p-navigation">
