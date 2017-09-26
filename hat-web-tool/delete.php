@@ -18,7 +18,7 @@ function titleLink ($title)
 function get_post($var) { return mysql_real_escape_string($_POST[$var]); }
     global $loginData;
 
-    $db_server = mysql_connect("metawiki.labsdb", $loginData['user'], $loginData['password']);
+    $db_server = mysql_connect("metawiki.analytics.db.svc.eqiad.wmflabs", $loginData['user'], $loginData['password']);
 
     if (!$db_server) die ("Unable to connect to MySQL: " . mysql_error());
 

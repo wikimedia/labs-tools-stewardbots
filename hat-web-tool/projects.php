@@ -23,7 +23,7 @@ This is a replacement for erwin85's projects tool. For special rights, see <a hr
 <tbody>
 	<?php
 	$loginData = require_once __DIR__ . '/../login.php';
-	$db_server = mysql_connect("metawiki.labsdb", $loginData['user'], $loginData['password']);
+	$db_server = mysql_connect("metawiki.analytics.db.svc.eqiad.wmflabs", $loginData['user'], $loginData['password']);
 	if (!$db_server) die ("Unable to connect to MySQL: " . mysql_error());
 
 	mysql_select_db("meta_p", $db_server) or die ("Unable to select database: " . mysql_error());
