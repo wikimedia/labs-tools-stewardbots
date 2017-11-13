@@ -53,7 +53,7 @@ class querier:
             self.cursor = self.db.cursor()
             try:
                 self.cursor.execute(*args, **kwargs)
-            except:
+            except Exception:
                 # Nothing we can do now.
                 return None
 
@@ -192,7 +192,7 @@ class FreenodeBot(SingleServerIRCBot):
                 self.msg('You have to follow the proper syntax. See '
                          '\x0302https://tools.wmflabs.org/stewardbots/'
                          'SULWatcher\x03', nick)  # Make this translatable
-            except:
+            except Exception:
                 exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
                 traceback.print_exception(
                     exceptionType, exceptionValue, exceptionTraceback)
@@ -234,7 +234,7 @@ class FreenodeBot(SingleServerIRCBot):
                         self.msg('You have to follow the proper syntax. See '
                                  '\x0302https://tools.wmflabs.org/stewardbots'
                                  '/SULWatcher\x03', target)
-                    except:
+                    except Exception:
                         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
                         traceback.print_exception(
                             exceptionType, exceptionValue, exceptionTraceback)
@@ -288,7 +288,7 @@ class FreenodeBot(SingleServerIRCBot):
                     sql = ('SELECT l_regex,l_user,l_timestamp FROM '
                            'logging ORDER BY l_id DESC LIMIT 1;')
                     result = db.do(sql)
-                except:
+                except Exception:
                     result = None
 
                 if result:
@@ -296,7 +296,7 @@ class FreenodeBot(SingleServerIRCBot):
                     try:
                         timestamp = time.strftime('%H:%M, %d %B %Y',
                                                   time.strptime(r['l_timestamp'], '%Y%m%d%H%M%S'))
-                    except:
+                    except ValueError:
                         timestamp = r['l_timestamp']
                     self.msg(u'MySQL connection seems to be fine. Last hit '
                              'was %s matching %s at %s.'
@@ -470,19 +470,19 @@ class FreenodeBot(SingleServerIRCBot):
                     rcreader.connection.part(rcreader.rcfeed)
                     rcreader.connection.quit()
                     rcreader.disconnect()
-                except:
+                except Exception:
                     raise BotConnectionError("RC reader didn't disconnect")
                 try:
                     bot1.connection.part(bot1.channel, rawquitmsg)
                     bot1.connection.quit(rawquitmsg)
                     bot1.disconnect()
-                except:
+                except Exception:
                     raise BotConnectionError("bot1 didn't disconnect")
                 try:
                     bot2.connection.part(bot2.channel, rawquitmsg)
                     bot2.connection.quit(rawquitmsg)
                     bot2.disconnect()
-                except:
+                except Exception:
                     raise BotConnectionError("bot2 didn't disconnect")
                 print 'Killed. Now exiting...'
                 # sys.exit(0) # 0 is a normal exit status
@@ -501,7 +501,7 @@ class FreenodeBot(SingleServerIRCBot):
                         rcreader.connection.quit()
                         rcreader.disconnect()
                         BotThread(rcreader).start()
-                    except:
+                    except Exception:
                         raise BotConnectionError("rcreader didn't recover: %s %s %s"
                                                  % (sys.exc_info()[1],
                                                     sys.exc_info()[1],
@@ -511,7 +511,7 @@ class FreenodeBot(SingleServerIRCBot):
                         bot1.connection.quit()
                         bot1.disconnect()
                         BotThread(bot1).start()
-                    except:
+                    except Exception:
                         raise BotConnectionError("bot1 didn't recover: %s %s %s"
                                                  % (sys.exc_info()[1],
                                                     sys.exc_info()[1],
@@ -521,7 +521,7 @@ class FreenodeBot(SingleServerIRCBot):
                         bot2.connection.quit()
                         bot2.disconnect()
                         BotThread(bot2).start()
-                    except:
+                    except Exception:
                         raise BotConnectionError("bot2 didn't recover: %s %s %s"
                                                  % (sys.exc_info()[1],
                                                     sys.exc_info()[1],
@@ -533,7 +533,7 @@ class FreenodeBot(SingleServerIRCBot):
                         rcreader.connection.quit()
                         rcreader.disconnect()
                         BotThread(rcreader).start()
-                    except:
+                    except Exception:
                         raise BotConnectionError("rcreader didn't recover: %s %s %s"
                                                  % (sys.exc_info()[1],
                                                     sys.exc_info()[1],
@@ -558,7 +558,7 @@ class FreenodeBot(SingleServerIRCBot):
                 else:
                     regex = re.compile(r['r_regex'], re.IGNORECASE)
                 badwords.append((index, regex))
-            except:  # What is the actual exception that might need to be caught here?
+            except Exception:  # What is the actual exception that might need to be caught here?
                 self.msg('Disabling regex %s. Could not compile pattern '
                          'into regex object.' % (index))
                 self.removeRegex(index=index)
@@ -674,7 +674,7 @@ class FreenodeBot(SingleServerIRCBot):
             try:
                 timestamp = time.strftime('%H:%M, %d %B %Y',
                                           time.strptime(r['r_timestamp'], '%Y%m%d%H%M%S'))
-            except:
+            except ValueError:
                 timestamp = r['r_timestamp']
             self.msg('Regex %s (#%s, %s, %s hits) added by %s with last '
                      'update at %s and note: \'%s\'.'
@@ -690,10 +690,10 @@ class FreenodeBot(SingleServerIRCBot):
 
     def addToList(self, who, groupname, target):
         print "addToList(self, '%s', '%s', '%s')" % (who, groupname, target)
-        l = getConfig(groupname)
-        if not l:
+        group_members = getConfig(groupname)
+        if not group_members:
             self.msg("Could not find '%s'." % (groupname), target)
-        elif who not in l:
+        elif who not in group_members:
             sql = ('INSERT INTO setup (s_param,s_value) '
                    'VALUES (%s,%s);')
             args = (groupname, who)
@@ -709,10 +709,10 @@ class FreenodeBot(SingleServerIRCBot):
     def removeFromList(self, who, groupname, target):
         print ("removeFromList(self, '%s', '%s', '%s')"
                % (who, groupname, target))
-        l = getConfig(groupname)
-        if not l:
+        group_members = getConfig(groupname)
+        if not group_members:
             self.msg("Could not find '%s'." % (groupname), target)
-        elif who in l:
+        elif who in group_members:
             sql = ('DELETE FROM setup WHERE s_param=%s AND s_value=%s;')
             args = (groupname, who)
             db.do(sql, args)
@@ -848,7 +848,7 @@ class WikimediaBot(SingleServerIRCBot):
                             args = (m, sulname, sulwiki,
                                     time.strftime('%Y%m%d%H%M%S'))
                             db.do(sql, args)
-                        except:
+                        except Exception:
                             print 'Could not log hit to database.'
                     if globals()['lastbot'] != 1:
                         bot1.msg("\x0303%s\x03@%s \x0305\x02matches badword "
@@ -863,7 +863,7 @@ class WikimediaBot(SingleServerIRCBot):
                                     urlname))
                         globals()['lastbot'] = 2
             globals()['lastsulname'] = sulname
-        except:  # Should be specific about what might happen here
+        except Exception:  # Should be specific about what might happen here
             print ('RC reader error: %s %s %s'
                    % (sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
 
@@ -940,7 +940,7 @@ if __name__ == "__main__":
             exceptionType, exceptionValue, exceptionTraceback)
         os._exit(os.EX_OK)
         raise
-    except:
+    except Exception:
         print '\nUnexpected error:\n'
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
         traceback.print_exception(

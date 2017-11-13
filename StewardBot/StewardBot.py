@@ -1038,7 +1038,7 @@ class WikimediaBot(SingleServerIRCBot):
                         bot1.connection.part(chan, "Process terminated.")
                 bot1.connection.quit()
                 bot1.disconnect()
-            except:
+            except Exception:
                 print "Bot 1 seems to have already quit!"
             c.part(self.channel)
             c.quit()
@@ -1443,8 +1443,7 @@ if __name__ == "__main__":
         main()
     except IOError:
         print "No config file! You should start this script from its directory like 'python stewardbot.py'"
-    except:
-        raise
+    finally:
         bot1.die()
         bot2.die()
         sys.exit()

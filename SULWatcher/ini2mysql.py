@@ -65,7 +65,7 @@ def main():
             try:
                 regex = unicode(config.get(section, 'regex'), 'utf8')
                 regex = regex.encode('utf8')
-            except:
+            except UnicodeDecodeError:
                 print 'Failing for %s' % (regex)
                 print [regex]
             cloak = config.get(section, 'adder')
