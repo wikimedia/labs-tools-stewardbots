@@ -5,9 +5,9 @@
 <script src="https://tools-static.wmflabs.org/static/jquery/2.1.0/jquery.min.js"></script>
 <script src="https://tools-static.wmflabs.org/static/jquery-tablesorter/2.0.5/jquery.tablesorter.min.js"></script>
 <script type="text/javascript">
-    jQuery(document).ready( function() {
-       jQuery('#projects').tablesorter();
-    } );
+	jQuery(document).ready( function() {
+	   jQuery('#projects').tablesorter();
+	} );
 </script>
 <?php
 $loginData = require_once __DIR__ . '/../login.php';

@@ -6,9 +6,9 @@
 <script src="https://tools-static.wmflabs.org/static/jquery-tablesorter/2.0.5/jquery.tablesorter.min.js"></script>
 <script type="text/javascript">
 $(document).ready(function()
-    {
-        $("#projects").tablesorter();
-    }
+	{
+		$("#projects").tablesorter();
+	}
 );
 </script>
 </head>
