@@ -774,8 +774,8 @@ class WikimediaBot(SingleServerIRCBot):
         self.server = server
         self.rcfeed = rcfeed
         self.nickname = nickname
-        globals()['lastsulname'] = None
-        globals()['lastbot'] = 1
+        self.lastsulname = None
+        self.lastbot = bot1
 
     def on_error(self, c, e):
         print e.target()
@@ -798,6 +798,7 @@ class WikimediaBot(SingleServerIRCBot):
 
     def on_pubmsg(self, c, e):
         global badwords, whitelist
+        centralwiki = 'https://meta.wikimedia.org/wiki/Special:CentralAuth/'
         a = e.arguments()[0]
         # bot1.msg(a)
         # Parsing the rcbot output:
@@ -811,8 +812,10 @@ class WikimediaBot(SingleServerIRCBot):
             # localname = parse.search(a).group('localname')
             sulwiki = parse.search(a).group('sulwiki')
             sulname = parse.search(a).group('sulname')
-            if (not globals()['lastsulname'] or
-                    globals()['lastsulname'] != sulname):
+            if sulwiki != 'loginwiki':
+                return
+            if (not self.lastsulname or
+                    self.lastsulname != sulname):
                 bad = False
                 good = False
                 # print "%s@%s" % (sulname, sulwiki)
@@ -831,14 +834,14 @@ class WikimediaBot(SingleServerIRCBot):
                     urlname = re.sub('\.$', '%2E', urlname)
 #                print 'Replacement: %s' % sulname
                 if not bad and not good:
-                    if globals()['lastbot'] != 1:
-                        bot1.msg("\x0303%s\x03@%s: \x0302https://meta.wikimedia.org/wiki/Special:CentralAuth/%s\x03"
-                                 % (sulname, sulwiki, urlname))
-                        globals()['lastbot'] = 1
-                    else:
-                        bot2.msg("\x0303%s\x03@%s: \x0302https://meta.wikimedia.org/wiki/Special:CentralAuth/%s\x03"
-                                 % (sulname, sulwiki, urlname))
-                        globals()['lastbot'] = 2
+                    self.lastbot.msg(
+                        "\x0303{0} \x0302{1}{2}\x03".format(
+                            sulname,
+                            centralwiki,
+                            urlname
+                        )
+                    )
+                    self.lastbot = bot2 if self.lastbot == bot1 else bot1
                 elif bad and not good:
                     for m in matches:
                         try:
@@ -850,19 +853,13 @@ class WikimediaBot(SingleServerIRCBot):
                             db.do(sql, args)
                         except Exception:
                             print 'Could not log hit to database.'
-                    if globals()['lastbot'] != 1:
-                        bot1.msg("\x0303%s\x03@%s \x0305\x02matches badword "
-                                 "%s\017: \x0302https://meta.wikimedia.org/wiki/Special:CentralAuth/%s\x03"
-                                 % (sulname, sulwiki, '; '.join(matches),
-                                    urlname))
-                        globals()['lastbot'] = 1
-                    else:
-                        bot2.msg("\x0303%s\x03@%s \x0305\x02matches badword "
-                                 "%s\017: \x0302https://meta.wikimedia.org/wiki/Special:CentralAuth/%s\x03"
-                                 % (sulname, sulwiki, '; '.join(matches),
-                                    urlname))
-                        globals()['lastbot'] = 2
-            globals()['lastsulname'] = sulname
+                    self.lastbot.msg(
+                        "\x0303{0} \x0305\x02".format(sulname) +
+                        "matches badword {0}".format('; '.join(matches)) +
+                        "\017: \x0302{0}{1}\x03".format(centralwiki, urlname)
+                    )
+                    self.lastbot = bot2 if self.lastbot == bot1 else bot1
+            self.lastsulname = sulname
         except Exception:  # Should be specific about what might happen here
             print ('RC reader error: %s %s %s'
                    % (sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
