@@ -32,7 +32,7 @@ Documentation
 License
 -------
 
-- GPL: <http://www.gnu.org/licenses/gpl-3.0.txt>
+- GPL version 3.0: <https://www.gnu.org/licenses/gpl-3.0.txt>
 
 Authors
 -------
