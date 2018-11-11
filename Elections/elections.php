@@ -1,4 +1,7 @@
 <?php
+$year = 2019;
+$lastModified = '11 November 2018';
+
 function getPages( $titles ) {
 	$URL = 'https://meta.wikimedia.org/w/api.php'
 		. '?action=query&format=php&prop=revisions&rvprop=content&redirects&titles=';
@@ -41,7 +44,7 @@ function titleSort( $a, $b ) {
 "http://www.w3.org/TR/html4/loose.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-	<title>Steward elections 2018</title>
+	<title><?php echo "Steward elections $year"; ?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link rel="stylesheet" type="text/css" href="/stewardbots/resources/Common.css" />
 	<link rel="stylesheet" type="text/css" href="/stewardbots/resources/stylesheet.css" />
@@ -57,7 +60,11 @@ function titleSort( $a, $b ) {
 	<div id="globalWrapper">
 		<div id="content" class="mw-body" role="main">
 			<h2>Steward elections</h2>
-			<p>This page contains an unofficial tally of the votes in the <a href="//meta.wikimedia.org/wiki/Stewards/Elections_2018">2018 steward elections</a>.</p>
+			<p>
+				<?php
+				echo "This page contains an unofficial tally of the votes in the <a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year'>$year steward elections</a>."
+				?>
+			</p>
 <?php
 $cacheFile = './cache/elections.php';
 $useCache = false;
@@ -95,14 +102,14 @@ if ( $useCache ) {
 				</thead>
 			<tbody>
 <?php
-	$pages = getPages( 'Stewards/Elections_2018' );
+	$pages = getPages( "Stewards/Elections_$year" );
 	$content = '';
 	if ( $pages ) {
 		$content = $pages[0]['content'];
 	}
 
 	 preg_match_all(
-		  '/^\{\{[Ss]e[_ ]candidate[_ ]indexer\|2018\|(?<user>[^\|\}]+)(?:\|(?<status>[^\|\}]+))?\}\}/m',
+		  '/^\{\{[Ss]e[_ ]candidate[_ ]indexer\|\d{4}\|(?<user>[^\|\}]+)(?:\|(?<status>[^\|\}]+))?\}\}/m',
 		  $content, $m
 	 );
 
@@ -113,7 +120,7 @@ if ( $useCache ) {
 		$user = $m['user'][$i];
 		$status = $m['status'][$i];
 		if ( !$status || $status == 'yes' ) {
-			$titles[] = 'Stewards/Elections_2018/Votes/' . $user;
+			$titles[] = "Stewards/Elections_$year/Votes/$user";
 		}
 	}
 
@@ -130,7 +137,9 @@ if ( $useCache ) {
 		// Treat pages
 		foreach ( $pages as $page ) {
 			$title = $page['title'];
-			$user = substr( $title, 30 );
+			$rawUser = substr( $title, 30 );
+			$user = htmlspecialchars( $rawUser, ENT_QUOTES, 'UTF-8' );
+			$encodedUser = urlencode( $rawUser );
 			$content = $page['content'];
 			if ( !empty( $content ) ) {
 				// Find vote headers
@@ -159,7 +168,7 @@ if ( $useCache ) {
 ?>
 				<tr>
 					<td><?php echo $i;?></td>
-					<td><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2018/Votes/<?php echo $user;?>"><?php echo $user;?></a></td>
+					<?php echo "<td><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Votes/$encodedUser'>$user</a></td>";?>
 					<td <?php echo $bgyes;?>><?php echo $votes['yes'];?></td>
 					<td><?php echo $votes['no'];?></td>
 					<td><?php echo $votes['neutral'];?></td>
@@ -170,7 +179,7 @@ if ( $useCache ) {
 ?>
 				<tr>
 					<td><?php echo $i; ?></td>
-					<td><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2018/Votes/<?php echo $user;?>"><?php echo $user; ?></a></td>
+					<?php echo "<td><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Votes/$encodedUser'>$user</a></td>";?>
 					<td colspan="4">Could not get votes. Please <a href="//phabricator.wikimedia.org/maniphest/task/create/?projects=Tool-stewardbots">report</a> this.</td>
 				</tr>
 <?php
@@ -216,11 +225,14 @@ href="//tools.wmflabs.org/stewardbots/Elections/elections.php" title="Elections"
 				<h3>Steward elections</h3>
 				<div class="pBody">
 					<ul>
-						<li><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2018">Elections page</a></li>
-						<li><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2018/Guidelines">Guidelines</a></li>
-						<li><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2018/Statements">Statements</a></li>
-						<li><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2018/Questions">Questions</a></li>
-						<li><a href="//meta.wikimedia.org/wiki/Stewards/Elections_2018/Statistics">Statistics</a></li>
+						<?php echo(
+						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year'>Elections page</a></li>".
+						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Guidelines'>Guidelines</a></li>".
+						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Statements'>Statements</a></li>".
+						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Questions'>Questions</a></li>".
+						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Statistics'>Statistics</a></li>"
+						);
+						?>
 					</ul>
 				</div>
 			</div>
@@ -234,7 +246,7 @@ Wikimedia Labs" title="Powered by Wikimedia Labs" height="31"
 width="88" /></a>
 			</div>
 			<ul id="f-list">
-				<li id="lastmod">This page was last modified 12 January 2018.</li>
+				<li id="lastmod">This page was last modified <?php echo $lastModified;?>.</li>
 				<li id="about">This tool was written by <a href="//meta.wikimedia.org/wiki/User:Erwin">Erwin</a> and is mantained by the stewardbots project.</li>
 			</ul>
 		</div>
