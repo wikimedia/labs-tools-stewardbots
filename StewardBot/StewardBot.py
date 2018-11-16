@@ -1064,7 +1064,7 @@ class WikimediaBot(SingleServerIRCBot):
                 # 14[[07Special:Log/rights14]]4 rights10 02 5* 03Spacebirdy 5*  10changed group membership for 02User:Piolinfax@siwiktionary10 from (none) to sysop: per [[srp]], temp, 1 month
                 # 14[[07Special:Log/rights14]]4 rights10 02 5* 03Nick1915 5*  10changed group membership for User:Poppy@frwiki from sysop to (none): http://meta.wikimedia.org/w/index.php?title=Steward_requests%2FPermissions&diff=1241753&oldid=1241325#Poppy.40fr.wikipedia
                 comp = re.compile(
-                    "14\[\[07Special:Log/rights14\]\]4 rights10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10changed group membership for (02)?User:(?P<usertarget>.+?)(10)? from (?P<state1>.+?) to (?P<state2>.+?)(: (?P<comment>.+))?",
+                    r"14\[\[07Special:Log/rights14\]\]4 rights10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10changed group membership for (02)?User:(?P<usertarget>.+?)(10)? from (?P<state1>.+?) to (?P<state2>.+?)(: (?P<comment>.+))?",
                     re.DOTALL)
                 found = comp.search(a)
                 print timestamp + who + a
@@ -1137,7 +1137,7 @@ class WikimediaBot(SingleServerIRCBot):
                 if "gblock2" in a:
                     # [[Special:Log/gblblock]] gblock2  * Pathoschild *  globally blocked [[User:190.198.116.53]] (anonymous only, expires 15:18, 28 April 2009): crosswiki abuse, likely proxy
                     comp = re.compile(
-                        "14\[\[07Special:Log/gblblock14\]\]4 gblock210 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\] \((?P<expiry>.+?)\)(: (?P<comment>.+))?",
+                        r"14\[\[07Special:Log/gblblock14\]\]4 gblock210 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\] \((?P<expiry>.+?)\)(: (?P<comment>.+))?",
                         re.DOTALL)
                     found = comp.search(a)
                     print timestamp + who + a
@@ -1149,7 +1149,7 @@ class WikimediaBot(SingleServerIRCBot):
                 elif "modify" in a:
                     # [[Special:Log/gblblock]] modify  * Dungodung *  modified the global block on [[User:1.2.3.4]] (expires 15:34, March 28, 2009): testing
                     comp = re.compile(
-                        "14\[\[07Special:Log/gblblock14\]\]4 modify10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\] \((?P<expiry>.+?)\)(: (?P<comment>.+))?",
+                        r"14\[\[07Special:Log/gblblock14\]\]4 modify10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\] \((?P<expiry>.+?)\)(: (?P<comment>.+))?",
                         re.DOTALL)
                     found = comp.search(a)
                     print timestamp + who + a
@@ -1161,7 +1161,7 @@ class WikimediaBot(SingleServerIRCBot):
                 elif "gunblock" in a:
                     # [[Special:Log/gblblock]] gunblock  * Pathoschild *  removed global block on [[User:94.229.64.0/19]]: oops
                     comp = re.compile(
-                        "14\[\[07Special:Log/gblblock14\]\]4 gunblock10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\](: (?P<comment>.+))?",
+                        r"14\[\[07Special:Log/gblblock14\]\]4 gunblock10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\](: (?P<comment>.+))?",
                         re.DOTALL)
                     found = comp.search(a)
                     print timestamp + who + a
@@ -1191,7 +1191,7 @@ class WikimediaBot(SingleServerIRCBot):
                 # 14[[07Special:Log/globalauth14]]4 unlock10 02 5* 03Spacebirdy 5*  10unlocked global account "<nowiki>User:Bluegoblin7@global</nowiki>": user claims to be not involved in the vandalism
                 # [[Special:Log/globalauth]] setstatus  * Dungodung *  changed status for global account "<nowiki>User:Pathoschild2@global</nowiki>": Set hidden; Unset locked: test
                 comp = re.compile(
-                    "14\[\[07Special:Log/globalauth14\]\]4 (?P<action1>.+?)10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<action2>.+?) global account(.*?)(02)?User:(?P<usertarget>.+?)@global(10)?(.+?)(: (?P<comment>.+))?",
+                    r"14\[\[07Special:Log/globalauth14\]\]4 (?P<action1>.+?)10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<action2>.+?) global account(.*?)(02)?User:(?P<usertarget>.+?)@global(10)?(.+?)(: (?P<comment>.+))?",
                     re.DOTALL)
                 found = comp.search(a)
                 print timestamp + who + a
@@ -1261,7 +1261,7 @@ class WikimediaBot(SingleServerIRCBot):
                 # 14[[07Special:Log/gblrights14]]4 groupprms210 02 5* 03Dungodung 5*  10changed group permissions for Special:GlobalUsers/test.Added move, patrol;Removed (none): testing
                 # 14[[07Special:Log/gblrights14]]4 ***action***10 02 5* 03***who*** 5*  10***text***: ***opt-comment***
                 comp = re.compile(
-                    "14\[\[07Special:Log/gblrights14\]\]4 (?P<action>.+?)10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<text>.+)",
+                    r"14\[\[07Special:Log/gblrights14\]\]4 (?P<action>.+?)10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<text>.+)",
                     re.DOTALL)
                 found = comp.search(a)
                 print timestamp + who + a
@@ -1366,7 +1366,7 @@ class WikimediaBot(SingleServerIRCBot):
             else:
                 # 14[[07Steward requests/Permissions14]]4 10 02http://meta.wikimedia.org/w/index.php?title=Steward_requests/Permissions&diff=1146717&oldid=1146712&rcid=1190374 5* 03Black Kite 5* (+105) 10/* Black Kite@enwiki */ reply
                 comp = re.compile(
-                    "14\[\[07(?P<page>.+?)14\]\](.+?)diff=(?P<diff>[0-9]+)&oldid=(.+?) 5\* 03(?P<user>.+?) 5\* \((.+?)\) 10(?P<comment>.*)",
+                    r"14\[\[07(?P<page>.+?)14\]\](.+?)diff=(?P<diff>[0-9]+)&oldid=(.+?) 5\* 03(?P<user>.+?) 5\* \((.+?)\) 10(?P<comment>.*)",
                     re.DOTALL)
                 found = comp.search(a)
                 if not found:
@@ -1391,13 +1391,13 @@ class WikimediaBot(SingleServerIRCBot):
                 if not rccomment:
                     comment = section = ""
                 else:
-                    comp = re.compile("/\* *(?P<section>.+?) *\*/", re.DOTALL)
+                    comp = re.compile(r"/\* *(?P<section>.+?) *\*/", re.DOTALL)
                     found = comp.search(rccomment)
                     if found:
                         section = "#" + found.group('section')
                     else:
                         section = ""
-                    rccomment = re.sub("/\*(.+?)\*/", "", rccomment.strip(" "))
+                    rccomment = re.sub(r"/\*(.+?)\*/", "", rccomment.strip(" "))
                     if rccomment.replace(" ", "") == "":
                         comment = ""
                     else:

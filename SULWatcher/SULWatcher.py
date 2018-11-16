@@ -805,9 +805,9 @@ class WikimediaBot(SingleServerIRCBot):
         # \x0314[[\x0307Usu\xc3\xa1rio:Liliaan\x0314]]\x034@ptwiki\x0310
         # \x0302http://pt.wikipedia.org/wiki/Usu%C3%A1rio:Liliaan\x03
         # \x035*\x03 \x0303Liliaan\x03 \x035*\x03
-        parse = re.compile("\\x0314\[\[\\x0307(?P<localname>.*)\\x0314\]\]"
-                           "\\x034@(?P<sulwiki>.*)\\x0310.*\\x0303(?P<sulname>"
-                           ".*)\\x03 \\x035\*\\x03", re.UNICODE)
+        parse = re.compile(r"\\x0314\[\[\\x0307(?P<localname>.*)\\x0314\]\]"
+                           r"\\x034@(?P<sulwiki>.*)\\x0310.*\\x0303(?P<sulname>"
+                           r".*)\\x03 \\x035\*\\x03", re.UNICODE)
         try:
             # localname = parse.search(a).group('localname')
             sulwiki = parse.search(a).group('sulwiki')
@@ -831,7 +831,7 @@ class WikimediaBot(SingleServerIRCBot):
                 urlname = urllib.quote(sulname)
 #                print 'original: %s' % urlname
                 if urlname.endswith('.'):
-                    urlname = re.sub('\.$', '%2E', urlname)
+                    urlname = re.sub(r'\.$', '%2E', urlname)
 #                print 'Replacement: %s' % sulname
                 if not bad and not good:
                     self.lastbot.msg(
