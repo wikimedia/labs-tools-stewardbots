@@ -92,7 +92,7 @@ class FreenodeBot(SingleServerIRCBot):
             self, [(self.server, 6667)], self.nickname, self.nickname)
 
     def on_error(self, c, e):
-        print e.target()
+        print(e.target())
         self.die()
 
     def on_nicknameinuse(self, c, e):
@@ -125,13 +125,13 @@ class FreenodeBot(SingleServerIRCBot):
 
     def on_action(self, c, e):
         who = "<" + self.channel + "/" + nm_to_n(e.source()) + "> "
-        print "[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] * " + who + e.arguments()[0]
+        print("[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] * " + who + e.arguments()[0])
 
     def on_privmsg(self, c, e):
         nick = nm_to_n(e.source())
         a = e.arguments()[0]
         nocando = "This command cannot be used via query!"
-        print "[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] <private/" + nick + "> " + a
+        print("[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] <private/" + nick + "> " + a)
         if a[0] == "@" or a.lower().startswith(self.nickname.lower() + ":"):
             if a[0] == "@":
                 command = a[1:]
@@ -173,7 +173,7 @@ class FreenodeBot(SingleServerIRCBot):
         where = e.target()
         who = "<" + where + "/" + nick + "> "
         if where == self.channel:
-            print timestamp + who + a
+            print(timestamp + who + a)
             if a[0] == "@" or a.lower().startswith(
                     self.nickname.lower() + ":"):
                 # Start of Anti-PiR hack
@@ -213,7 +213,7 @@ class FreenodeBot(SingleServerIRCBot):
                     pass
         if a.lower().startswith("!steward"):
             if where != self.channel:
-                print timestamp + who + a
+                print(timestamp + who + a)
             reason = re.sub("(?i)!steward", "", a).strip(" ")
             self.attention(nick, where, reason)
 
@@ -1006,7 +1006,7 @@ class WikimediaBot(SingleServerIRCBot):
             self, [(self.server, 6667)], self.nickname, self.nickname)
 
     def on_error(self, c, e):
-        print e.target()
+        print(e.target())
         self.die()
 
     def on_nicknameinuse(self, c, e):
@@ -1039,7 +1039,7 @@ class WikimediaBot(SingleServerIRCBot):
                 bot1.connection.quit()
                 bot1.disconnect()
             except Exception:
-                print "Bot 1 seems to have already quit!"
+                print("Bot 1 seems to have already quit!")
             c.part(self.channel)
             c.quit()
             self.disconnect()
@@ -1048,7 +1048,7 @@ class WikimediaBot(SingleServerIRCBot):
             c.privmsg(
                 nick,
                 "Type 'echo <password> | md5sum' to your linux terminal and paste the output here.")
-        print "[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] <!private/" + nick + "> " + a
+        print("[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] <!private/" + nick + "> " + a)
 
     def on_pubmsg(self, c, e):
         self.randmess()
@@ -1067,9 +1067,9 @@ class WikimediaBot(SingleServerIRCBot):
                     r"14\[\[07Special:Log/rights14\]\]4 rights10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10changed group membership for (02)?User:(?P<usertarget>.+?)(10)? from (?P<state1>.+?) to (?P<state2>.+?)(: (?P<comment>.+))?",
                     re.DOTALL)
                 found = comp.search(a)
-                print timestamp + who + a
+                print(timestamp + who + a)
                 if not found:
-                    print "!!! Error!"
+                    print("!!! Error!")
                     return
                 usersource = found.group('usersource')
                 usertarget = found.group('usertarget')
@@ -1114,7 +1114,7 @@ class WikimediaBot(SingleServerIRCBot):
                     chrightsn = "(none)"
                 # end of check expiry
                 if extra:
-                    print "!!! There are extra parameters!"
+                    print("!!! There are extra parameters!")
                 comment = found.group('comment')
                 if comment:
                     comment = " with the following comment: 07" + \
@@ -1140,9 +1140,9 @@ class WikimediaBot(SingleServerIRCBot):
                         r"14\[\[07Special:Log/gblblock14\]\]4 gblock210 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\] \((?P<expiry>.+?)\)(: (?P<comment>.+))?",
                         re.DOTALL)
                     found = comp.search(a)
-                    print timestamp + who + a
+                    print(timestamp + who + a)
                     if not found:
-                        print "!!! Error!"
+                        print("!!! Error!")
                         return
                     expiry = found.group('expiry')
                     expiry = " (%s)" % expiry
@@ -1152,9 +1152,9 @@ class WikimediaBot(SingleServerIRCBot):
                         r"14\[\[07Special:Log/gblblock14\]\]4 modify10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\] \((?P<expiry>.+?)\)(: (?P<comment>.+))?",
                         re.DOTALL)
                     found = comp.search(a)
-                    print timestamp + who + a
+                    print(timestamp + who + a)
                     if not found:
-                        print "!!! Error!"
+                        print("!!! Error!")
                         return
                     expiry = found.group('expiry')
                     expiry = " (%s)" % expiry
@@ -1164,20 +1164,20 @@ class WikimediaBot(SingleServerIRCBot):
                         r"14\[\[07Special:Log/gblblock14\]\]4 gunblock10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\](: (?P<comment>.+))?",
                         re.DOTALL)
                     found = comp.search(a)
-                    print timestamp + who + a
+                    print(timestamp + who + a)
                     if not found:
-                        print "!!! Error!"
+                        print("!!! Error!")
                         return
                     expiry = ""
                 else:
-                    print "!!! Error!"
+                    print("!!! Error!")
                     return
                 usersource = found.group('usersource')
                 didwhat = found.group('didwhat')
                 usertarget = found.group('usertarget')
                 extra = found.group('extra')
                 if extra:
-                    print "!!! There are extra parameters!"
+                    print("!!! There are extra parameters!")
                 comment = found.group('comment')
                 if comment:
                     comment = " with the following comment: 7" + \
@@ -1194,9 +1194,9 @@ class WikimediaBot(SingleServerIRCBot):
                     r"14\[\[07Special:Log/globalauth14\]\]4 (?P<action1>.+?)10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<action2>.+?) global account(.*?)(02)?User:(?P<usertarget>.+?)@global(10)?(.+?)(: (?P<comment>.+))?",
                     re.DOTALL)
                 found = comp.search(a)
-                print timestamp + who + a
+                print(timestamp + who + a)
                 if not found:
-                    print "!!! Error!"
+                    print("!!! Error!")
                     return
                 usersource = found.group('usersource')
                 usertarget = found.group('usertarget')
@@ -1204,7 +1204,7 @@ class WikimediaBot(SingleServerIRCBot):
                 action2 = found.group('action2')
                 extra = found.group('extra')
                 if extra:
-                    print "!!! There are extra parameters!"
+                    print("!!! There are extra parameters!")
                 origcomment = comment = found.group('comment')
                 hid = False
                 if comment:  # Best that I could thought of without changing the structure of this branch
@@ -1251,7 +1251,7 @@ class WikimediaBot(SingleServerIRCBot):
                 else:
                     usertarget = "global account %s" % usertarget
                 # HARCODED PART; TO BE REDESIGNED INTO AN EXCEPTION SYSTEM
-                print usersource, origcomment
+                print(usersource, origcomment)
                 # if usersource == 'Quentinv57' and 'spambot' in origcomment:
                 #     pass
                 if True:  # else:
@@ -1264,16 +1264,16 @@ class WikimediaBot(SingleServerIRCBot):
                     r"14\[\[07Special:Log/gblrights14\]\]4 (?P<action>.+?)10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<text>.+)",
                     re.DOTALL)
                 found = comp.search(a)
-                print timestamp + who + a
+                print(timestamp + who + a)
                 if not found:
-                    print "!!! Error!"
+                    print("!!! Error!")
                     return
                 usersource = found.group('usersource')
                 text = found.group('text')
                 action = found.group('action')
                 extra = found.group('extra')
                 if extra:
-                    print "!!! There are extra parameters!"
+                    print("!!! There are extra parameters!")
                 outtext = text
                 comment = ""
                 if action == "groupprms2":
@@ -1358,7 +1358,7 @@ class WikimediaBot(SingleServerIRCBot):
                         comment = ":".join(niz)
                         outtext = outtext.replace(":" + comment, "")
                 else:
-                    print "!!! Unrecognized action!"
+                    print("!!! Unrecognized action!")
                 if comment:
                     comment = " with the following comment: 07" + \
                         comment.strip(" ") + ""
@@ -1370,7 +1370,7 @@ class WikimediaBot(SingleServerIRCBot):
                     re.DOTALL)
                 found = comp.search(a)
                 if not found:
-                    print "*** Not the edit type I need ***"
+                    print("*** Not the edit type I need ***")
                     return
                 rcpage = found.group('page').strip(" ")
                 watched = False
@@ -1379,13 +1379,13 @@ class WikimediaBot(SingleServerIRCBot):
                         watched = True
                         break
                 if not watched:
-                    print "*** %s: Not a page I'm watching ***" % rcpage
+                    print("*** %s: Not a page I'm watching ***" % rcpage)
                     return
                 rcuser = found.group('user').strip(" ")
                 if rcuser in self.ignored:
-                    print "*** %s: Not a user I need ***" % rcuser
+                    print("*** %s: Not a user I need ***" % rcuser)
                     return
-                print timestamp + who + a
+                print(timestamp + who + a)
                 rccomment = found.group('comment')
                 rcdiff = found.group('diff')
                 if not rccomment:
@@ -1442,7 +1442,7 @@ if __name__ == "__main__":
     try:
         main()
     except IOError:
-        print "No config file! You should start this script from its directory like 'python stewardbot.py'"
+        print("No config file! You should start this script from its directory like 'python stewardbot.py'")
     finally:
         bot1.die()
         bot2.die()

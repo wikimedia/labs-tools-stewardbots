@@ -115,9 +115,9 @@ class FreenodeBot(SingleServerIRCBot):
 
         WTF does that mean?!
         """
-        print "Error:"
-        print "Arguments: %s" % e.arguments()
-        print "Target: %s" % e.target()
+        print("Error:")
+        print("Arguments: %s" % e.arguments())
+        print("Target: %s" % e.target())
         self.die()
         sys.exit(1)
 
@@ -127,11 +127,11 @@ class FreenodeBot(SingleServerIRCBot):
 
         We attempt to ghost the nick and acquire it.
         """
-        print "Nick %s is in use, trying to acquire it..." % self.nickname
+        print("Nick %s is in use, trying to acquire it..." % self.nickname)
         c.nick(c.get_nickname() + "_")
         c.privmsg("NickServ", "GHOST %s %s" % (self.nickname, self.password))
         c.nick(self.nickname)
-        print "Acquired nick %s; identifying..." % self.nickname
+        print("Acquired nick %s; identifying..." % self.nickname)
         c.privmsg("NickServ", "IDENTIFY %s" % self.password)
 
     def on_welcome(self, c, e):
@@ -140,11 +140,11 @@ class FreenodeBot(SingleServerIRCBot):
 
         We log the fact, and identify to nickserv.
         """
-        print "Identifying to services..."
+        print("Identifying to services...")
         c.privmsg("NickServ", "IDENTIFY %s" % self.password)
         time.sleep(5)  # Let identification succeed before joining channels
         c.join(self.channel)
-        print "Joined %s" % self.channel
+        print("Joined %s" % self.channel)
 
     def on_ctcp(self, c, e):
         """
@@ -181,14 +181,14 @@ class FreenodeBot(SingleServerIRCBot):
         nick = nm_to_n(e.source())
         target = nick  # If they did the command in PM, keep replies in PM
         a = e.arguments()[0]
-        # print '[%s] <%s/%s>: %s' % (timestamp, e.target(), e.source(), a)
+        # print('[%s] <%s/%s>: %s' % (timestamp, e.target(), e.source(), a))
         command = a.strip()
         if (self.channels[self.channel].is_voiced(nick) or
                 self.channels[self.channel].is_oper(nick)):
             try:
                 self.do_command(e, command, target)
-            except CommanderError, e:
-                print 'CommanderError: %s' % e.value
+            except CommanderError as e:
+                print('CommanderError: %s' % e.value)
                 self.msg('You have to follow the proper syntax. See '
                          '\x0302https://tools.wmflabs.org/stewardbots/'
                          'SULWatcher\x03', nick)  # Make this translatable
@@ -221,7 +221,7 @@ class FreenodeBot(SingleServerIRCBot):
         # replies should go to the channel
         target = e.target()
         a = e.arguments()[0].split(':', 1)
-        # print '[%s] <%s/%s>: %s' % (timestamp, target, nick, a)
+        # print('[%s] <%s/%s>: %s' % (timestamp, target, nick, a))
         if a[0] == self.nickname:
             if len(a) == 2:
                 command = a[1].strip()
@@ -229,8 +229,8 @@ class FreenodeBot(SingleServerIRCBot):
                         self.channels[self.channel].is_oper(nick)):
                     try:
                         self.do_command(e, command, target)
-                    except CommanderError, e:
-                        print 'CommanderError: %s' % e.value
+                    except CommanderError as e:
+                        print('CommanderError: %s' % e.value)
                         self.msg('You have to follow the proper syntax. See '
                                  '\x0302https://tools.wmflabs.org/stewardbots'
                                  '/SULWatcher\x03', target)
@@ -254,7 +254,7 @@ class FreenodeBot(SingleServerIRCBot):
         This should be split into a command_parse method, which hands
         off only valid commands to do_X methods.
         """
-        print "do_command(self, e, '%s', '%s')" % (cmd, target)
+        print("do_command(self, e, '%s', '%s')" % (cmd, target))
         global badwords, whitelist
         nick = nm_to_n(e.source())
         args = cmd.split(' ')  # Should use regex to parse here
@@ -274,8 +274,8 @@ class FreenodeBot(SingleServerIRCBot):
                     else:
                         self.msg('"%s" does not match regex "%s"'
                                  % (string, probe), target)
-                except IndexError, e:
-                    print 'IndexError: %s' % sys.exc_info()[1]
+                except IndexError:
+                    print('IndexError: %s' % sys.exc_info()[1])
                     raise CommanderError("You didn't use the right format for "
                                          "testing: 'SULWatcher: test <string to test> regex "
                                          "\bregular ?expression\b'")
@@ -460,7 +460,7 @@ class FreenodeBot(SingleServerIRCBot):
                                      'huggles?!')
         elif args[0] == 'die':  # Die
             if self.channels[self.channel].is_oper(nick):
-                print '%s is opped - dying...' % nick
+                print('%s is opped - dying...' % nick)
                 if len(args) > 1:
                     quitmsg = ' '.join(args[1:])
                 else:
@@ -484,17 +484,17 @@ class FreenodeBot(SingleServerIRCBot):
                     bot2.disconnect()
                 except Exception:
                     raise BotConnectionError("bot2 didn't disconnect")
-                print 'Killed. Now exiting...'
+                print('Killed. Now exiting...')
                 # sys.exit(0) # 0 is a normal exit status
                 os._exit(os.EX_OK)  # really really kill things off!!
             else:
                 self.msg("You can't kill me; you're not opped!", target)
         elif args[0] == 'restart':  # Restart
             if self.channels[self.channel].is_oper(nick):
-                print '%s is opped - restarting...' % nick
+                print('%s is opped - restarting...' % nick)
                 if len(args) == 1:
                     quitmsg = getConfig('quitmsg')
-                    print 'Restarting all bots with message: "%s"' % quitmsg
+                    print('Restarting all bots with message: "%s"' % quitmsg)
                     rawquitmsg = ':' + quitmsg
                     try:
                         rcreader.connection.part(rcfeed)
@@ -545,7 +545,7 @@ class FreenodeBot(SingleServerIRCBot):
                 self.msg("You can't restart me; you're not opped!", target)
 
     def buildRegex(self):
-        print 'buildRegex(self)'
+        print('buildRegex(self)')
         global badwords
         sql = ('SELECT r_id,r_regex,r_case FROM regex WHERE r_active=1;')
         results = db.do(sql)
@@ -565,14 +565,14 @@ class FreenodeBot(SingleServerIRCBot):
         return badwords
 
     def buildWhitelist(self):
-        print 'buildWhitelist(self)'
+        print('buildWhitelist(self)')
         global whitelist
         sql = ("SELECT s_value FROM setup WHERE s_param='whitelist';")
         result = db.do(sql)
         whitelist = [r['s_value'] for r in result]
 
     def addRegex(self, regex, cloak, target):
-        print "addRegex(self, '%s', '%s', '%s')" % (regex, cloak, target)
+        print("addRegex(self, '%s', '%s', '%s')" % (regex, cloak, target))
         sql = ('SELECT r_id FROM regex WHERE r_regex=%s;')
         args = (regex,)
         result = db.do(sql, args)
@@ -592,7 +592,7 @@ class FreenodeBot(SingleServerIRCBot):
             self.getPrintRegex(regex=regex, target=target)
 
     def removeRegex(self, regex=None, index=None, target=None):
-        print "removeRegex(self, '%s', '%s', '%s')" % (regex, index, target)
+        print("removeRegex(self, '%s', '%s', '%s')" % (regex, index, target))
         if regex:
             sql = ('UPDATE regex SET r_active=0,r_timestamp=%s '
                    'WHERE r_regex=%s;')
@@ -617,7 +617,7 @@ class FreenodeBot(SingleServerIRCBot):
                 self.msg('Could not disable regex #%s.' % (index), target)
 
     def enableRegex(self, index, target):
-        print "enableRegex(self, '%s', '%s')" % (index, target)
+        print("enableRegex(self, '%s', '%s')" % (index, target))
         sql = ('UPDATE regex SET r_active=1 '
                'WHERE r_id=%s;')
         args = (index,)
@@ -627,7 +627,7 @@ class FreenodeBot(SingleServerIRCBot):
             self.buildRegex()
 
     def getRegex(self, regex=None, index=None):
-        print "getRegex(self, '%s', '%s')" % (regex, index)
+        print("getRegex(self, '%s', '%s')" % (regex, index))
         if regex:
             sql = """
                   SELECT r_id, r_regex, r_active, r_case, r_cloak, r_reason, r_timestamp, sum(if(l_id, 1, 0)) AS hits
@@ -662,7 +662,7 @@ class FreenodeBot(SingleServerIRCBot):
             return None
 
     def getPrintRegex(self, regex=None, index=None, target=None):
-        print "getPrintRegex(self, '%s', '%s', '%s')" % (regex, index, target)
+        print("getPrintRegex(self, '%s', '%s', '%s')" % (regex, index, target))
         r = self.getRegex(regex=regex, index=index)
         if r:
             if r['r_active']:
@@ -689,7 +689,7 @@ class FreenodeBot(SingleServerIRCBot):
                 self.msg("That record couldn't be found.", target)
 
     def addToList(self, who, groupname, target):
-        print "addToList(self, '%s', '%s', '%s')" % (who, groupname, target)
+        print("addToList(self, '%s', '%s', '%s')" % (who, groupname, target))
         group_members = getConfig(groupname)
         if not group_members:
             self.msg("Could not find '%s'." % (groupname), target)
@@ -707,8 +707,10 @@ class FreenodeBot(SingleServerIRCBot):
             self.msg('%s is already in %s.' % (who, groupname), target)
 
     def removeFromList(self, who, groupname, target):
-        print ("removeFromList(self, '%s', '%s', '%s')"
-               % (who, groupname, target))
+        print(
+            "removeFromList(self, '%s', '%s', '%s')"
+            % (who, groupname, target)
+        )
         group_members = getConfig(groupname)
         if not group_members:
             self.msg("Could not find '%s'." % (groupname), target)
@@ -725,7 +727,7 @@ class FreenodeBot(SingleServerIRCBot):
             self.msg('%s is not in %s.' % (who, groupname), target)
 
     def msg(self, message, target=None):
-        # print "msg(self, '%s', '%s')" % (message, target)
+        # print("msg(self, '%s', '%s')" % (message, target))
         if not target:
             target = self.channel
         self.connection.privmsg(target, message)
@@ -736,7 +738,7 @@ class FreenodeBot(SingleServerIRCBot):
 
         nick!~user@host.com -> host.com
         """
-        # print "getCloak(self, '%s')" % mask
+        # print("getCloak(self, '%s')" % mask)
         if "@" in mask:
             return mask.split("@")[1]
         else:
@@ -748,7 +750,7 @@ class FreenodeBot(SingleServerIRCBot):
 
         nick!~user@host.com -> ~user
         """
-        # print "getUser(self, '%s')" % mask
+        # print("getUser(self, '%s')" % mask)
         if "!" in mask and "@" in mask:
             return mask.split("!")[1].split("@")[0]
         else:
@@ -760,7 +762,7 @@ class FreenodeBot(SingleServerIRCBot):
 
         nick!~user@host.com -> nick
         """
-        # print "getNick(self, '%s')" % mask
+        # print("getNick(self, '%s')" % mask)
         if "!" in mask:
             return mask.split("!")[0]
         else:
@@ -778,7 +780,7 @@ class WikimediaBot(SingleServerIRCBot):
         self.lastbot = bot1
 
     def on_error(self, c, e):
-        print e.target()
+        print(e.target())
         # self.die()
 
     def on_nicknameinuse(self, c, e):
@@ -818,7 +820,7 @@ class WikimediaBot(SingleServerIRCBot):
                     self.lastsulname != sulname):
                 bad = False
                 good = False
-                # print "%s@%s" % (sulname, sulwiki)
+                # print("%s@%s" % (sulname, sulwiki))
                 matches = []
                 for (idx, bw) in badwords:
                     if (bw.search(sulname)):
@@ -826,13 +828,13 @@ class WikimediaBot(SingleServerIRCBot):
                         matches.append(bw.pattern)
                 for wl in whitelist:
                     if sulname == wl:
-                        print "Skipped '%s'; user is whitelisted" % sulname
+                        print("Skipped '%s'; user is whitelisted" % sulname)
                         good = True
                 urlname = urllib.quote(sulname)
-#                print 'original: %s' % urlname
+#                print('original: %s' % urlname)
                 if urlname.endswith('.'):
                     urlname = re.sub(r'\.$', '%2E', urlname)
-#                print 'Replacement: %s' % sulname
+#                print('Replacement: %s' % sulname)
                 if not bad and not good:
                     self.lastbot.msg(
                         "\x0303{0} \x0302{1}{2}\x03".format(
@@ -852,7 +854,7 @@ class WikimediaBot(SingleServerIRCBot):
                                     time.strftime('%Y%m%d%H%M%S'))
                             db.do(sql, args)
                         except Exception:
-                            print 'Could not log hit to database.'
+                            print('Could not log hit to database.')
                     self.lastbot.msg(
                         "\x0303{0} \x0305\x02".format(sulname) +
                         "matches badword {0}".format('; '.join(matches)) +
@@ -861,8 +863,10 @@ class WikimediaBot(SingleServerIRCBot):
                     self.lastbot = bot2 if self.lastbot == bot1 else bot1
             self.lastsulname = sulname
         except Exception:  # Should be specific about what might happen here
-            print ('RC reader error: %s %s %s'
-                   % (sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
+            print(
+                'RC reader error: %s %s %s'
+                % (sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
+            )
 
 
 class BotThread(threading.Thread):
@@ -879,7 +883,7 @@ class BotThread(threading.Thread):
 
 
 def getConfig(param):
-    print "getConfig(self, '%s')" % (param)
+    print("getConfig(self, '%s')" % (param))
     sql = ('SELECT s_value FROM setup WHERE s_param=%s;')
     args = (param,)
     result = db.do(sql, args)
@@ -938,7 +942,7 @@ if __name__ == "__main__":
         os._exit(os.EX_OK)
         raise
     except Exception:
-        print '\nUnexpected error:\n'
+        print('\nUnexpected error:\n')
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
         traceback.print_exception(
             exceptionType, exceptionValue, exceptionTraceback)

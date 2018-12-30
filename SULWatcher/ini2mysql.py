@@ -63,11 +63,11 @@ def main():
                 db.do(sql, args)
         else:
             try:
-                regex = unicode(config.get(section, 'regex'), 'utf8')
+                regex = unicode(config.get(section, 'regex'), 'utf8')  # noqa: F821
                 regex = regex.encode('utf8')
             except UnicodeDecodeError:
-                print 'Failing for %s' % (regex)
-                print [regex]
+                print('Failing for %s' % (regex))
+                print([regex])
             cloak = config.get(section, 'adder')
             timestamp = time.strftime('%Y%m%d%H%M%S')
             if config.has_option(section, 'reason'):
