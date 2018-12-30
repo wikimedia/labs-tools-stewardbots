@@ -181,7 +181,7 @@ class FreenodeBot(SingleServerIRCBot):
                 for evilchar in evilchars:
                     if evilchar in a:
                         self.msg(
-                            "We do not fancy the abusive characters your command contains.",
+                            "Your command contains prohibited characters. Please repeat the command without them.",
                             self.channel)
                         return
                 # End of Anti-PiR hack
