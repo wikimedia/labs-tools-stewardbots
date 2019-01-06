@@ -1219,16 +1219,16 @@ class WikimediaBot(SingleServerIRCBot):
                         ss3set = ss2.group('s')
                         ss3unset = ss2.group('u')
                         changeda = []
-                        if "hidden" in ss3set or "oculto" in ss3set or "versteckt" in ss3set:
+                        if "hidden" in ss3set:
                             changeda += ["hid"]
                             hid = True
-                        if "locked" in ss3set or "Bloqueado" in ss3set or "gesperrt" in ss3set:
+                        if "locked" in ss3set:
                             changeda += ["locked"]
                         if "oversighted" in ss3unset:
                             changeda += ["unsuppressed"]
-                        if "hidden" in ss3unset or "oculto" in ss3unset or "versteckt" in ss3unset:
+                        if "hidden" in ss3unset:
                             changeda += ["unhid"]
-                        if "locked" in ss3unset or "Bloqueado" in ss3unset or "gesperrt" in ss3unset:
+                        if "locked" in ss3unset:
                             changeda += ["unlocked"]
                         list.sort(changeda, reverse=True)
                         action2 = " and ".join(changeda)
