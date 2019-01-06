@@ -1224,7 +1224,7 @@ class WikimediaBot(SingleServerIRCBot):
                             hid = True
                         if "locked" in ss3set:
                             changeda += ["locked"]
-                        if "oversighted" in ss3unset:
+                        if "suppressed" in ss3unset:
                             changeda += ["unsuppressed"]
                         if "hidden" in ss3unset:
                             changeda += ["unhid"]
