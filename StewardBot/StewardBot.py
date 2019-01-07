@@ -24,7 +24,7 @@ dbfile.close()
 SQLuser = li[0].split("=")[1].strip()
 SQLpassword = li[1].split("=")[1].strip().strip("\"")
 SQLhost = li[2].split("=")[1].strip().strip("\"")
-SQLdb = 'YOURDB_HERE'
+SQLdb = config.dbname
 
 # common queries
 queries = {
