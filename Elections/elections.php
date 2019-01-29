@@ -159,7 +159,12 @@ if ( $useCache ) {
 				$votes['neutral'] = preg_match_all( $vote, substr( $content, $offset['neutral'] ), $m );
 
 				// Math
-				$support = $votes['yes'] / ( $votes['yes'] + $votes['no'] );
+				$totalVotes = $votes['yes'] + $votes['no'];
+				if ( $totalVotes > 0 ) {
+					$support = $votes['yes'] / $totalVotes;
+				} else {
+					$support = 0;
+				}
 				$perc = round( $support * 100, 1 );
 
 				$bgyes = ( $votes['yes'] < 30 ) ? 'style="background-color:#FF9999"' : '';
