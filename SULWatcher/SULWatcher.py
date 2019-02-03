@@ -848,10 +848,9 @@ class WikimediaBot(SingleServerIRCBot):
                     for m in matches:
                         try:
                             sql = ('INSERT INTO logging (l_regex,l_user,'
-                                   'l_project,l_timestamp) VALUES '
-                                   '(%s,%s,%s,%s);')
-                            args = (m, sulname, sulwiki,
-                                    time.strftime('%Y%m%d%H%M%S'))
+                                   'l_timestamp) VALUES '
+                                   '(%s,%s,%s);')
+                            args = (m, sulname, time.strftime('%Y%m%d%H%M%S'))
                             db.do(sql, args)
                         except Exception:
                             print('Could not log hit to database.')
