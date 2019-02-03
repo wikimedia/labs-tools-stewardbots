@@ -1,6 +1,26 @@
 <?php
+include '../vendor/autoload.php';
+use Symfony\Component\Process\Process;
+
+// Election year
 $year = 2019;
-$lastModified = '11 November 2018';
+
+// Get git hash
+$rev = getGitInfo( 'rev-parse --short' );
+
+// Get git date
+$lastModified = getGitInfo( 'show -s --format=format:%cD' );
+
+function getGitInfo( $command ) {
+$process = new Process( 'git ' . $command . ' HEAD' );
+$process->run();
+
+if ( !$process->isSuccessful() ) {
+	throw new ProcessFailedException( $process );
+}
+
+return $process->getOutput();
+}
 
 function getPages( $titles ) {
 	$URL = 'https://meta.wikimedia.org/w/api.php'
@@ -251,7 +271,7 @@ Wikimedia Labs" title="Powered by Wikimedia Labs" height="31"
 width="88" /></a>
 			</div>
 			<ul id="f-list">
-				<li id="lastmod">This page was last modified <?php echo $lastModified;?>.</li>
+				<li id="lastmod">This page is based on remote version <?php echo $rev;?> modified <?php echo $lastModified;?>.</li>
 				<li id="about">This tool was written by <a href="//meta.wikimedia.org/wiki/User:Erwin">Erwin</a> and is mantained by the stewardbots project.</li>
 			</ul>
 		</div>
