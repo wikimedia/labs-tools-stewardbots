@@ -159,7 +159,7 @@ if ( $useCache ) {
 			$title = $page['title'];
 			$rawUser = substr( $title, 30 );
 			$user = htmlspecialchars( $rawUser, ENT_QUOTES, 'UTF-8' );
-			$encodedUser = urlencode( $rawUser );
+			$encodedUser = rawurlencode( $rawUser );
 			$content = $page['content'];
 			if ( !empty( $content ) ) {
 				// Find vote headers
