@@ -77,7 +77,7 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 		$numAdmins = ( $row2[0] ? $row2[0] : 0 );
 
 		if ( $numAdmins <= $admins ) {
-			$queryL = "SELECT user_name, log_timestamp FROM logging JOIN user ON user_id = log_user JOIN user_groups ON ug_user = user_id WHERE log_type IN ('delete', 'block', 'protect') AND ug_group = 'sysop' ORDER BY log_timestamp DESC LIMIT 1;";
+			$queryL = "SELECT user_name, log_timestamp FROM logging_compat JOIN user ON user_id = log_user JOIN user_groups ON ug_user = user_id WHERE log_type IN ('delete', 'block', 'protect') AND ug_group = 'sysop' ORDER BY log_timestamp DESC LIMIT 1;";
 			$resultL = mysql_query( $queryL );
 
 			if ( !$resultL ) { die( "Database access failed: " . mysql_error() );
