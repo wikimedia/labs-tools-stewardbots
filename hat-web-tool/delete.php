@@ -77,7 +77,15 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 		$numAdmins = ( $row2[0] ? $row2[0] : 0 );
 
 		if ( $numAdmins <= $admins ) {
-			$queryL = "SELECT user_name, log_timestamp FROM logging_compat JOIN user ON user_id = log_user JOIN user_groups ON ug_user = user_id WHERE log_type IN ('delete', 'block', 'protect') AND ug_group = 'sysop' ORDER BY log_timestamp DESC LIMIT 1;";
+			$queryL = "SELECT user_name, log_timestamp
+					   FROM logging
+						 JOIN actor_logging ON actor_id = log_actor
+						 JOIN user ON user_id = actor_user
+						 JOIN user_groups ON ug_user = user_id
+					   WHERE log_type IN ('delete', 'block', 'protect')
+						 AND ug_group = 'sysop'
+					   ORDER BY log_timestamp DESC
+					   LIMIT 1;";
 			$resultL = mysql_query( $queryL );
 
 			if ( !$resultL ) { die( "Database access failed: " . mysql_error() );
@@ -85,7 +93,13 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 
 			$rowL = mysql_fetch_row( $resultL );
 
-			$query3 = "SELECT pl_title FROM pagelinks LEFT JOIN page ON page_id = pl_from WHERE page_title = 'Delete' AND page_namespace = 10 AND page_is_redirect = 1 LIMIT 1;";
+			$query3 = "SELECT pl_title
+					   FROM pagelinks
+						 LEFT JOIN page ON page_id = pl_from
+					   WHERE page_title = 'Delete'
+						 AND page_namespace = 10
+						 AND page_is_redirect = 1
+					   LIMIT 1;";
 			$result3 = mysql_query( $query3 );
 
 			if ( !$result3 ) { die( "Database access failed: " . mysql_error() );
@@ -101,7 +115,19 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 				$template = "Delete";
 			}
 
-			$query4 = "SELECT page_title, rev_timestamp, rev_user_text, rev_comment, rev_id FROM page LEFT JOIN templatelinks ON tl_from = page_id LEFT JOIN revision ON rev_page = page_id WHERE tl_title = '" . $template . "' AND tl_namespace=10 AND rev_timestamp = (SELECT max(rev_timestamp) FROM revision AS r WHERE rev_page = page_id)";
+			$query4 = "SELECT page_title, rev_timestamp, actor_name AS rev_user_text, comment_text AS rev_comment, rev_id
+					   FROM page
+						 LEFT JOIN templatelinks ON tl_from = page_id
+						 LEFT JOIN revision ON rev_page = page_id
+						 JOIN actor_revision ON rev_actor = actor_id
+						 JOIN comment_revision ON rev_comment_id = comment_id
+					   WHERE tl_title = '" . $template . "'
+						 AND tl_namespace=10
+						 AND rev_timestamp = (
+						   SELECT MAX(rev_timestamp)
+						   FROM revision AS r
+						   WHERE rev_page = page_id
+					   )";
 			$result4 = mysql_query( $query4 );
 
 			if ( !$result4 ) { die( "Database access failed: " . mysql_error() );
@@ -126,8 +152,8 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 </tbody>
 </table>
 <br />
-<p>Acknowledgements to <a href="http://tools.wmflabs.org/erwin85/">erwin85</a> for the 
-original tool and many of the queries, and to <a href="http://tools.wmflabs.org/pathoschild-contrib/">Pathoschild</a> 
+<p>Acknowledgements to <a href="http://tools.wmflabs.org/erwin85/">erwin85</a> for the
+original tool and many of the queries, and to <a href="http://tools.wmflabs.org/pathoschild-contrib/">Pathoschild</a>
 for creating the extensive suite of tools that I used as an example.</p>
 </body>
 </html>
