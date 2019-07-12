@@ -11,13 +11,18 @@
 </script>
 <?php
 $loginData = require_once __DIR__ . '/../login.php';
+
 function titleLink( $title ) {
 	return str_replace( '%2F', '/', urlencode( str_replace( ' ', '_', $title ) ) );
 }
+
 function get_post( $var ) {
  return mysql_real_escape_string( $_POST[$var] );
 }
+
+	//phpcs:disable MediaWiki.NamingConventions.ValidGlobalName.allowedPrefix
 	global $loginData;
+	// phpcs:enable
 
 	$db_server = mysql_connect( "metawiki.analytics.db.svc.eqiad.wmflabs", $loginData['user'], $loginData['password'] );
 	if ( !$db_server ) { die( "Unable to connect to MySQL: " . mysql_error() );
@@ -64,7 +69,7 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 		if ( !$db_server_temp ) { die( "Unable to connect to MySQL: " . mysql_error() );
 		}
 
-		mysql_select_db( $row[0]."_p", $db_server_temp ) or die( "Unable to select database: " . mysql_error() );
+		mysql_select_db( $row[0] . "_p", $db_server_temp ) or die( "Unable to select database: " . mysql_error() );
 
 		$query2 = "SELECT sum(if(ug_group = 'sysop', 1, 0)) FROM user_groups;";
 		$result2 = mysql_query( $query2 );
@@ -137,13 +142,13 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 
 			for ( $k = 0; $k < $rows4; ++$k ) {
 				$rowD = mysql_fetch_row( $result4 );
-				echo "<tr><td><a href=\"" . $row[1] . "\">". $row[0] . "</a></td>";
-				echo "<td>".$numAdmins."</td>\n";
-				echo "<td>".$rowL[1]."</td>\n";
-				echo "<td><a href=\"" . $row[1]. "/wiki/Special:Diff/".titleLink( $rowD[4] )."\">".$rowD[0]."</a></td>\n";
-				echo "<td><a href=\"" . $row[1]. "/wiki/User:".titleLink( $rowD[2] )."\">".$rowD[2]."</a></td>\n";
-				echo "<td>".$rowD[1]."</td>\n";
-				echo "<td>".$rowD[3]."</td></tr>\n";
+				echo "<tr><td><a href=\"" . $row[1] . "\">" . $row[0] . "</a></td>";
+				echo "<td>" . $numAdmins . "</td>\n";
+				echo "<td>" . $rowL[1] . "</td>\n";
+				echo "<td><a href=\"" . $row[1] . "/wiki/Special:Diff/" . titleLink( $rowD[4] ) . "\">" . $rowD[0] . "</a></td>\n";
+				echo "<td><a href=\"" . $row[1] . "/wiki/User:" . titleLink( $rowD[2] ) . "\">" . $rowD[2] . "</a></td>\n";
+				echo "<td>" . $rowD[1] . "</td>\n";
+				echo "<td>" . $rowD[3] . "</td></tr>\n";
 			}
 		}
 	}

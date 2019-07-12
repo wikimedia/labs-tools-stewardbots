@@ -45,7 +45,7 @@ This is a replacement for erwin85's projects tool. For special rights, see <a hr
 		if ( !$db_server_temp ) { die( "Unable to connect to MySQL: " . mysql_error() );
 		}
 
-		mysql_select_db( $row[0]."_p", $db_server_temp ) or die( "Unable to select database: " . mysql_error() );
+		mysql_select_db( $row[0] . "_p", $db_server_temp ) or die( "Unable to select database: " . mysql_error() );
 
 		$query2 = "SELECT sum(if(ug_group = 'sysop', 1, 0)), sum(if(ug_group = 'bureaucrat', 1, 0)), sum(if(ug_group = 'checkuser', 1, 0)), sum(if(ug_group = 'oversight', 1, 0)) FROM user_groups;";
 		$result2 = mysql_query( $query2 );
@@ -55,11 +55,11 @@ This is a replacement for erwin85's projects tool. For special rights, see <a hr
 
 		$row2 = mysql_fetch_row( $result2 );
 
-		echo "<tr><td><a href=\"" . $row[1] . "\">". $row[0] . "</a></td>";
-		echo "<td><a href=\"" . $row[1]. "/wiki/Special:ListUsers/sysop\">". ( $row2[0] ? $row2[0] : 0 )."</td>\n";
-		echo "<td><a href=\"" . $row[1]. "/wiki/Special:ListUsers/bureaucrat\">".( $row2[1] ? $row2[1] : 0 )."</td>\n";
-		echo "<td><a href=\"" . $row[1]. "/wiki/Special:ListUsers/checkuser\">".( $row2[2] ? $row2[2] : 0 )."</td>\n";
-		echo "<td><a href=\"" . $row[1]. "/wiki/Special:ListUsers/oversight\">".( $row2[3] ? $row2[3] : 0 )."</td></tr>\n";
+		echo "<tr><td><a href=\"" . $row[1] . "\">" . $row[0] . "</a></td>";
+		echo "<td><a href=\"" . $row[1] . "/wiki/Special:ListUsers/sysop\">" . ( $row2[0] ? $row2[0] : 0 ) . "</td>\n";
+		echo "<td><a href=\"" . $row[1] . "/wiki/Special:ListUsers/bureaucrat\">" . ( $row2[1] ? $row2[1] : 0 ) . "</td>\n";
+		echo "<td><a href=\"" . $row[1] . "/wiki/Special:ListUsers/checkuser\">" . ( $row2[2] ? $row2[2] : 0 ) . "</td>\n";
+		echo "<td><a href=\"" . $row[1] . "/wiki/Special:ListUsers/oversight\">" . ( $row2[3] ? $row2[3] : 0 ) . "</td></tr>\n";
 	}
 	?>
 

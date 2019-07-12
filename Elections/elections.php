@@ -59,6 +59,7 @@ function getPages( $titles ) {
 function titleSort( $a, $b ) {
 	return strnatcasecmp( $a['title'], $b['title'] );
 }
+
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
@@ -251,10 +252,10 @@ href="//tools.wmflabs.org/stewardbots/Elections/elections.php" title="Elections"
 				<div class="pBody">
 					<ul>
 						<?php echo(
-						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year'>Elections page</a></li>".
-						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Guidelines'>Guidelines</a></li>".
-						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Statements'>Statements</a></li>".
-						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Questions'>Questions</a></li>".
+						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year'>Elections page</a></li>" .
+						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Guidelines'>Guidelines</a></li>" .
+						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Statements'>Statements</a></li>" .
+						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Questions'>Questions</a></li>" .
 						"<li><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Statistics'>Statistics</a></li>"
 						);
 						?>

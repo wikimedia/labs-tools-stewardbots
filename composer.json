@@ -1,6 +1,8 @@
 {
+	"name": "wikimedia/tool-stewardbots",
+	"type": "project",
 	"description": "Tools for stewards' work",
-	"license": "GPL-3.0",
+	"license": "GPL-3.0-only",
 	"support": {
 		"issues": "https://phabricator.wikimedia.org/",
 		"irc": "irc://irc.freenode.net/wikimedia-stewards",
@@ -8,14 +10,15 @@
 		"source": "https://phabricator.wikimedia.org/diffusion/TSTW/"
 	},
 	"require": {
+		"php": "^7.2",
 		"ext-curl": "*"
 	},
 	"require-dev": {
 		"jakub-onderka/php-parallel-lint": "1.0.0",
-		"jakub-onderka/php-console-highlighter": "0.3.2",
-		"mediawiki/mediawiki-codesniffer": "19.0.0",
+		"jakub-onderka/php-console-highlighter": "0.4.0",
+		"mediawiki/mediawiki-codesniffer": "26.0.0",
 		"mediawiki/minus-x": "0.3.2",
-		"symfony/process": "^3.0"
+		"symfony/process": "4.3.2"
 	},
 	"scripts": {
 		"test": [
