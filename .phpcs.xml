@@ -5,7 +5,6 @@
 		<exclude name="MediaWiki.NamingConventions.PrefixedGlobalFunctions.wfPrefix" />
 		<exclude name="MediaWiki.Usage.SuperGlobalsUsage.SuperGlobals" />
 		<exclude name="Generic.Files.LineLength.TooLong" />
-		<exclude name="MediaWiki.NamingConventions.ValidGlobalName.wgPrefix" />
 		<exclude name="Squiz.Operators.ValidLogicalOperators.NotAllowed" />
 		<exclude name="Generic.PHP.CharacterBeforePHPOpeningTag.Found" />
 		<exclude name="MediaWiki.Commenting.FunctionComment.WrongStyle" />
