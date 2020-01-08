@@ -21,7 +21,9 @@ Requirements
 ------------
 
 - Python >= 2.7
-- MySQL DB
+- PyMySQL
+- irc
+- MySQL DB >= 5.5
 
 Documentation
 -------------

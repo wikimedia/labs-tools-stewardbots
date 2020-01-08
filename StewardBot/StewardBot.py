@@ -1,21 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 
-from ircbot import SingleServerIRCBot
-from irclib import nm_to_n
+from irc.bot import SingleServerIRCBot
+from irc.client import NickMask
 from datetime import datetime
-import MySQLdb
+from jaraco.stream import buffer
+from irc.client import ServerConnection
+import pymysql
 import os
 import random
 import re
-import string
 import sys
 import threading
 import time
-import urllib
 import json
 
 import config
+
+PY2 = sys.version_info[0] == 2
+
+if PY2:
+    from urllib import urlopen
+else:
+    from urllib.request import urlopen
 
 # DB data
 dbfile = open(os.path.expanduser('~/.my.cnf'), 'r')
@@ -38,8 +47,13 @@ queries = {
 }
 
 
+def nm_to_n(nm):
+    """Convert nick mask from source to nick."""
+    return NickMask(nm).nick
+
+
 def query(sqlquery, one=True):
-    db = MySQLdb.connect(
+    db = pymysql.connect(
         db=SQLdb,
         host=SQLhost,
         user=SQLuser,
@@ -48,19 +62,15 @@ def query(sqlquery, one=True):
     cursor.execute(sqlquery)
     db.close()
     res = list(cursor.fetchall())
-    list.sort(res)
+    res.sort(key=lambda x: x if isinstance(x, str) else "")
     if one:
-        res2 = []
-        for i in res:
-            if i[0] is not None:
-                res2 += [i[0]]
-        return res2
+        return [i[0] for i in res if i]
     else:
         return res
 
 
 def modquery(sqlquery):
-    db = MySQLdb.connect(
+    db = pymysql.connect(
         db=SQLdb,
         host=SQLhost,
         user=SQLuser,
@@ -92,7 +102,7 @@ class FreenodeBot(SingleServerIRCBot):
             self, [(self.server, 6667)], self.nickname, self.nickname)
 
     def on_error(self, c, e):
-        print(e.target())
+        print(e.target)
         self.die()
 
     def on_nicknameinuse(self, c, e):
@@ -112,24 +122,24 @@ class FreenodeBot(SingleServerIRCBot):
             for chan in self.listened:
                 c.join(chan)
 
-    def on_ctcp(self, c, e):
-        if e.arguments()[0] == "VERSION":
+    def on_ctcp(self, c, event):
+        if event.arguments[0] == "VERSION":
             c.ctcp_reply(
                 nm_to_n(
-                    e.source()),
+                    event.source),
                 "Bot for informing Wikimedia stewards on " +
                 self.channel)
-        elif e.arguments()[0] == "PING":
-            if len(e.arguments()) > 1:
-                c.ctcp_reply(nm_to_n(e.source()), "PING " + e.arguments()[1])
+        elif event.arguments[0] == "PING":
+            if len(event.arguments) > 1:
+                c.ctcp_reply(nm_to_n(event.source), "PING " + event.arguments[1])
 
-    def on_action(self, c, e):
-        who = "<" + self.channel + "/" + nm_to_n(e.source()) + "> "
-        print("[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] * " + who + e.arguments()[0])
+    def on_action(self, c, event):
+        who = "<" + self.channel + "/" + nm_to_n(event.source) + "> "
+        print("[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] * " + who + event.arguments[0])
 
     def on_privmsg(self, c, e):
-        nick = nm_to_n(e.source())
-        a = e.arguments()[0]
+        nick = nm_to_n(e.source)
+        a = e.arguments[0]
         nocando = "This command cannot be used via query!"
         print("[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] <private/" + nick + "> " + a)
         if a[0] == "@" or a.lower().startswith(self.nickname.lower() + ":"):
@@ -142,8 +152,8 @@ class FreenodeBot(SingleServerIRCBot):
                     "",
                     a).strip(" ")
             if command.lower() == "die":
-                if self.getcloak(e.source()) == self.owner:
-                    self.do_command(e, command)
+                if self.getcloak(e.source) == self.owner:
+                    self.do_command(e.source, command)
                 else:
                     self.msg(nocando, nick)
             # Start of Anti-PiR hack
@@ -152,25 +162,25 @@ class FreenodeBot(SingleServerIRCBot):
             # elif command.lower().startswith("huggle"):
             #    self.msg(nocando, nick)
             # End of Anti-PiR hack
-            elif self.getcloak(e.source()).lower() in self.privileged:
-                self.do_command(e, string.strip(command), nick)
+            elif self.getcloak(e.source).lower() in self.privileged:
+                self.do_command(e.source, command.strip(), nick)
             else:
                 self.msg(self.badsyntax, nick)
         elif a.lower().startswith("!steward"):
             # self.attention(nick)
             self.msg(nocando, nick)
-        elif self.getcloak(e.source()).lower() == self.owner:
+        elif self.getcloak(e.source).lower() == self.owner:
             if a[0] == "!":
                 self.connection.action(self.channel, a[1:])
             else:
                 self.msg(a)
 
-    def on_pubmsg(self, c, e):
+    def on_pubmsg(self, c, event):
         timestamp = "[" + time.strftime("%d.%m.%Y %H:%M:%S",
                                         time.localtime(time.time())) + "] "
-        nick = nm_to_n(e.source())
-        a = e.arguments()[0]
-        where = e.target()
+        nick = event.source.nick
+        a = event.arguments[0]
+        where = event.target
         who = "<" + where + "/" + nick + "> "
         if where == self.channel:
             print(timestamp + who + a)
@@ -205,9 +215,9 @@ class FreenodeBot(SingleServerIRCBot):
                         "stew nicks",
                         "stew optin",
                         "stew info"]):
-                    self.do_command(e, string.strip(command))
-                elif self.getcloak(e.source()) and self.getcloak(e.source()).lower() in self.privileged:
-                    self.do_command(e, string.strip(command))
+                    self.do_command(event.source, command.strip())
+                elif self.getcloak(event.source) and self.getcloak(event.source).lower() in self.privileged:
+                    self.do_command(event.source, command.strip())
                 else:
                     # if not self.quiet: self.msg("You're not allowed to issue commands.")
                     pass
@@ -218,7 +228,7 @@ class FreenodeBot(SingleServerIRCBot):
             self.attention(nick, where, reason)
 
     def do_command(self, e, cmd, target=None):
-        nick = nm_to_n(e.source())
+        nick = nm_to_n(e)
         if not target:
             target = self.channel
         c = self.connection
@@ -328,7 +338,7 @@ class FreenodeBot(SingleServerIRCBot):
 
         # Die
         elif cmd.lower() == "die":
-            if self.getcloak(e.source()) != self.owner:
+            if self.getcloak(e) != self.owner:
                 if not self.quiet:
                     self.msg("You can't kill me; you're not my owner! :P")
             else:
@@ -1006,7 +1016,7 @@ class WikimediaBot(SingleServerIRCBot):
             self, [(self.server, 6667)], self.nickname, self.nickname)
 
     def on_error(self, c, e):
-        print(e.target())
+        print(e.target)
         self.die()
 
     def on_nicknameinuse(self, c, e):
@@ -1015,17 +1025,17 @@ class WikimediaBot(SingleServerIRCBot):
     def on_welcome(self, c, e):
         c.join(self.channel)
 
-    def on_ctcp(self, c, e):
-        if e.arguments()[0] == "VERSION":
-            c.ctcp_reply(nm_to_n(e.source()),
+    def on_ctcp(self, c, event):
+        if event.arguments[0] == "VERSION":
+            c.ctcp_reply(nm_to_n(event.source),
                          "Logging bot for #wikimedia-stewards")
-        elif e.arguments()[0] == "PING":
-            if len(e.arguments()) > 1:
-                c.ctcp_reply(nm_to_n(e.source()), "PING " + e.arguments()[1])
+        elif event.arguments[0] == "PING":
+            if len(event.arguments) > 1:
+                c.ctcp_reply(nm_to_n(event.source), "PING " + event.arguments[1])
 
-    def on_privmsg(self, c, e):
-        nick = nm_to_n(e.source())
-        a = e.arguments()[0]
+    def on_privmsg(self, c, event):
+        nick = nm_to_n(event.source)
+        a = event.arguments[0]
         if nick.lower() != "dungodung":
             c.privmsg(nick, "Please don't talk to me!")
         elif a.startswith(config.passwordhash):
@@ -1050,13 +1060,13 @@ class WikimediaBot(SingleServerIRCBot):
                 "Type 'echo <password> | md5sum' to your linux terminal and paste the output here.")
         print("[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] <!private/" + nick + "> " + a)
 
-    def on_pubmsg(self, c, e):
+    def on_pubmsg(self, c, event):
         self.randmess()
         timestamp = "[" + time.strftime(
                 "%d.%m.%Y %H:%M:%S", time.localtime(time.time())) + "] "
-        nick = nm_to_n(e.source())
+        nick = nm_to_n(event.source)
         who = "<" + self.channel + "/" + nick + "> "
-        a = (e.arguments()[0])
+        a = (event.arguments[0])
         self.testregister = timestamp + a
         if not bot1.quiet:
             # Parsing the rcbot output
@@ -1077,9 +1087,11 @@ class WikimediaBot(SingleServerIRCBot):
                 state2 = found.group('state2')
                 extra = found.group('extra')
                 # check expiry via api
-                urlapi = ("https://meta.wikimedia.org/w/api.php?action=query&format=json&list=logevents&letype=rights&letitle=User:" + usertarget + "&lelimit=1")
-                response = urllib.urlopen(urlapi)
-                data = json.loads(response.read())
+                urlapi = ("https://meta.wikimedia.org/w/"
+                          + "api.php?action=query&format=json&list=logevents&letype=rights&letitle=User:"
+                          + usertarget + "&lelimit=1")
+                response = urlopen(urlapi)
+                data = json.loads(response.read().decode("utf-8"))
                 oldright = data['query']['logevents'][0]['params']['oldgroups']
                 newright = data['query']['logevents'][0]['params']['newgroups']
                 lennewrights = len(newright) + 1
@@ -1092,23 +1104,31 @@ class WikimediaBot(SingleServerIRCBot):
                     oldrightfield = data['query']['logevents'][0]['params']['oldgroups'][o-1]
                     oldrightfieldexpiry = data['query']['logevents'][0]['params']['oldmetadata'][o-1]['expiry']
                     if oldrightfieldexpiry != "infinity":
-                        chrightso = chrightso + oldrightfield + " (expiry: " + datetime.strptime(oldrightfieldexpiry, "%Y-%m-%dT%H:%M:%SZ").strftime('%H:%M, %d %B %Y') + ")"
+                        chrightso += '{} (expiry: {}='.format(
+                            oldrightfield,
+                            datetime.strptime(
+                                oldrightfieldexpiry,
+                                '%Y-%m-%dT%H:%M:%SZ').strftime('%H:%M, %d %B %Y'))
                     else:
-                        chrightso = chrightso + oldrightfield
+                        chrightso += oldrightfield
                     if o != lenoldrights - 1:
-                        chrightso = chrightso + ", "
-                    o = o+1
+                        chrightso += ', '
+                    o += 1
                 if chrightso == "":
                     chrightso = "(none)"
                 while n < lennewrights:
                     newrightfield = data['query']['logevents'][0]['params']['newgroups'][n-1]
                     newrightfieldexpiry = data['query']['logevents'][0]['params']['newmetadata'][n-1]['expiry']
                     if newrightfieldexpiry != "infinity":
-                        chrightsn = chrightsn + newrightfield + " (expiry: " + datetime.strptime(newrightfieldexpiry, "%Y-%m-%dT%H:%M:%SZ").strftime('%H:%M, %d %B %Y') + ")"
+                        chrightsn += '{} (expiry: {})'.format(
+                            newrightfield,
+                            datetime.strptime(
+                                newrightfieldexpiry,
+                                '%Y-%m-%dT%H:%M:%SZ').strftime('%H:%M, %d %B %Y'))
                     else:
-                        chrightsn = chrightsn + newrightfield
+                        chrightsn += newrightfield
                     if n != lennewrights - 1:
-                        chrightsn = chrightsn + ", "
+                        chrightsn += ', '
                     n = n+1
                 if chrightsn == "":
                     chrightsn = "(none)"
@@ -1132,7 +1152,8 @@ class WikimediaBot(SingleServerIRCBot):
                     bott = "06(bot) "
                 bot1.msg(
                     "%s%s03%s changed user rights for %s from 04%s to 04%s%s" %
-                    (selff, bott, usersource, usertarget, chrightso.encode('utf8', 'strict'), chrightsn.encode('utf8', 'strict'), comment))
+                    (selff, bott, usersource, usertarget, chrightso, chrightsn,
+                     comment))
             elif "Special:Log/gblblock" in a:
                 if "gblock2" in a:
                     # [[Special:Log/gblblock]] gblock2  * Pathoschild *  globally blocked [[User:190.198.116.53]] (anonymous only, expires 15:18, 28 April 2009): crosswiki abuse, likely proxy
@@ -1416,6 +1437,11 @@ class WikimediaBot(SingleServerIRCBot):
                 bot1.msg(message)
 
 
+class IgnoreErrorsBuffer(buffer.DecodingLineBuffer):
+    def handle_exception(self):
+        pass
+
+
 class BotThread(threading.Thread):
 
     def __init__(self, bot):
@@ -1426,6 +1452,7 @@ class BotThread(threading.Thread):
         self.startbot(self.b)
 
     def startbot(self, bot):
+        ServerConnection.buffer_class = IgnoreErrorsBuffer
         bot.start()
 
 
