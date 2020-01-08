@@ -5,23 +5,33 @@
 # LICENSE:      GPL
 # CREDITS:      Erwin
 #
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 
-import ConfigParser
-import MySQLdb
-import MySQLdb.cursors
+import sys
+import pymysql
 import time
+
+PYTHON_VERSION = sys.version_info[:3]
+PY2 = (PYTHON_VERSION[0] == 2)
+
+if PY2:
+    from ConfigParser import ConfigParser
+else:
+    from configparser import ConfigParser
+    unicode = str
 
 
 class querier:
-    """A wrapper for MySQLdb"""
+    """A wrapper for PyMySQL"""
 
     def __init__(self, *args, **kwargs):
         if 'read_default_file' not in kwargs:
             kwargs['read_default_file'] = '~/.my.cnf'
 
-        kwargs['cursorclass'] = MySQLdb.cursors.DictCursor
+        kwargs['cursorclass'] = pymysql.cursors.DictCursor
 
-        self.db = MySQLdb.connect(*args, **kwargs)
+        self.db = pymysql.connect(*args, **kwargs)
         self.db.autocommit(True)  # Autocommit transactions
 
         self.cursor = None
@@ -39,7 +49,7 @@ class querier:
 
 
 def main():
-    config = ConfigParser.ConfigParser()
+    config = ConfigParser()
     config.read('SULWatcher.ini')
 
     db = querier(host='sql')
@@ -58,13 +68,12 @@ def main():
                 args = []
                 for v in values:
                     args.append(option)
-                    args.append(v.strip().encode('utf8'))
+                    args.append(v.strip())
                 args = tuple(args)
                 db.do(sql, args)
         else:
             try:
-                regex = unicode(config.get(section, 'regex'), 'utf8')  # noqa: F821
-                regex = regex.encode('utf8')
+                regex = unicode(config.get(section, 'regex'), 'utf8')
             except UnicodeDecodeError:
                 print('Failing for %s' % (regex))
                 print([regex])

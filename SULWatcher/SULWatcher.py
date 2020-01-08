@@ -6,6 +6,8 @@
 # LICENSE:      GPL
 # CREDITS:      Mike.lifeguard, Erwin, Dungodung (Filip Maljkovic)
 #
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 
 import sys
 import os
@@ -13,17 +15,22 @@ import re
 import time
 import threading
 import traceback
-import urllib
-import MySQLdb
-import MySQLdb.cursors
+import pymysql
 
-# Needs python-irclib
-from ircbot import SingleServerIRCBot
-from irclib import nm_to_n
+# Needs irc lib
+from irc.bot import SingleServerIRCBot
+from irc.client import nm_to_n
+
+PY2 = sys.version_info[0] == 2
+
+if PY2:
+    from urllib import quote
+else:
+    from urllib.parse import quote
 
 
 class querier:
-    """A wrapper for MySQLdb"""
+    """A wrapper for PyMySQL"""
 
     def __init__(self, *args, **kwargs):
         self.args = args
@@ -32,22 +39,22 @@ class querier:
         if 'read_default_file' not in self.kwargs:
             self.kwargs['read_default_file'] = '~/.my.cnf'
 
-        self.kwargs['cursorclass'] = MySQLdb.cursors.DictCursor
+        self.kwargs['cursorclass'] = pymysql.cursors.DictCursor
 
         self.connect()
 
-    # Connect to the database server.
     def connect(self, *args, **kwargs):
+        """Connect to the database server."""
         self.cursor = None
-        self.db = MySQLdb.connect(*self.args, **self.kwargs)
+        self.db = pymysql.connect(*self.args, **self.kwargs)
         self.db.autocommit(True)  # Autocommit transactions
 
-    # Execute a query.
     def do(self, *args, **kwargs):
+        """Execute a query."""
         try:
             self.cursor = self.db.cursor()
             self.cursor.execute(*args, **kwargs)
-        except (AttributeError, MySQLdb.OperationalError):
+        except (AttributeError, pymysql.OperationalError):
             # Try to reconnect to the server.
             self.connect()
             self.cursor = self.db.cursor()
@@ -101,7 +108,8 @@ class FreenodeBot(SingleServerIRCBot):
 
     def __init__(self, channel, nickname, server, password, port=6667):
         SingleServerIRCBot.__init__(self, [(server, port, "%s:%s"
-                                            % (nickname, password))], nickname, nickname)
+                                            % (nickname, password))],
+                                    nickname, nickname)
         self.server = server
         self.channel = channel
         self.nickname = nickname
@@ -177,7 +185,8 @@ class FreenodeBot(SingleServerIRCBot):
         or opped in the main channel. Replies are sent back to
         the user by PM.
         """
-        # timestamp = time.strftime('%d.%m.%Y %H:%M:%S', time.localtime(time.time()))
+        # timestamp = time.strftime('%d.%m.%Y %H:%M:%S',
+        #                           time.localtime(time.time()))
         nick = nm_to_n(e.source())
         target = nick  # If they did the command in PM, keep replies in PM
         a = e.arguments()[0]
@@ -193,7 +202,8 @@ class FreenodeBot(SingleServerIRCBot):
                          '\x0302https://tools.wmflabs.org/stewardbots/'
                          'SULWatcher\x03', nick)  # Make this translatable
             except Exception:
-                exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+                (exceptionType, exceptionValue,
+                 exceptionTraceback) = sys.exc_info()
                 traceback.print_exception(
                     exceptionType, exceptionValue, exceptionTraceback)
                 self.msg('Unknown internal error: %s; traceback in console'
@@ -215,7 +225,8 @@ class FreenodeBot(SingleServerIRCBot):
          * help is replied to in PM
          * ??
         """
-        # timestamp = time.strftime('%d.%m.%Y %H:%M:%S', time.localtime(time.time()))
+        # timestamp = time.strftime('%d.%m.%Y %H:%M:%S',
+        #                           time.localtime(time.time()))
         nick = nm_to_n(e.source())
         # If they issued the command in a channel,
         # replies should go to the channel
@@ -235,11 +246,13 @@ class FreenodeBot(SingleServerIRCBot):
                                  '\x0302https://tools.wmflabs.org/stewardbots'
                                  '/SULWatcher\x03', target)
                     except Exception:
-                        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+                        (exceptionType, exceptionValue,
+                         exceptionTraceback) = sys.exc_info()
                         traceback.print_exception(
                             exceptionType, exceptionValue, exceptionTraceback)
-                        self.msg('Unknown internal error: %s; traceback in console.'
-                                 % (sys.exc_info()[1]), target)
+                        self.msg(
+                            'Unknown internal error: {}; traceback in console.'
+                            .format(sys.exc_info()[1]), target)
                 elif command == 'test':  # This one is safe to let them do
                     self.do_command(e, command, target)
                 else:
@@ -276,9 +289,10 @@ class FreenodeBot(SingleServerIRCBot):
                                  % (string, probe), target)
                 except IndexError:
                     print('IndexError: %s' % sys.exc_info()[1])
-                    raise CommanderError("You didn't use the right format for "
-                                         "testing: 'SULWatcher: test <string to test> regex "
-                                         "\bregular ?expression\b'")
+                    raise CommanderError(
+                        "You didn't use the right format for "
+                        "testing: 'SULWatcher: test <string to test> regex "
+                        "\bregular ?expression\b'")
             elif len(args) == 1:
                 self.msg("Yes, I'm alive. You can test a string against a "
                          "regex by saying 'SULWatcher: test <string to test> "
@@ -294,15 +308,16 @@ class FreenodeBot(SingleServerIRCBot):
                 if result:
                     r = result[0]
                     try:
-                        timestamp = time.strftime('%H:%M, %d %B %Y',
-                                                  time.strptime(r['l_timestamp'], '%Y%m%d%H%M%S'))
+                        timestamp = time.strftime(
+                            '%H:%M, %d %B %Y',
+                            time.strptime(r['l_timestamp'], '%Y%m%d%H%M%S'))
                     except ValueError:
                         timestamp = r['l_timestamp']
-                    self.msg(u'MySQL connection seems to be fine. Last hit '
-                             'was %s matching %s at %s.'
-                             % (r['l_user'], r['l_regex'], timestamp))
+                    self.msg('MySQL connection seems to be fine. Last hit '
+                             'was {r[l_user]} matching {r[l_regex]} at {ts}.'
+                             .format(r=r, ts=timestamp))
                 else:
-                    self.msg(u'MySQL connection seems to be down. '
+                    self.msg('MySQL connection seems to be down. '
                              'Please restart the bots.')
         elif args[0] == 'find' or args[0] == 'search':
             if args[1] == 'regex' or args[1] == 'badword':
@@ -332,8 +347,8 @@ class FreenodeBot(SingleServerIRCBot):
                     self.msg('%s has added no regexes.' % adder, target)
                 else:
                     maxlen = 20
-                    shortlists = [regexes[i:i + maxlen] for i in range(0,
-                                                                       len(regexes), maxlen)]
+                    shortlists = [regexes[i:i + maxlen]
+                                  for i in range(0, len(regexes), maxlen)]
                     for l in range(0, len(shortlists)):
                         self.msg(r'%s added (%s/%s): %s.'
                                  % (adder, l + 1, len(shortlists),
@@ -402,8 +417,8 @@ class FreenodeBot(SingleServerIRCBot):
                     results = db.do(sql)
                     longlist = [r['r_regex'] for r in results]
                     maxlen = 20
-                    shortlists = [longlist[i:i + maxlen] for i in range(0,
-                                                                        len(longlist), maxlen)]
+                    shortlists = [longlist[i:i + maxlen]
+                                  for i in range(0, len(longlist), maxlen)]
                     self.msg('Listing active regexes:', target)
                     for l in range(0, len(shortlists)):
                         self.msg('Regex list (%s/%s): %s'
@@ -411,10 +426,11 @@ class FreenodeBot(SingleServerIRCBot):
                                     ", ".join(shortlists[l])), target)
                         time.sleep(2)  # sleep a bit to avoid flooding?
                 else:
-                    self.msg('Sorry, can\'t do. I\'m afraid of flooding. You '
+                    self.msg("Sorry, can't do. I'm afraid of flooding. You "
                              'can view the list at https://tools.wmflabs.org/'
                              'stewardbots/SULWatcher/ or force me to display '
-                             'it by repeating this command as operator.', target)
+                             'it by repeating this command as operator.',
+                             target)
             elif args[1] == 'whitelist':
                 self.msg('Whitelisted users: %s'
                          % ', '.join(whitelist), target)
@@ -502,30 +518,33 @@ class FreenodeBot(SingleServerIRCBot):
                         rcreader.disconnect()
                         BotThread(rcreader).start()
                     except Exception:
-                        raise BotConnectionError("rcreader didn't recover: %s %s %s"
-                                                 % (sys.exc_info()[1],
-                                                    sys.exc_info()[1],
-                                                    sys.exc_info()[2]))
+                        raise BotConnectionError(
+                            "rcreader didn't recover: {} {} {}"
+                            .format(sys.exc_info()[1],
+                                    sys.exc_info()[1],
+                                    sys.exc_info()[2]))
                     try:
                         bot1.connection.part(mainchannel, rawquitmsg)
                         bot1.connection.quit()
                         bot1.disconnect()
                         BotThread(bot1).start()
                     except Exception:
-                        raise BotConnectionError("bot1 didn't recover: %s %s %s"
-                                                 % (sys.exc_info()[1],
-                                                    sys.exc_info()[1],
-                                                    sys.exc_info()[2]))
+                        raise BotConnectionError(
+                            "bot1 didn't recover: {} {} {}"
+                            .format(sys.exc_info()[1],
+                                    sys.exc_info()[1],
+                                    sys.exc_info()[2]))
                     try:
                         bot2.connection.part(mainchannel, rawquitmsg)
                         bot2.connection.quit()
                         bot2.disconnect()
                         BotThread(bot2).start()
                     except Exception:
-                        raise BotConnectionError("bot2 didn't recover: %s %s %s"
-                                                 % (sys.exc_info()[1],
-                                                    sys.exc_info()[1],
-                                                    sys.exc_info()[2]))
+                        raise BotConnectionError(
+                            "bot2 didn't recover: {} {} {}"
+                            .format(sys.exc_info()[1],
+                                    sys.exc_info()[1],
+                                    sys.exc_info()[2]))
                 elif len(args) > 1 and args[1] == 'rc':
                     self.msg('Restarting RC reader', target)
                     try:
@@ -534,11 +553,11 @@ class FreenodeBot(SingleServerIRCBot):
                         rcreader.disconnect()
                         BotThread(rcreader).start()
                     except Exception:
-                        raise BotConnectionError("rcreader didn't recover: %s %s %s"
-                                                 % (sys.exc_info()[1],
-                                                    sys.exc_info()[1],
-                                                    sys.exc_info()[2]))
-
+                        raise BotConnectionError(
+                            "rcreader didn't recover: {} {} {}"
+                            .format(sys.exc_info()[1],
+                                    sys.exc_info()[1],
+                                    sys.exc_info()[2]))
                 else:
                     raise CommanderError("Invalid command")
             else:
@@ -558,7 +577,8 @@ class FreenodeBot(SingleServerIRCBot):
                 else:
                     regex = re.compile(r['r_regex'], re.IGNORECASE)
                 badwords.append((index, regex))
-            except Exception:  # What is the actual exception that might need to be caught here?
+            except Exception:
+                # What is the actual exception to be caught here?
                 self.msg('Disabling regex %s. Could not compile pattern '
                          'into regex object.' % (index))
                 self.removeRegex(index=index)
@@ -673,7 +693,8 @@ class FreenodeBot(SingleServerIRCBot):
                 info += ', case sensitive'
             try:
                 timestamp = time.strftime('%H:%M, %d %B %Y',
-                                          time.strptime(r['r_timestamp'], '%Y%m%d%H%M%S'))
+                                          time.strptime(r['r_timestamp'],
+                                                        '%Y%m%d%H%M%S'))
             except ValueError:
                 timestamp = r['r_timestamp']
             self.msg('Regex %s (#%s, %s, %s hits) added by %s with last '
@@ -792,7 +813,8 @@ class WikimediaBot(SingleServerIRCBot):
     def on_ctcp(self, c, e):
         if e.arguments()[0] == 'VERSION':
             c.ctcp_reply(nm_to_n(e.source()),
-                         "Bot for filtering account unifications in %s" % self.rcfeed)
+                         "Bot for filtering account unifications in {}"
+                         .format(self.rcfeed))
         elif e.arguments()[0] == 'PING':
             if len(e.arguments()) > 1:
                 c.ctcp_reply(nm_to_n(e.source()),
@@ -830,7 +852,7 @@ class WikimediaBot(SingleServerIRCBot):
                     if sulname == wl:
                         print("Skipped '%s'; user is whitelisted" % sulname)
                         good = True
-                urlname = urllib.quote(sulname)
+                urlname = quote(sulname)
 #                print('original: %s' % urlname)
                 if urlname.endswith('.'):
                     urlname = re.sub(r'\.$', '%2E', urlname)
@@ -896,7 +918,8 @@ def getConfig(param):
 
 
 def main():
-    global bot1, bot2, rcreader, nickname, alias, password, mainchannel, mainserver, wmserver, rcfeed, db
+    global bot1, bot2, rcreader, nickname, alias, password, mainchannel
+    global mainserver, wmserver, rcfeed, db
 
     # These vars should be customized - in the future, they should be
     # read from a simple external config file for bootstrapping - all
@@ -945,6 +968,7 @@ if __name__ == "__main__":
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
         traceback.print_exception(
             exceptionType, exceptionValue, exceptionTraceback)
+    finally:
         bot1.die()
         rcreader.die()
         bot2.die()
