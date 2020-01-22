@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
-
 from irc.bot import SingleServerIRCBot
 from irc.client import NickMask
 from datetime import datetime
@@ -19,13 +16,8 @@ import json
 
 import config
 
-PY2 = sys.version_info[0] == 2
-
-if PY2:
-    from urllib import urlopen
-else:
-    from urllib.request import urlopen
-    from urllib.parse import quote
+from urllib.request import urlopen
+from urllib.parse import quote
 
 # DB data
 dbfile = open(os.path.expanduser('~/.my.cnf'), 'r')
