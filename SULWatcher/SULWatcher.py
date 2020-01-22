@@ -19,7 +19,7 @@ import pymysql
 
 # Needs irc lib
 from irc.bot import SingleServerIRCBot
-from irc.client import nm_to_n
+from irc.client import NickMask
 
 PY2 = sys.version_info[0] == 2
 
@@ -29,7 +29,12 @@ else:
     from urllib.parse import quote
 
 
-class querier:
+def nm_to_n(nm):
+    """Convert nick mask from source to nick."""
+    return NickMask(nm).nick
+
+
+class Querier(object):
     """A wrapper for PyMySQL"""
 
     def __init__(self, *args, **kwargs):
@@ -928,7 +933,7 @@ def main():
     myhost = 'tools-db'
     mydatabase = 's51541_sulwatcher'
 
-    db = querier(host=myhost, db=mydatabase)
+    db = Querier(host=myhost, db=mydatabase)
     nickname = getConfig('nickname')
     alias = getConfig('alias')
     password = getConfig('password')

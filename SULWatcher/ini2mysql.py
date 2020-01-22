@@ -12,8 +12,7 @@ import sys
 import pymysql
 import time
 
-PYTHON_VERSION = sys.version_info[:3]
-PY2 = (PYTHON_VERSION[0] == 2)
+PY2 = sys.version_info[0] == 2
 
 if PY2:
     from ConfigParser import ConfigParser
@@ -73,7 +72,7 @@ def main():
                 db.do(sql, args)
         else:
             try:
-                regex = unicode(config.get(section, 'regex'), 'utf8')
+                regex = unicode(config.get(section, 'regex'))
             except UnicodeDecodeError:
                 print('Failing for %s' % (regex))
                 print([regex])
