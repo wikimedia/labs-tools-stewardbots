@@ -5,24 +5,14 @@
 # LICENSE:      GPL
 # CREDITS:      Erwin
 #
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
-
-import sys
-import pymysql
+from configparser import ConfigParser
 import time
 
-PY2 = sys.version_info[0] == 2
-
-if PY2:
-    from ConfigParser import ConfigParser
-else:
-    from configparser import ConfigParser
-    unicode = str
+import pymysql
 
 
 class querier:
-    """A wrapper for PyMySQL"""
+    """A wrapper for PyMySQL."""
 
     def __init__(self, *args, **kwargs):
         if 'read_default_file' not in kwargs:
@@ -71,11 +61,7 @@ def main():
                 args = tuple(args)
                 db.do(sql, args)
         else:
-            try:
-                regex = unicode(config.get(section, 'regex'))
-            except UnicodeDecodeError:
-                print('Failing for %s' % (regex))
-                print([regex])
+            regex = config.get(section, 'regex')
             cloak = config.get(section, 'adder')
             timestamp = time.strftime('%Y%m%d%H%M%S')
             if config.has_option(section, 'reason'):

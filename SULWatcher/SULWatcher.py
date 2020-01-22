@@ -6,16 +6,13 @@
 # LICENSE:      GPL
 # CREDITS:      Mike.lifeguard, Erwin, Dungodung (Filip Maljkovic)
 #
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
-
 import sys
 import os
 import re
 import time
 import threading
 import traceback
-import pymysql
+from urllib.parse import quote
 
 # Needs irc lib
 from irc.bot import SingleServerIRCBot
@@ -23,12 +20,7 @@ from irc.client import NickMask
 from irc.client import ServerConnection
 from jaraco.stream import buffer
 
-PY2 = sys.version_info[0] == 2
-
-if PY2:
-    from urllib import quote
-else:
-    from urllib.parse import quote
+import pymysql
 
 
 def nm_to_n(nm):
@@ -37,6 +29,7 @@ def nm_to_n(nm):
 
 
 class Querier(object):
+
     """A wrapper for PyMySQL"""
 
     def __init__(self, *args, **kwargs):
@@ -77,38 +70,35 @@ class Querier(object):
 
 
 class SULWatcherException(Exception):
+
     """A single base exception class for all other SULWatcher errors."""
-    pass
+
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
 
 
 class CommanderError(SULWatcherException):
+
     """This exception is raised when the command parser fails."""
 
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+    pass
 
 
 class BotConnectionError(SULWatcherException):
+
     """This exception is raised when a bot has some connection error."""
 
-    def __init(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+    pass
 
 
 class ParseHostMaskError(SULWatcherException):
+
     """This exception is raised when a hostmask can't be parsed."""
 
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+    pass
 
 
 class FreenodeBot(SingleServerIRCBot):
@@ -156,6 +146,7 @@ class FreenodeBot(SingleServerIRCBot):
         We log the fact, and identify to nickserv.
         """
         print("Identifying to services...")
+        c.privmsg("NickServ", "RELEASE %s %s" % (self.nickname, self.password))
         c.privmsg("NickServ", "IDENTIFY %s" % self.password)
         time.sleep(5)  # Let identification succeed before joining channels
         c.join(self.channel)
@@ -927,10 +918,9 @@ def getConfig(param):
     result = [r['s_value'] for r in result]
     if len(result) > 1:
         return result
-    elif len(result) == 1:
+    if len(result) == 1:
         return result[0]
-    else:
-        return None
+    return None
 
 
 def main():
