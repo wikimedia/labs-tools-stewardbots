@@ -122,15 +122,15 @@ class FreenodeBot(SingleServerIRCBot):
         self.buildRegex()
         self.buildWhitelist()
 
-    def on_error(self, c, e):
+    def on_error(self, c, event):
         """
         Called when some kind of IRC error happens.
 
         WTF does that mean?!
         """
         print("Error:")
-        print("Arguments: %s" % e.arguments())
-        print("Target: %s" % e.target())
+        print("Arguments: %s" % event.arguments())
+        print("Target: %s" % event.target())
         self.die()
         sys.exit(1)
 
@@ -155,11 +155,11 @@ class FreenodeBot(SingleServerIRCBot):
         """
         print("Identifying to services...")
         c.privmsg("NickServ", "IDENTIFY %s" % self.password)
-        time.sleep(5)  # Let identification succeed before joining channels
+        time.sleep(8)  # Let identification succeed before joining channels
         c.join(self.channel)
         print("Joined %s" % self.channel)
 
-    def on_ctcp(self, c, e):
+    def on_ctcp(self, c, event):
         """
         Called when the bot recieves a CTCP message.
 
@@ -169,19 +169,19 @@ class FreenodeBot(SingleServerIRCBot):
          * SOURCE, with a URL to documentation for the bot
 
         """
-        if e.arguments()[0] == "VERSION":
+        if event.arguments[0] == "VERSION":
             c.ctcp_reply(
-                self.getNick(e.source()),
+                self.getNick(event.source),
                 "Bot for filtering account unifications in %s" % self.channel)
-        elif e.arguments()[0] == "PING":
-            if len(e.arguments()) > 1:
+        elif event.arguments[0] == "PING":
+            if len(event.arguments) > 1:
                 c.ctcp_reply(
-                    self.getNick(e.source()), "PING " + e.arguments()[1])
-        elif e.arguments()[0] == "SOURCE":
-            c.ctcp_reply(self.getNick(e.source()),
+                    self.getNick(event.source), "PING " + event.arguments[1])
+        elif event.arguments[0] == "SOURCE":
+            c.ctcp_reply(self.getNick(event.source),
                          "git://git.hashbang.ca/SULWatcher")
 
-    def on_privmsg(self, c, e):
+    def on_privmsg(self, c, event):
         """
         Called when the bot recieves a private message.
 
@@ -192,17 +192,17 @@ class FreenodeBot(SingleServerIRCBot):
         """
         # timestamp = time.strftime('%d.%m.%Y %H:%M:%S',
         #                           time.localtime(time.time()))
-        nick = nm_to_n(e.source())
+        nick = nm_to_n(event.source)
         target = nick  # If they did the command in PM, keep replies in PM
-        a = e.arguments()[0]
-        # print('[%s] <%s/%s>: %s' % (timestamp, e.target(), e.source(), a))
+        a = event.arguments[0]
+        # print('[%s] <%s/%s>: %s' % (timestamp, e.target(), e.source, a))
         command = a.strip()
         if (self.channels[self.channel].is_voiced(nick) or
                 self.channels[self.channel].is_oper(nick)):
             try:
-                self.do_command(e, command, target)
-            except CommanderError as e:
-                print('CommanderError: %s' % e.value)
+                self.do_command(event, command, target)
+            except CommanderError as event:
+                print('CommanderError: %s' % event.value)
                 self.msg('You have to follow the proper syntax. See '
                          '\x0302https://tools.wmflabs.org/stewardbots/'
                          'SULWatcher\x03', nick)  # Make this translatable
@@ -211,15 +211,15 @@ class FreenodeBot(SingleServerIRCBot):
                  exceptionTraceback) = sys.exc_info()
                 traceback.print_exception(
                     exceptionType, exceptionValue, exceptionTraceback)
-                self.msg('Unknown internal error: %s; traceback in console'
+                self.msg('Unknown internal error: %s target: %s; traceback in console'
                          % (sys.exc_info()[1], target))
         elif command == 'test':  # Safe to let them do this
-            self.do_command(e, command, target)
+            self.do_command(event, command, target)
         else:
             self.msg('Sorry, you need to be voiced to give the '
                      'bot commands.', nick)
 
-    def on_pubmsg(self, c, e):
+    def on_pubmsg(self, c, event):
         """
         Called when the bot recieves a message in a channel.
 
@@ -232,11 +232,11 @@ class FreenodeBot(SingleServerIRCBot):
         """
         # timestamp = time.strftime('%d.%m.%Y %H:%M:%S',
         #                           time.localtime(time.time()))
-        nick = nm_to_n(e.source())
+        nick = nm_to_n(event.source)
         # If they issued the command in a channel,
         # replies should go to the channel
-        target = e.target()
-        a = e.arguments()[0].split(':', 1)
+        target = event.target
+        a = event.arguments[0].split(':', 1)
         # print('[%s] <%s/%s>: %s' % (timestamp, target, nick, a))
         if a[0] == self.nickname:
             if len(a) == 2:
@@ -244,9 +244,9 @@ class FreenodeBot(SingleServerIRCBot):
                 if (self.channels[self.channel].is_voiced(nick) or
                         self.channels[self.channel].is_oper(nick)):
                     try:
-                        self.do_command(e, command, target)
-                    except CommanderError as e:
-                        print('CommanderError: %s' % e.value)
+                        self.do_command(event, command, target)
+                    except CommanderError as event:
+                        print('CommanderError: %s' % event.value)
                         self.msg('You have to follow the proper syntax. See '
                                  '\x0302https://tools.wmflabs.org/stewardbots'
                                  '/SULWatcher\x03', target)
@@ -259,7 +259,7 @@ class FreenodeBot(SingleServerIRCBot):
                             'Unknown internal error: {}; traceback in console.'
                             .format(sys.exc_info()[1]), target)
                 elif command == 'test':  # This one is safe to let them do
-                    self.do_command(e, command, target)
+                    self.do_command(event, command, target)
                 else:
                     self.msg('Sorry, you need to be voiced to give the '
                              'bot commands.', nick)
@@ -274,7 +274,7 @@ class FreenodeBot(SingleServerIRCBot):
         """
         print("do_command(self, e, '%s', '%s')" % (cmd, target))
         global badwords, whitelist
-        nick = nm_to_n(e.source())
+        nick = nm_to_n(e.source)
         args = cmd.split(' ')  # Should use regex to parse here
         if args[0] == '_':  # I forget why this was needed :(
             args.remove('_')
@@ -315,7 +315,7 @@ class FreenodeBot(SingleServerIRCBot):
                     try:
                         timestamp = time.strftime(
                             '%H:%M, %d %B %Y',
-                            time.strptime(r['l_timestamp'], '%Y%m%d%H%M%S'))
+                            time.strptime(r['l_timestamp'].decode("ASCII"), '%Y%m%d%H%M%S'))
                     except ValueError:
                         timestamp = r['l_timestamp']
                     self.msg('MySQL connection seems to be fine. Last hit '
@@ -371,7 +371,7 @@ class FreenodeBot(SingleServerIRCBot):
             index = args[1]
             if args[2] == 'regex' or args[2] == 'badword':
                 regex = ' '.join(args[3:])
-                adder = self.getCloak(e.source())
+                adder = self.getCloak(e.source)
                 sql = ('UPDATE regex SET r_regex=%s,r_cloak=%s,'
                        'r_timestamp=%s WHERE r_id=%s')
                 args = (regex, adder, time.strftime('%Y%m%d%H%M%S'), index)
@@ -381,7 +381,7 @@ class FreenodeBot(SingleServerIRCBot):
                     self.getPrintRegex(index=index, target=target)
                     self.buildRegex()
             elif args[2] == 'note' or args[2] == 'reason':
-                cloak = self.getCloak(e.source())
+                cloak = self.getCloak(e.source)
                 # Re-attribute regex to cloak.
                 if args[3] == '!':
                     reason = ' '.join(args[4:])
@@ -442,11 +442,11 @@ class FreenodeBot(SingleServerIRCBot):
         elif args[0] == 'add':
             if args[1] == 'badword' or args[1] == 'regex':
                 badword = ' '.join(args[2:])
-                adder = self.getCloak(e.source())
+                adder = self.getCloak(e.source)
                 self.addRegex(badword, adder, target)
             elif args[1] == 'reason':
                 index = args[2]
-                cloak = self.getCloak(e.source())
+                cloak = self.getCloak(e.source)
                 if args[3] == '!':  # Re-attribute regex to cloak.
                     reason = ' '.join(args[4:])
                     sql = ('UPDATE regex SET r_reason=%s,r_cloak=%s,'
@@ -805,8 +805,8 @@ class WikimediaBot(SingleServerIRCBot):
         self.lastsulname = None
         self.lastbot = bot1
 
-    def on_error(self, c, e):
-        print(e.target())
+    def on_error(self, c, event):
+        print(event.target)
         # self.die()
 
     def on_nicknameinuse(self, c, e):
@@ -815,20 +815,20 @@ class WikimediaBot(SingleServerIRCBot):
     def on_welcome(self, c, e):
         c.join(self.rcfeed)
 
-    def on_ctcp(self, c, e):
-        if e.arguments()[0] == 'VERSION':
-            c.ctcp_reply(nm_to_n(e.source()),
+    def on_ctcp(self, c, event):
+        if event.arguments[0] == 'VERSION':
+            c.ctcp_reply(nm_to_n(event.source),
                          "Bot for filtering account unifications in {}"
                          .format(self.rcfeed))
-        elif e.arguments()[0] == 'PING':
-            if len(e.arguments()) > 1:
-                c.ctcp_reply(nm_to_n(e.source()),
-                             "PING " + e.arguments()[1])
+        elif event.arguments[0] == 'PING':
+            if len(event.arguments) > 1:
+                c.ctcp_reply(nm_to_n(event.source),
+                             "PING " + event.arguments[1])
 
-    def on_pubmsg(self, c, e):
+    def on_pubmsg(self, c, event):
         global badwords, whitelist
         centralwiki = 'https://meta.wikimedia.org/wiki/Special:CentralAuth/'
-        a = e.arguments()[0]
+        a = event.arguments[0]
         # bot1.msg(a)
         # Parsing the rcbot output:
         # \x0314[[\x0307Usu\xc3\xa1rio:Liliaan\x0314]]\x034@ptwiki\x0310
@@ -947,9 +947,9 @@ def main():
     try:
         BotThread(bot1).start()
         BotThread(bot2).start()
-        # The Freenode bots connect comparatively slowly & have a 5s delay
+        # The Freenode bots connect comparatively slowly & have a 10s delay
         # to identify to services before joining channels.
-        time.sleep(5)
+        time.sleep(10)
         BotThread(rcreader).start()  # Can cause ServerNotConnectedError
     except KeyboardInterrupt:
         raise
