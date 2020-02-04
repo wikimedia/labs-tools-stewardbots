@@ -20,6 +20,8 @@ import pymysql
 # Needs irc lib
 from irc.bot import SingleServerIRCBot
 from irc.client import NickMask
+from irc.client import ServerConnection
+from jaraco.stream import buffer
 
 PY2 = sys.version_info[0] == 2
 
@@ -155,7 +157,7 @@ class FreenodeBot(SingleServerIRCBot):
         """
         print("Identifying to services...")
         c.privmsg("NickServ", "IDENTIFY %s" % self.password)
-        time.sleep(8)  # Let identification succeed before joining channels
+        time.sleep(5)  # Let identification succeed before joining channels
         c.join(self.channel)
         print("Joined %s" % self.channel)
 
@@ -895,6 +897,11 @@ class WikimediaBot(SingleServerIRCBot):
             )
 
 
+class IgnoreErrorsBuffer(buffer.DecodingLineBuffer):
+    def handle_exception(self):
+        pass
+
+
 class BotThread(threading.Thread):
 
     def __init__(self, bot):
@@ -905,6 +912,7 @@ class BotThread(threading.Thread):
         self.startbot(self.b)
 
     def startbot(self, bot):
+        ServerConnection.buffer_class = IgnoreErrorsBuffer
         bot.start()
 
 
@@ -946,10 +954,11 @@ def main():
     rcreader = WikimediaBot(rcfeed, 'SULW', wmserver, 8001)
     try:
         BotThread(bot1).start()
+        time.sleep(7)
         BotThread(bot2).start()
-        # The Freenode bots connect comparatively slowly & have a 10s delay
+        # The Freenode bots connect comparatively slowly & have a 7s delay
         # to identify to services before joining channels.
-        time.sleep(10)
+        time.sleep(7)
         BotThread(rcreader).start()  # Can cause ServerNotConnectedError
     except KeyboardInterrupt:
         raise
