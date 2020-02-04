@@ -815,6 +815,9 @@ class WikimediaBot(SingleServerIRCBot):
         c.nick(c.get_nickname() + '_')
 
     def on_welcome(self, c, e):
+        # The Freenode bots connect comparatively slowly & have a 5s delay
+        # to identify to services before joining channels
+        time.sleep(5)
         c.join(self.rcfeed)
 
     def on_ctcp(self, c, event):
@@ -953,13 +956,10 @@ def main():
     bot2 = FreenodeBot(mainchannel, alias, mainserver, password, 8001)
     rcreader = WikimediaBot(rcfeed, 'SULW', wmserver, 8001)
     try:
-        BotThread(bot1).start()
-        time.sleep(7)
-        BotThread(bot2).start()
-        # The Freenode bots connect comparatively slowly & have a 7s delay
-        # to identify to services before joining channels.
-        time.sleep(7)
         BotThread(rcreader).start()  # Can cause ServerNotConnectedError
+        BotThread(bot1).start()
+        BotThread(bot2).start()
+
     except KeyboardInterrupt:
         raise
 
