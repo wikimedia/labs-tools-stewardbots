@@ -3,13 +3,13 @@ include './vendor/autoload.php';
 use Symfony\Component\Process\Process;
 
 // Get git hash
-$rev = getGitInfo( 'rev-parse --short' );
+$rev = getGitInfo( [ 'rev-parse', '--short' ] );
 
 // Get git date
-$lastModified = getGitInfo( 'show -s --format=format:%cD' );
+$lastModified = getGitInfo( [ 'show', '-s', '--format=format:%cD' ] );
 
 function getGitInfo( $command ) {
-$process = new Process( 'git ' . $command . ' HEAD' );
+$process = new Process( array_merge( [ 'git' ], $command, [ 'HEAD' ] ) );
 $process->run();
 
 if ( !$process->isSuccessful() ) {
