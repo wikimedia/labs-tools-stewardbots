@@ -11,3 +11,5 @@ channel2 = "#meta.wikimedia"
 server = "irc.freenode.net"
 server2 = "irc.wikimedia.org"
 dbname = "s51541_stewardbot"
+# Set to True to see random invitation message for annual Steward elections
+randmess = False

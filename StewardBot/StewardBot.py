@@ -95,7 +95,7 @@ class FreenodeBot(SingleServerIRCBot):
         self.steward = query(queries["stewardnicks"])
         self.quiet = False
         self.notify = True
-        self.randmess = False
+        self.randmess = config.randmess
         self.listen = True
         self.badsyntax = "Unrecognized command. Type @help for more info."
         SingleServerIRCBot.__init__(
@@ -1430,9 +1430,13 @@ class WikimediaBot(SingleServerIRCBot):
 
     def randmess(self):
         if bot1.randmess:
+            this_year = datetime.now().year
             a = int(random.random() * 5000)
             b = int(random.random() * 5000)
-            message = "Steward elections are on! Please vote @ https://meta.wikimedia.org/wiki/Stewards/elections_2011 and comment @ https://meta.wikimedia.org/wiki/Stewards/confirm. Live updates: #wikimedia-stewards-elections"
+            message = "Steward elections are on! Please vote @ " \
+                      "https://meta.wikimedia.org/wiki/Stewards/Elections_%s" \
+                      " and comment @ https://meta.wikimedia.org/wiki/Stewards/Confirm/%s Live updates: " \
+                      "#wikimedia-stewards-elections" % (this_year, this_year)
             if a == b:
                 bot1.msg(message)
 
