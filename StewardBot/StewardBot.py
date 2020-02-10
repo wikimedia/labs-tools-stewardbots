@@ -25,6 +25,7 @@ if PY2:
     from urllib import urlopen
 else:
     from urllib.request import urlopen
+    from urllib.parse import quote
 
 # DB data
 dbfile = open(os.path.expanduser('~/.my.cnf'), 'r')
@@ -116,7 +117,7 @@ class FreenodeBot(SingleServerIRCBot):
     def on_welcome(self, c, e):
         c.privmsg("NickServ", 'GHOST ' + self.nickname + ' ' + self.password)
         c.privmsg("NickServ", 'IDENTIFY ' + self.password)
-        time.sleep(5)  # let identification succeed before joining channels
+        time.sleep(6)  # let identification succeed before joining channels
         c.join(self.channel)
         if self.listen and self.listened:
             for chan in self.listened:
@@ -1023,6 +1024,7 @@ class WikimediaBot(SingleServerIRCBot):
         c.nick(c.get_nickname() + "_")
 
     def on_welcome(self, c, e):
+        time.sleep(5)
         c.join(self.channel)
 
     def on_ctcp(self, c, event):
@@ -1087,9 +1089,9 @@ class WikimediaBot(SingleServerIRCBot):
                 state2 = found.group('state2')
                 extra = found.group('extra')
                 # check expiry via api
-                urlapi = ("https://meta.wikimedia.org/w/"
-                          + "api.php?action=query&format=json&list=logevents&letype=rights&letitle=User:"
-                          + usertarget + "&lelimit=1")
+                urlapi = "https://meta.wikimedia.org/w/" \
+                         "api.php?action=query&format=json&list=logevents&letype=rights&letitle=User:%s" \
+                         "&lelimit=1" % quote(usertarget)
                 response = urlopen(urlapi)
                 data = json.loads(response.read().decode("utf-8"))
                 oldright = data['query']['logevents'][0]['params']['oldgroups']
@@ -1463,9 +1465,12 @@ class BotThread(threading.Thread):
 def main():
     global bot1, bot2
     bot1 = FreenodeBot()
-    BotThread(bot1).start()
     bot2 = WikimediaBot()
-    BotThread(bot2).start()  # can raise ServerNotConnectedError
+    try:
+        BotThread(bot1).start()
+        BotThread(bot2).start()  # can raise ServerNotConnectedError
+    except KeyboardInterrupt:
+        raise
 
 
 if __name__ == "__main__":
