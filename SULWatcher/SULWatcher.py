@@ -498,6 +498,12 @@ class FreenodeBot(SingleServerIRCBot):
                     bot2.disconnect()
                 except Exception:
                     raise BotConnectionError("bot2 didn't disconnect")
+                try:
+                    bot3.connection.part(bot3.channel, rawquitmsg)
+                    bot3.connection.quit(rawquitmsg)
+                    bot3.disconnect()
+                except Exception:
+                    raise BotConnectionError("bot3 didn't disconnect")
                 print('Killed. Now exiting...')
                 # sys.exit(0) # 0 is a normal exit status
                 os._exit(os.EX_OK)  # really really kill things off!!
@@ -540,6 +546,17 @@ class FreenodeBot(SingleServerIRCBot):
                     except Exception:
                         raise BotConnectionError(
                             "bot2 didn't recover: {} {} {}"
+                            .format(sys.exc_info()[1],
+                                    sys.exc_info()[1],
+                                    sys.exc_info()[2]))
+                    try:
+                        bot3.connection.part(mainchannel, rawquitmsg)
+                        bot3.connection.quit()
+                        bot3.disconnect()
+                        BotThread(bot3).start()
+                    except Exception:
+                        raise BotConnectionError(
+                            "bot3 didn't recover: {} {} {}"
                             .format(sys.exc_info()[1],
                                     sys.exc_info()[1],
                                     sys.exc_info()[2]))
@@ -866,7 +883,12 @@ class WikimediaBot(SingleServerIRCBot):
                             urlname
                         )
                     )
-                    self.lastbot = bot2 if self.lastbot == bot1 else bot1
+                    if self.lastbot == bot1:
+                        self.lastbot = bot2
+                    elif self.lastbot == bot2:
+                        self.lastbot = bot3
+                    else:
+                        self.lastbot = bot1
                 elif bad and not good:
                     for m in matches:
                         try:
@@ -882,7 +904,12 @@ class WikimediaBot(SingleServerIRCBot):
                         "matches badword {0}".format('; '.join(matches)) +
                         "\017: \x0302{0}{1}\x03".format(centralwiki, urlname)
                     )
-                    self.lastbot = bot2 if self.lastbot == bot1 else bot1
+                    if self.lastbot == bot1:
+                        self.lastbot = bot2
+                    elif self.lastbot == bot2:
+                        self.lastbot = bot3
+                    else:
+                        self.lastbot = bot1
             self.lastsulname = sulname
         except Exception:  # Should be specific about what might happen here
             print(
@@ -924,7 +951,7 @@ def getConfig(param):
 
 
 def main():
-    global bot1, bot2, rcreader, nickname, alias, password, mainchannel
+    global bot1, bot2, bot3, rcreader, nickname, alias, password, mainchannel
     global mainserver, wmserver, rcfeed, db
 
     # These vars should be customized - in the future, they should be
@@ -937,6 +964,7 @@ def main():
     db = Querier(host=myhost, db=mydatabase)
     nickname = getConfig('nickname')
     alias = getConfig('alias')
+    alias2 = getConfig('alias2')
     password = getConfig('password')
     mainchannel = getConfig('channel')
     mainserver = getConfig('server')
@@ -944,18 +972,20 @@ def main():
     rcfeed = getConfig('rcfeed')
     bot1 = FreenodeBot(mainchannel, nickname, mainserver, password, 8001)
     bot2 = FreenodeBot(mainchannel, alias, mainserver, password, 8001)
+    bot3 = FreenodeBot(mainchannel, alias2, mainserver, password, 8001)
     rcreader = WikimediaBot(rcfeed, 'SULW', wmserver, 8001)
     try:
         BotThread(rcreader).start()  # Can cause ServerNotConnectedError
         BotThread(bot1).start()
         BotThread(bot2).start()
+        BotThread(bot3).start()
 
     except KeyboardInterrupt:
         raise
 
 
 if __name__ == "__main__":
-    global bot1, rcreader, bot2
+    global bot1, rcreader, bot2, bot3
 # main()
     try:
         main()
@@ -976,4 +1006,5 @@ if __name__ == "__main__":
         bot1.die()
         rcreader.die()
         bot2.die()
+        bot3.die()
         sys.exit()
