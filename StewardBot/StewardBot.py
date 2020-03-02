@@ -13,6 +13,7 @@ import sys
 import threading
 import time
 import json
+from configparser import ConfigParser
 
 import config
 
@@ -20,12 +21,11 @@ from urllib.request import urlopen
 from urllib.parse import quote
 
 # DB data
-dbfile = open(os.path.expanduser('~/.my.cnf'), 'r')
-li = [l.strip("\n") for l in dbfile.readlines()[1:]]
-dbfile.close()
-SQLuser = li[0].split("=")[1].strip()
-SQLpassword = li[1].split("=")[1].strip().strip("\"")
-SQLhost = li[2].split("=")[1].strip().strip("\"")
+dbconfig = ConfigParser()
+dbconfig.read_string(open(os.path.expanduser('~/.my.cnf'), 'r').read())
+SQLuser = dbconfig['client']['user']
+SQLpassword = dbconfig['client']['password']
+SQLhost = dbconfig['client']['host']
 SQLdb = config.dbname
 
 # common queries
