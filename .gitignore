@@ -7,3 +7,8 @@
 /vendor/
 composer.lock
 .idea
+__pycache__
+*.pyc
+*.pyo
+*.bak
+/venv
