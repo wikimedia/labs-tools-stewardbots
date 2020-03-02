@@ -28,7 +28,7 @@ Requirements
 Documentation
 -------------
 
-- [Installation](docs/installation.markdown)
+- [Installation](docs/installation.md)
 - Add missing docs
 
 License
