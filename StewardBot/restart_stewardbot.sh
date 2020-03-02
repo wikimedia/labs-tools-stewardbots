@@ -17,6 +17,6 @@ if [ $? -eq 0 ]; then
 	done
 fi
 
-jstart -N stewardbot -mem 2G /data/project/stewardbots/venv-py3/bin/python3 /data/project/stewardbots/public_html/StewardBot/StewardBot.py
+jstart -N stewardbot -mem 2G /data/project/stewardbots/venv-py3/bin/python3 /data/project/stewardbots/stewardbots/StewardBot/StewardBot.py
 
 #EOF
