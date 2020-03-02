@@ -17,18 +17,18 @@ function titleLink( $title ) {
 }
 
 function get_post( $var ) {
- return mysql_real_escape_string( $_POST[$var] );
+ return mysqli_real_escape_string( $_POST[$var] );
 }
 
 	//phpcs:disable MediaWiki.NamingConventions.ValidGlobalName.allowedPrefix
 	global $loginData;
 	// phpcs:enable
 
-	$db_server = mysql_connect( "metawiki.analytics.db.svc.eqiad.wmflabs", $loginData['user'], $loginData['password'] );
-	if ( !$db_server ) { die( "Unable to connect to MySQL: " . mysql_error() );
+	$db_server = mysqli_connect( "metawiki.analytics.db.svc.eqiad.wmflabs", $loginData['user'], $loginData['password'] );
+	if ( !$db_server ) { die( "Unable to connect to MySQL: " . mysqli_error() );
 	}
 
-	mysql_select_db( "meta_p", $db_server ) or die( "Unable to select database: " . mysql_error() );
+	mysqli_select_db( $db_server, "meta_p" ) or die( "Unable to select database: " . mysqli_error( $db_server ) );
 	$admins = 0;
 
 	if ( isset( $_POST['number'] ) ) {
@@ -55,29 +55,29 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 	<?php
 
 	$query = "SELECT dbname,REPLACE(url, 'http://', 'https://') AS domain, slice FROM wiki WHERE url IS NOT NULL AND is_closed=0;";
-	$result = mysql_query( $query );
+	$result = mysqli_query( $db_server, $query );
 
-	if ( !$result ) { die( "Database access failed: " . mysql_error() );
+	if ( !$result ) { die( "Database access failed: " . mysqli_error( $db_server ) );
 	}
 
-	$rows = mysql_num_rows( $result );
+	$rows = mysqli_num_rows( $result );
 
 	for ( $j = 0; $j < $rows; ++$j ) {
-		$row = mysql_fetch_row( $result );
+		$row = mysqli_fetch_row( $result );
 
-		$db_server_temp = mysql_connect( $row[2], $loginData['user'], $loginData['password'] );
-		if ( !$db_server_temp ) { die( "Unable to connect to MySQL: " . mysql_error() );
+		$db_server_temp = mysqli_connect( $row[2], $loginData['user'], $loginData['password'] );
+		if ( !$db_server_temp ) { die( "Unable to connect to MySQL: " . mysqli_error( $db_server_temp ) );
 		}
 
-		mysql_select_db( $row[0] . "_p", $db_server_temp ) or die( "Unable to select database: " . mysql_error() );
+		mysqli_select_db( $db_server_temp, $row[0] . "_p" ) or die( "Unable to select database: " . mysql_error() );
 
 		$query2 = "SELECT sum(if(ug_group = 'sysop', 1, 0)) FROM user_groups;";
-		$result2 = mysql_query( $query2 );
+		$result2 = mysqli_query( $db_server_temp, $query2 );
 
-		if ( !$result2 ) { die( "Database access failed: " . mysql_error() );
+		if ( !$result2 ) { die( "Database access failed: " . mysqli_error() );
 		}
 
-		$row2 = mysql_fetch_row( $result2 );
+		$row2 = mysqli_fetch_row( $result2 );
 
 		$numAdmins = ( $row2[0] ? $row2[0] : 0 );
 
@@ -91,12 +91,12 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 						 AND ug_group = 'sysop'
 					   ORDER BY log_timestamp DESC
 					   LIMIT 1;";
-			$resultL = mysql_query( $queryL );
+			$resultL = mysqli_query( $db_server_temp, $queryL );
 
 			if ( !$resultL ) { die( "Database access failed: " . mysql_error() );
 			}
 
-			$rowL = mysql_fetch_row( $resultL );
+			$rowL = mysqli_fetch_row( $resultL );
 
 			$query3 = "SELECT pl_title
 					   FROM pagelinks
@@ -105,7 +105,7 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 						 AND page_namespace = 10
 						 AND page_is_redirect = 1
 					   LIMIT 1;";
-			$result3 = mysql_query( $query3 );
+			$result3 = mysqli_query( $db_server_temp, $query3 );
 
 			if ( !$result3 ) { die( "Database access failed: " . mysql_error() );
 			}
@@ -114,8 +114,8 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 
 			if ( !$result3 ) {
 				$template = "Delete";
-			} elseif ( mysql_num_rows( $result3 ) == 1 ) {
-				$template = mysql_result( $result3, 0 );
+			} elseif ( mysqli_num_rows( $result3 ) == 1 ) {
+				$template = mysqli_result( $result3, 0 );
 			} else {
 				$template = "Delete";
 			}
@@ -133,15 +133,15 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 						   FROM revision AS r
 						   WHERE rev_page = page_id
 					   )";
-			$result4 = mysql_query( $query4 );
+			$result4 = mysqli_query( $db_server_temp, $query4 );
 
 			if ( !$result4 ) { die( "Database access failed: " . mysql_error() );
 			}
 
-			$rows4 = mysql_num_rows( $result4 );
+			$rows4 = mysqli_num_rows( $result4 );
 
 			for ( $k = 0; $k < $rows4; ++$k ) {
-				$rowD = mysql_fetch_row( $result4 );
+				$rowD = mysqli_fetch_row( $result4 );
 				echo "<tr><td><a href=\"" . $row[1] . "\">" . $row[0] . "</a></td>";
 				echo "<td>" . $numAdmins . "</td>\n";
 				echo "<td>" . $rowL[1] . "</td>\n";
