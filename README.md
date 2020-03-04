@@ -20,7 +20,7 @@ Help pages for the bots
 Requirements
 ------------
 
-- Python >= 2.7
+- Python >= 3.5
 - PyMySQL
 - irc
 - MySQL DB >= 5.5
