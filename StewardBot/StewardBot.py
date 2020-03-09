@@ -1098,7 +1098,7 @@ class WikimediaBot(SingleServerIRCBot):
                     oldrightfield = data['query']['logevents'][0]['params']['oldgroups'][o-1]
                     oldrightfieldexpiry = data['query']['logevents'][0]['params']['oldmetadata'][o-1]['expiry']
                     if oldrightfieldexpiry != "infinity":
-                        chrightso += '{} (expiry: {}='.format(
+                        chrightso += '{} (expiry: {})'.format(
                             oldrightfield,
                             datetime.strptime(
                                 oldrightfieldexpiry,
