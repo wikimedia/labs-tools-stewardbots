@@ -13,4 +13,4 @@ if [ $? -eq 0 ]; then
 fi
 
 sleep 5
-jstart -N sulwatcher -mem 2G -j y /data/project/stewardbots/venv-py3/bin/python3 /data/project/stewardbots/SULWatcher/SULWatcher.py
+jstart -N sulwatcher -mem 2G -j y /data/project/stewardbots/venv-py3/bin/python3 /data/project/stewardbots/stewardbots/SULWatcher/SULWatcher.py
