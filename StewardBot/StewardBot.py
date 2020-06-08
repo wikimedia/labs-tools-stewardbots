@@ -989,9 +989,9 @@ class FreenodeBot(SingleServerIRCBot):
         if re.search("/", doer) and re.search("@", doer):
             return doer.split("@")[1]
 
-    def startswitharray(self, a, l):
-        for i in l:
-            if a.startswith(i):
+    def startswitharray(self, text, array):
+        for entry in array:
+            if text.startswith(entry):
                 return True
         return False
 

@@ -347,10 +347,10 @@ class FreenodeBot(SingleServerIRCBot):
                     maxlen = 20
                     shortlists = [regexes[i:i + maxlen]
                                   for i in range(0, len(regexes), maxlen)]
-                    for l in range(0, len(shortlists)):
+                    for i in range(0, len(shortlists)):
                         self.msg(r'%s added (%s/%s): %s.'
-                                 % (adder, l + 1, len(shortlists),
-                                    ", ".join(shortlists[l])), target)
+                                 % (adder, i + 1, len(shortlists),
+                                    ", ".join(shortlists[i])), target)
                         time.sleep(2)  # Sleep a bit to avoid flooding?
             elif args[1] == 'number':
                 index = args[2]
@@ -418,10 +418,10 @@ class FreenodeBot(SingleServerIRCBot):
                     shortlists = [longlist[i:i + maxlen]
                                   for i in range(0, len(longlist), maxlen)]
                     self.msg('Listing active regexes:', target)
-                    for l in range(0, len(shortlists)):
+                    for i in range(0, len(shortlists)):
                         self.msg('Regex list (%s/%s): %s'
-                                 % (l + 1, len(shortlists),
-                                    ", ".join(shortlists[l])), target)
+                                 % (i + 1, len(shortlists),
+                                    ", ".join(shortlists[i])), target)
                         time.sleep(2)  # sleep a bit to avoid flooding?
                 else:
                     self.msg("Sorry, can't do. I'm afraid of flooding. You "
