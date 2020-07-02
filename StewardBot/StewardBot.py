@@ -109,7 +109,7 @@ class FreenodeBot(SingleServerIRCBot):
     def on_welcome(self, c, e):
         c.privmsg("NickServ", 'GHOST ' + self.nickname + ' ' + self.password)
         c.privmsg("NickServ", 'IDENTIFY ' + self.password)
-        time.sleep(6)  # let identification succeed before joining channels
+        time.sleep(10)  # let identification succeed before joining channels
         c.join(self.channel)
         if self.listen and self.listened:
             for chan in self.listened:
