@@ -1092,7 +1092,7 @@ class WikimediaBot():
                                 (performer, action_description, target, expiry, comment)
                             )
                         elif change['log_type'] == 'globalauth':
-                            target = change['user'].replace('User:', '').replace('@global', '')
+                            target = change['title'].replace('User:', '').replace('@global', '')
                             comment = change['comment']
                             if comment != "":
                                 comment = " with the following comment: 07" + \
