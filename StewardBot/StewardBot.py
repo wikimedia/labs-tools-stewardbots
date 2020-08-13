@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from sseclient import SSEClient as EventSource
 from irc.bot import SingleServerIRCBot
 from irc.client import NickMask
 from datetime import datetime
@@ -7,7 +8,6 @@ from jaraco.stream import buffer
 from irc.client import ServerConnection
 import pymysql
 import os
-import random
 import re
 import sys
 import threading
@@ -16,9 +16,6 @@ import json
 from configparser import ConfigParser
 
 import config
-
-from urllib.request import urlopen
-from urllib.parse import quote
 
 # DB data
 dbconfig = ConfigParser()
@@ -996,443 +993,127 @@ class FreenodeBot(SingleServerIRCBot):
         return False
 
 
-class WikimediaBot(SingleServerIRCBot):
-
+class WikimediaBot():
     def __init__(self):
-        self.server = config.server2
-        self.channel = config.channel2
-        self.nickname = config.nick2
         self.stalked = query(queries["stalkedpages"])
         self.ignored = query(queries["ignoredusers"])
-        self.testregister = None
-        SingleServerIRCBot.__init__(
-            self, [(self.server, 6667)], self.nickname, self.nickname)
+        self.RE_SECTION = re.compile(r"/\* *(?P<section>.+?) *\*/", re.DOTALL)
 
-    def on_error(self, c, e):
-        print(e.target)
-        self.die()
+    def run(self):
+        stream = 'https://stream.wikimedia.org/v2/stream/recentchange'
+        for event in EventSource(stream):
+            if bot1.quiet:
+                continue
 
-    def on_nicknameinuse(self, c, e):
-        c.nick(c.get_nickname() + "_")
+            if event.event == 'message':
+                try:
+                    change = json.loads(event.data)
+                except ValueError:
+                    continue
+                if change['wiki'] == 'metawiki':
+                    if change['type'] == 'edit':
+                        if change['title'] not in self.stalked:
+                            continue
 
-    def on_welcome(self, c, e):
-        time.sleep(5)
-        c.join(self.channel)
+                        if change['user'] in self.ignored:
+                            continue
 
-    def on_ctcp(self, c, event):
-        if event.arguments[0] == "VERSION":
-            c.ctcp_reply(nm_to_n(event.source),
-                         "Logging bot for #wikimedia-stewards")
-        elif event.arguments[0] == "PING":
-            if len(event.arguments) > 1:
-                c.ctcp_reply(nm_to_n(event.source), "PING " + event.arguments[1])
-
-    def on_privmsg(self, c, event):
-        nick = nm_to_n(event.source)
-        a = event.arguments[0]
-        if nick.lower() != "dungodung":
-            c.privmsg(nick, "Please don't talk to me!")
-        elif a.startswith(config.passwordhash):
-            c.privmsg(nick, "Terminating the bot!")
-            try:
-                bot1.msg("Emergency killswitch activated!")
-                bot1.connection.part(self.channel, "Process terminated.")
-                if bot1.listen and bot1.listened:
-                    for chan in bot1.listened:
-                        bot1.connection.part(chan, "Process terminated.")
-                bot1.connection.quit()
-                bot1.disconnect()
-            except Exception:
-                print("Bot 1 seems to have already quit!")
-            c.part(self.channel)
-            c.quit()
-            self.disconnect()
-            os._exit(os.EX_OK)
-        else:
-            c.privmsg(
-                nick,
-                "Type 'echo <password> | md5sum' to your linux terminal and paste the output here.")
-        print("[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] <!private/" + nick + "> " + a)
-
-    def on_pubmsg(self, c, event):
-        self.randmess()
-        timestamp = "[" + time.strftime(
-                "%d.%m.%Y %H:%M:%S", time.localtime(time.time())) + "] "
-        nick = nm_to_n(event.source)
-        who = "<" + self.channel + "/" + nick + "> "
-        a = (event.arguments[0])
-        self.testregister = timestamp + a
-        if not bot1.quiet:
-            # Parsing the rcbot output
-            if "Special:Log/rights" in a:
-                # 14[[07Special:Log/rights14]]4 rights10 02 5* 03Spacebirdy 5*  10changed group membership for 02User:Piolinfax@siwiktionary10 from (none) to sysop: per [[srp]], temp, 1 month
-                # 14[[07Special:Log/rights14]]4 rights10 02 5* 03Nick1915 5*  10changed group membership for User:Poppy@frwiki from sysop to (none): http://meta.wikimedia.org/w/index.php?title=Steward_requests%2FPermissions&diff=1241753&oldid=1241325#Poppy.40fr.wikipedia
-                comp = re.compile(
-                    r"14\[\[07Special:Log/rights14\]\]4 rights10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10changed group membership for (02)?User:(?P<usertarget>.+?)(10)? from (?P<state1>.+?) to (?P<state2>.+?)(: (?P<comment>.+))?",
-                    re.DOTALL)
-                found = comp.search(a)
-                print(timestamp + who + a)
-                if not found:
-                    print("!!! Error!")
-                    return
-                usersource = found.group('usersource')
-                usertarget = found.group('usertarget')
-                state1 = found.group('state1')
-                state2 = found.group('state2')
-                extra = found.group('extra')
-                # check expiry via api
-                urlapi = "https://meta.wikimedia.org/w/" \
-                         "api.php?action=query&format=json&list=logevents&letype=rights&letitle=User:%s" \
-                         "&lelimit=1" % quote(usertarget)
-                response = urlopen(urlapi)
-                data = json.loads(response.read().decode("utf-8"))
-                oldright = data['query']['logevents'][0]['params']['oldgroups']
-                newright = data['query']['logevents'][0]['params']['newgroups']
-                lennewrights = len(newright) + 1
-                lenoldrights = len(oldright) + 1
-                chrightsn = ""
-                chrightso = ""
-                n = 1
-                o = 1
-                while o < lenoldrights:
-                    oldrightfield = data['query']['logevents'][0]['params']['oldgroups'][o-1]
-                    oldrightfieldexpiry = data['query']['logevents'][0]['params']['oldmetadata'][o-1]['expiry']
-                    if oldrightfieldexpiry != "infinity":
-                        chrightso += '{} (expiry: {})'.format(
-                            oldrightfield,
-                            datetime.strptime(
-                                oldrightfieldexpiry,
-                                '%Y-%m-%dT%H:%M:%SZ').strftime('%H:%M, %d %B %Y'))
-                    else:
-                        chrightso += oldrightfield
-                    if o != lenoldrights - 1:
-                        chrightso += ', '
-                    o += 1
-                if chrightso == "":
-                    chrightso = "(none)"
-                while n < lennewrights:
-                    newrightfield = data['query']['logevents'][0]['params']['newgroups'][n-1]
-                    newrightfieldexpiry = data['query']['logevents'][0]['params']['newmetadata'][n-1]['expiry']
-                    if newrightfieldexpiry != "infinity":
-                        chrightsn += '{} (expiry: {})'.format(
-                            newrightfield,
-                            datetime.strptime(
-                                newrightfieldexpiry,
-                                '%Y-%m-%dT%H:%M:%SZ').strftime('%H:%M, %d %B %Y'))
-                    else:
-                        chrightsn += newrightfield
-                    if n != lennewrights - 1:
-                        chrightsn += ', '
-                    n = n+1
-                if chrightsn == "":
-                    chrightsn = "(none)"
-                # end of check expiry
-                if extra:
-                    print("!!! There are extra parameters!")
-                comment = found.group('comment')
-                if comment:
-                    comment = " with the following comment: 07" + \
-                        comment.strip(" ") + ""
-                else:
-                    comment = ""
-                selff = ""
-                bott = ""
-                if "@" in usertarget:
-                    if usertarget.split("@")[0] == usersource:
-                        selff = "6(self) "
-                elif usersource == usertarget:
-                    selff = "06(self) "
-                if "bot" in state1 or "bot" in state2:
-                    bott = "06(bot) "
-                bot1.msg(
-                    "%s%s03%s changed user rights for %s from 04%s to 04%s%s" %
-                    (selff, bott, usersource, usertarget, chrightso, chrightsn,
-                     comment))
-            elif "Special:Log/gblblock" in a:
-                if "gblock2" in a:
-                    # [[Special:Log/gblblock]] gblock2  * Pathoschild *  globally blocked [[User:190.198.116.53]] (anonymous only, expires 15:18, 28 April 2009): crosswiki abuse, likely proxy
-                    comp = re.compile(
-                        r"14\[\[07Special:Log/gblblock14\]\]4 gblock210 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\] \((?P<expiry>.+?)\)(: (?P<comment>.+))?",
-                        re.DOTALL)
-                    found = comp.search(a)
-                    print(timestamp + who + a)
-                    if not found:
-                        print("!!! Error!")
-                        return
-                    expiry = found.group('expiry')
-                    expiry = " (%s)" % expiry
-                elif "modify" in a:
-                    # [[Special:Log/gblblock]] modify  * Dungodung *  modified the global block on [[User:1.2.3.4]] (expires 15:34, March 28, 2009): testing
-                    comp = re.compile(
-                        r"14\[\[07Special:Log/gblblock14\]\]4 modify10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\] \((?P<expiry>.+?)\)(: (?P<comment>.+))?",
-                        re.DOTALL)
-                    found = comp.search(a)
-                    print(timestamp + who + a)
-                    if not found:
-                        print("!!! Error!")
-                        return
-                    expiry = found.group('expiry')
-                    expiry = " (%s)" % expiry
-                elif "gunblock" in a:
-                    # [[Special:Log/gblblock]] gunblock  * Pathoschild *  removed global block on [[User:94.229.64.0/19]]: oops
-                    comp = re.compile(
-                        r"14\[\[07Special:Log/gblblock14\]\]4 gunblock10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<didwhat>.+?) \[\[02User:(?P<usertarget>.+?)10\]\](: (?P<comment>.+))?",
-                        re.DOTALL)
-                    found = comp.search(a)
-                    print(timestamp + who + a)
-                    if not found:
-                        print("!!! Error!")
-                        return
-                    expiry = ""
-                else:
-                    print("!!! Error!")
-                    return
-                usersource = found.group('usersource')
-                didwhat = found.group('didwhat')
-                usertarget = found.group('usertarget')
-                extra = found.group('extra')
-                if extra:
-                    print("!!! There are extra parameters!")
-                comment = found.group('comment')
-                if comment:
-                    comment = " with the following comment: 7" + \
-                        comment.strip(" ") + ""
-                else:
-                    comment = ""
-                bot1.msg("03%s %s %s%s%s" %
-                         (usersource, didwhat, usertarget, expiry, comment))
-            elif "Special:Log/globalauth" in a:
-                # 14[[07Special:Log/globalauth14]]4 ***action***10 02 5* 03***who*** 5*  10***text*** global account "<nowiki>02User:***user***@global10</nowiki>": ***opt-comment***
-                # 14[[07Special:Log/globalauth14]]4 unlock10 02 5* 03Spacebirdy 5*  10unlocked global account "<nowiki>User:Bluegoblin7@global</nowiki>": user claims to be not involved in the vandalism
-                # [[Special:Log/globalauth]] setstatus  * Dungodung *  changed status for global account "<nowiki>User:Pathoschild2@global</nowiki>": Set hidden; Unset locked: test
-                comp = re.compile(
-                    r"14\[\[07Special:Log/globalauth14\]\]4 (?P<action1>.+?)10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<action2>.+?) global account(.*?)(02)?User:(?P<usertarget>.+?)@global(10)?(.+?)(: (?P<comment>.+))?",
-                    re.DOTALL)
-                found = comp.search(a)
-                print(timestamp + who + a)
-                if not found:
-                    print("!!! Error!")
-                    return
-                usersource = found.group('usersource')
-                usertarget = found.group('usertarget')
-                action1 = found.group('action1')  # Don't really need it
-                action2 = found.group('action2')
-                extra = found.group('extra')
-                if extra:
-                    print("!!! There are extra parameters!")
-                origcomment = comment = found.group('comment')
-                hid = False
-                if comment:  # Best that I could thought of without changing the structure of this branch
-                    if action1 == "setstatus":
-                        if ":" in comment:
-                            ss1 = re.compile(
-                                "set (?P<s>.+?); unset (?P<u>.+?):", re.DOTALL)
+                        rccomment = change['comment'].strip()
+                        m = self.RE_SECTION.search(rccomment)
+                        if m:
+                            section = "#" + m.group('section')
                         else:
-                            ss1 = re.compile(
-                                "set (?P<s>.+?); unset (?P<u>.+)", re.DOTALL)
-                        ss2 = ss1.search(comment)
-                        ss3set = ss2.group('s')
-                        ss3unset = ss2.group('u')
-                        changeda = []
-                        if "hidden" in ss3set:
-                            changeda += ["hid"]
-                            hid = True
-                        if "locked" in ss3set:
-                            changeda += ["locked"]
-                        if "suppressed" in ss3unset:
-                            changeda += ["unsuppressed"]
-                        if "hidden" in ss3unset:
-                            changeda += ["unhid"]
-                        if "locked" in ss3unset:
-                            changeda += ["unlocked"]
-                        list.sort(changeda, reverse=True)
-                        action2 = " and ".join(changeda)
-                        if ":" in comment:
-                            comment = re.sub(
-                                "set (.+?); unset (.+?): ", "", comment)
-                        else:
-                            comment = ""
-                    if comment != "":
-                        comment = " with the following comment: 07" + \
-                            comment.strip(" ") + ""
-                else:
-                    comment = ""
-                if usersource == usertarget:
-                    selff = "06(self) "
-                else:
-                    selff = ""
-                if hid:
-                    usertarget = "a global account"
-                else:
-                    usertarget = "global account %s" % usertarget
-                # HARCODED PART; TO BE REDESIGNED INTO AN EXCEPTION SYSTEM
-                print(usersource, origcomment)
-                # if usersource == 'Quentinv57' and 'spambot' in origcomment:
-                #     pass
-                if True:  # else:
-                    bot1.msg("%s03%s %s %s%s" %
-                             (selff, usersource, action2, usertarget, comment))
-            elif "Special:Log/gblrights" in a:
-                # 14[[07Special:Log/gblrights14]]4 groupprms210 02 5* 03Dungodung 5*  10changed group permissions for Special:GlobalUsers/test.Added move, patrol;Removed (none): testing
-                # 14[[07Special:Log/gblrights14]]4 ***action***10 02 5* 03***who*** 5*  10***text***: ***opt-comment***
-                comp = re.compile(
-                    r"14\[\[07Special:Log/gblrights14\]\]4 (?P<action>.+?)10 02(?P<extra>.*?) 5\* 03(?P<usersource>.+?) 5\* +10(?P<text>.+)",
-                    re.DOTALL)
-                found = comp.search(a)
-                print(timestamp + who + a)
-                if not found:
-                    print("!!! Error!")
-                    return
-                usersource = found.group('usersource')
-                text = found.group('text')
-                action = found.group('action')
-                extra = found.group('extra')
-                if extra:
-                    print("!!! There are extra parameters!")
-                outtext = text
-                comment = ""
-                if action == "groupprms2":
-                    outtext = re.sub(
-                        r"Special:GlobalUsers/(.+?)\:", r"\1: ", outtext)
-                    outtext = re.sub(
-                        r"added (.+?);", r"added 04\1; ", outtext)
-                    outtext = re.sub(
-                        r"removed (.+)", r"removed 04\1", outtext)
-                    noco = len(re.findall(":", outtext))
-                    if noco >= 2:
-                        niz = outtext.split(":")[2:]
-                        comment = ":".join(niz)
-                        outtext = outtext.replace(":" + comment, "")
-                elif action == "groupprms3":
-                    outtext = re.sub(
-                        r"02Special:GlobalUsers/(.+?)10", r"\1", outtext)
-                    outtext = re.sub(
-                        r"from (.+?) to (.+)",
-                        r"from 04\1 to 04\2",
-                        outtext)
-                    noco = len(re.findall(":", outtext))
-                    if noco >= 1:
-                        niz = outtext.split(":")[1:]
-                        comment = ":".join(niz)
-                        outtext = outtext.replace(":" + comment, "")
-                elif action == "usergroups":
-                    outtext = re.sub(
-                        r"(02)?User:(.+?)(10)? from", r"\2 from", outtext)
-                    outtext = re.sub(
-                        r"from (.+?) to (.+)",
-                        r"from 04\1 to 04\2",
-                        outtext)
-                    noco = len(re.findall(":", outtext))
-                    if noco >= 1:
-                        niz = outtext.split(":")[1:]
-                        comment = ":".join(niz)
-                        outtext = outtext.replace(":" + comment, "")
-                elif action == "newset":
-                    outtext = re.sub(
-                        r"opt-(.+?) based wiki set (.+?) with",
-                        r"04opt-\1 based wiki set \2 with",
-                        outtext)
-                    outtext = re.sub(r"wikis: (.+)", r"wikis: 04\1", outtext)
-                    noco = len(re.findall(":", outtext))
-                    if noco >= 2:
-                        niz = outtext.split(":")[2:]
-                        comment = ":".join(niz)
-                        outtext = outtext.replace(":" + comment, "")
-                elif action == "setchange":
-                    outtext = re.sub(
-                        r"wikis in \"(.+?)\":", r"wikis in \1:", outtext)
-                    outtext = re.sub(
-                        r"added: (.+?);", r"added: 04\1;", outtext)
-                    outtext = re.sub(
-                        r"removed: (.+)", r"removed: 04\1", outtext)
-                    noco = len(re.findall(":", outtext))
-                    if noco >= 4:
-                        niz = outtext.split(":")[4:]
-                        comment = ":".join(niz)
-                        outtext = outtext.replace(":" + comment, "")
-                elif action == "setrename":
-                    outtext = re.sub(
-                        r"set \"(.+?)\" to \"(.+?)\"",
-                        r"set \1 to \2",
-                        outtext)
-                    noco = len(re.findall(":", outtext))
-                    if noco >= 1:
-                        niz = outtext.split(":")[1:]
-                        comment = ":".join(niz)
-                        outtext = outtext.replace(":" + comment, "")
-                elif action == "setnewtype":
-                    outtext = re.sub(
-                        r"type of \"(.+?)\"", r"type of \1", outtext)
-                    outtext = re.sub(
-                        r"opt-(.+?) based to opt-(.+?) based",
-                        r"04opt-\1 based to 04opt-\2 based",
-                        outtext)
-                    noco = len(re.findall(":", outtext))
-                    if noco >= 1:
-                        niz = outtext.split(":")[1:]
-                        comment = ":".join(niz)
-                        outtext = outtext.replace(":" + comment, "")
-                else:
-                    print("!!! Unrecognized action!")
-                if comment:
-                    comment = " with the following comment: 07" + \
-                        comment.strip(" ") + ""
-                bot1.msg("03%s %s%s" % (usersource, outtext, comment))
-            else:
-                # 14[[07Steward requests/Permissions14]]4 10 02http://meta.wikimedia.org/w/index.php?title=Steward_requests/Permissions&diff=1146717&oldid=1146712&rcid=1190374 5* 03Black Kite 5* (+105) 10/* Black Kite@enwiki */ reply
-                comp = re.compile(
-                    r"14\[\[07(?P<page>.+?)14\]\](.+?)diff=(?P<diff>[0-9]+)&oldid=(.+?) 5\* 03(?P<user>.+?) 5\* \((.+?)\) 10(?P<comment>.*)",
-                    re.DOTALL)
-                found = comp.search(a)
-                if not found:
-                    print("*** Not the edit type I need ***")
-                    return
-                rcpage = found.group('page').strip(" ")
-                watched = False
-                for pg in self.stalked:
-                    if pg in rcpage:
-                        watched = True
-                        break
-                if not watched:
-                    print("*** %s: Not a page I'm watching ***" % rcpage)
-                    return
-                rcuser = found.group('user').strip(" ")
-                if rcuser in self.ignored:
-                    print("*** %s: Not a user I need ***" % rcuser)
-                    return
-                print(timestamp + who + a)
-                rccomment = found.group('comment')
-                rcdiff = found.group('diff')
-                if not rccomment:
-                    comment = section = ""
-                else:
-                    comp = re.compile(r"/\* *(?P<section>.+?) *\*/", re.DOTALL)
-                    found = comp.search(rccomment)
-                    if found:
-                        section = "#" + found.group('section')
-                    else:
-                        section = ""
-                    rccomment = re.sub(r"/\*(.+?)\*/", "", rccomment.strip(" "))
-                    if rccomment.replace(" ", "") == "":
-                        comment = ""
-                    else:
+                            section = ""
                         comment = " with the following comment: 07" + \
                             rccomment.strip(" ") + ""
-                bot1.msg(
-                    "03%s edited 10[[%s%s]] 02https://meta.wikimedia.org/wiki/?diff=prev&oldid=%s%s" %
-                    (rcuser, rcpage, section, rcdiff, comment))
+                        bot1.msg(
+                            "03%s edited 10[[%s%s]] 02https://meta.wikimedia.org/wiki/?diff=prev&oldid=%s%s" %
+                            (change['user'], change['title'], section, change['id'], comment))
+                    elif change['type'] == "log":
+                        if change['log_type'] == "rights":
+                            performer = change['user']
+                            target = change['title'].replace('User:', '')
+                            selff = ""
+                            bott = ""
+                            if performer == target:
+                                selff = "06(self) "
+                            if "bot" in change['log_params']['newgroups'] or "bot" in change['log_params']['oldgroups']:
+                                bott = "06(bot) "
 
-    def randmess(self):
-        if bot1.randmess:
-            this_year = datetime.now().year
-            a = int(random.random() * 5000)
-            b = int(random.random() * 5000)
-            message = "Steward elections are on! Please vote @ " \
-                      "https://meta.wikimedia.org/wiki/Stewards/Elections_%s" \
-                      " and comment @ https://meta.wikimedia.org/wiki/Stewards/Confirm/%s Live updates: " \
-                      "#wikimedia-stewards-elections" % (this_year, this_year)
-            if a == b:
-                bot1.msg(message)
+                            # construct from_rights
+                            from_rights = []
+                            for i in range(len(change['log_params']['oldgroups'])):
+                                group = change['log_params']['oldgroups'][i]
+                                if change['log_params']['oldmetadata'][i] == []:
+                                    from_rights.append(group)
+                                else:
+                                    expiry = datetime.strptime(change['log_params']['oldmetadata'][i]['expiry'], '%Y%m%d%H%M%S')
+                                    from_rights.append('%s (expiry: %s)' % (group, expiry.strftime('%H:%M, %d %B %Y')))
+
+                            # construct to_rights
+                            to_rights = []
+                            for i in range(len(change['log_params']['newgroups'])):
+                                group = change['log_params']['newgroups'][i]
+                                metadata = change['log_params']['newmetadata'][i]
+                                if metadata == []:
+                                    to_rights.append(group)
+                                else:
+                                    expiry = datetime.strptime(metadata['expiry'], '%Y%m%d%H%M%S')
+                                    to_rights.append('%s (expiry: %s)' % (group, expiry.strftime('%H:%M, %d %B %Y')))
+
+                            bot1.msg(
+                                "%s%s03%s changed user rights for %s from 04%s to 04%s: 07%s" % (
+                                    selff,
+                                    bott,
+                                    performer,
+                                    target,
+                                    ", ".join(from_rights),
+                                    ", ".join(to_rights),
+                                    change['comment']
+                                )
+                            )
+                        elif change['log_type'] == "gblblock":
+                            target = change['title'].replace('User:', '')
+                            performer = change['user']
+                            expiry = ''
+                            comment = " with the following comment: 7" + \
+                                change['comment'].strip(" ") + ""
+                            if change['log_action'] == 'gblock2':
+                                expiry = change['log_params'][0]
+                                action_description = 'globally blocked'
+                            elif change['log_action'] == 'gunblock':
+                                action_description = 'removed global block on'
+                            else:
+                                action_description = 'modified the global block on'
+                            bot1.msg(
+                                "03%s %s %s  (%s) %s" %
+                                (performer, action_description, target, expiry, comment)
+                            )
+                        elif change['log_type'] == 'globalauth':
+                            target = change['user'].replace('User:', '').replace('@global', '')
+                            comment = change['comment']
+                            if comment != "":
+                                comment = " with the following comment: 07" + \
+                                    comment.strip(" ") + ""
+
+                            if change['log_params'][0] == 'locked':
+                                action_description = 'locked global account'
+                            else:
+                                action_description = 'unlocked global account'
+
+                            bot1.msg("03%s %s %s %s" % (change['user'], action_description, target, comment))
+                        elif change['log_type'] == 'gblrights':
+                            target = change['title'].replace('User:', '')
+                            bot1.msg(
+                                "03%s changed global group membership for %s from 04%s to 04%s: 07%s" %
+                                (
+                                    change['user'],
+                                    target,
+                                    change['log_params'][0],
+                                    change['log_params'][1],
+                                    change['comment']
+                                )
+                            )
 
 
 class IgnoreErrorsBuffer(buffer.DecodingLineBuffer):
@@ -1454,13 +1135,22 @@ class BotThread(threading.Thread):
         bot.start()
 
 
+class RecentChangesThread(threading.Thread):
+    def __init__(self, bot):
+        self.b = bot
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.b.run()
+
+
 def main():
     global bot1, bot2
     bot1 = FreenodeBot()
     bot2 = WikimediaBot()
     try:
         BotThread(bot1).start()
-        BotThread(bot2).start()  # can raise ServerNotConnectedError
+        RecentChangesThread(bot2).start()  # can raise ServerNotConnectedError
     except KeyboardInterrupt:
         raise
 
