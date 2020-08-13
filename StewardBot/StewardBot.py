@@ -1011,6 +1011,9 @@ class WikimediaBot():
                 except ValueError:
                     continue
                 if change['wiki'] == 'metawiki':
+                    if change['bot']:
+                        continue
+
                     if change['type'] == 'edit':
                         if change['title'] not in self.stalked:
                             continue
