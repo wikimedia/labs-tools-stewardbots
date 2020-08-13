@@ -1063,14 +1063,21 @@ class WikimediaBot():
                                     expiry = datetime.strptime(metadata['expiry'], '%Y%m%d%H%M%S')
                                     to_rights.append('%s (expiry: %s)' % (group, expiry.strftime('%H:%M, %d %B %Y')))
 
+                            from_rights_text = "(none)"
+                            if len(from_rights) > 0:
+                                from_rights_text = ", ".join(from_rights)
+
+                            to_rights_text = "(none)"
+                            if len (to_rights) > 0:
+                                to_rights_text = ", ".join(to_rights)
                             bot1.msg(
                                 "%s%s03%s changed user rights for %s from 04%s to 04%s: 07%s" % (
                                     selff,
                                     bott,
                                     performer,
                                     target,
-                                    ", ".join(from_rights),
-                                    ", ".join(to_rights),
+                                    from_rights_text,
+                                    to_rights_text,
                                     change['comment']
                                 )
                             )
