@@ -318,8 +318,7 @@ class FreenodeBot(SingleServerIRCBot):
 
         # Test
         elif cmd.lower() == "test":
-            if bot2.testregister:
-                self.msg(bot2.testregister, nick)
+            self.msg('The bot seems to see your message')
 
         # Huggle
         elif cmd.lower().startswith("huggle"):
