@@ -1095,14 +1095,14 @@ class WikimediaBot():
                             else:
                                 action_description = 'modified the global block on'
                             bot1.msg(
-                                "03%s %s %s  (%s) %s" %
+                                "03%s %s %s (%s) %s" %
                                 (performer, action_description, target, expiry, comment)
                             )
                         elif change['log_type'] == 'globalauth':
                             target = change['title'].replace('User:', '').replace('@global', '').strip()
                             comment = change['comment']
                             if comment != "":
-                                comment = " with the following comment: 07" + \
+                                comment = "with the following comment: 07" + \
                                     comment.strip(" ") + ""
 
                             if change['log_params'][0] == 'locked':
