@@ -6,6 +6,7 @@ from irc.client import NickMask
 from datetime import datetime
 from jaraco.stream import buffer
 from irc.client import ServerConnection
+import irc.client
 import pymysql
 import os
 import re
@@ -979,7 +980,13 @@ class FreenodeBot(SingleServerIRCBot):
     def msg(self, poruka, target=None):
         if not target:
             target = self.channel
-        self.connection.privmsg(target, poruka)
+        try:
+            self.connection.privmsg(target, poruka)
+        except irc.client.MessageTooLong:
+            self.connection.privmsg(
+                target,
+                "The message is too long. Please fill a task in Phabricator under #stewardbots describing what you tried to do."
+            )
 
     def getcloak(self, doer):
         if re.search("/", doer) and re.search("@", doer):
