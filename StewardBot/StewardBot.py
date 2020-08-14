@@ -1100,6 +1100,7 @@ class WikimediaBot():
                             elif change['log_action'] == 'gunblock':
                                 action_description = 'removed global block on'
                             else:
+                                expiry = change['log_params'][0]
                                 action_description = 'modified the global block on'
                             bot1.msg(
                                 "03%s %s %s (%s) %s" %
