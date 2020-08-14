@@ -1037,7 +1037,7 @@ class WikimediaBot():
                             rccomment.strip(" ") + ""
                         bot1.msg(
                             "03%s edited 10[[%s%s]] 02https://meta.wikimedia.org/wiki/Special:Diff/%s%s" %
-                            (change['user'], change['title'], section, change['id'], comment))
+                            (change['user'], change['title'], section, change['revision']['new'], comment))
                     elif change['type'] == "log":
                         if change['log_type'] == "rights":
                             performer = change['user']
