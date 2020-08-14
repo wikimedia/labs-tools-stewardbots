@@ -1068,7 +1068,7 @@ class WikimediaBot():
                                 from_rights_text = ", ".join(from_rights)
 
                             to_rights_text = "(none)"
-                            if len (to_rights) > 0:
+                            if len(to_rights) > 0:
                                 to_rights_text = ", ".join(to_rights)
                             bot1.msg(
                                 "%s%s03%s changed user rights for %s from 04%s to 04%s: 07%s" % (
