@@ -1138,8 +1138,8 @@ class WikimediaBot():
                                     (
                                         change['user'],
                                         change['title'].replace('Special:GlobalUsers/', ''),
-                                        change['log_params'][0],
                                         change['log_params'][1],
+                                        change['log_params'][0],
                                         change['comment']
                                     )
                                 )
