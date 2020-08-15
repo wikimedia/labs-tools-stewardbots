@@ -1134,7 +1134,7 @@ class WikimediaBot():
                                 )
                             elif change['log_action'] == 'groupprms2':
                                 bot1.msg(
-                                    "03%s changed global group permissions for %s from 04%s to 04%s: 07%s" %
+                                    "03%s changed global group permissions for %s, added 04%s, removed 04%s: 07%s" %
                                     (
                                         change['user'],
                                         change['title'].replace('Special:GlobalUsers/', ''),
