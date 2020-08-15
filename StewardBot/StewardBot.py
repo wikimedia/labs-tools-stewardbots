@@ -1120,17 +1120,29 @@ class WikimediaBot():
 
                             bot1.msg("03%s %s %s %s" % (change['user'], action_description, target, comment))
                         elif change['log_type'] == 'gblrights':
-                            target = change['title'].replace('User:', '')
-                            bot1.msg(
-                                "03%s changed global group membership for %s from 04%s to 04%s: 07%s" %
-                                (
-                                    change['user'],
-                                    target,
-                                    change['log_params'][0],
-                                    change['log_params'][1],
-                                    change['comment']
+                            if change['log_action'] == 'usergroups':
+                                target = change['title'].replace('User:', '')
+                                bot1.msg(
+                                    "03%s changed global group membership for %s from 04%s to 04%s: 07%s" %
+                                    (
+                                        change['user'],
+                                        target,
+                                        change['log_params'][0],
+                                        change['log_params'][1],
+                                        change['comment']
+                                    )
                                 )
-                            )
+                            elif change['log_action'] == 'groupprms2':
+                                bot1.msg(
+                                    "03%s changed global group permissions for %s from 04%s to 04%s: 07%s" %
+                                    (
+                                        change['user'],
+                                        change['title'].replace('Special:GlobalUsers/', ''),
+                                        change['log_params'][0],
+                                        change['log_params'][1],
+                                        change['comment']
+                                    )
+                                )
 
 
 class IgnoreErrorsBuffer(buffer.DecodingLineBuffer):
