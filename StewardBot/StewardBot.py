@@ -1050,7 +1050,7 @@ class WikimediaBot():
                             target = change['title'].replace('User:', '')
                             selff = ""
                             bott = ""
-                            if performer == target:
+                            if performer == re.sub(r"@.*", "", target):
                                 selff = "06(self) "
                             if "bot" in change['log_params']['newgroups'] or "bot" in change['log_params']['oldgroups']:
                                 bott = "06(bot) "
