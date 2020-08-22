@@ -1018,7 +1018,13 @@ class WikimediaBot():
                     continue
                 if change['wiki'] == 'metawiki':
                     if change['bot']:
-                        continue
+                        if change['type'] == 'log':
+                            if change['log_type'] != 'rights':
+                                continue
+                            if "bot" not in change['log_params']['newgroups'] and "flood" not in change['log_params']['newgroups']:
+                                continue
+                        else:
+                            continue
 
                     if change['type'] == 'edit':
                         if change['title'] not in self.stalked:
