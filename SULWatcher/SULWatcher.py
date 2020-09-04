@@ -148,7 +148,7 @@ class FreenodeBot(SingleServerIRCBot):
         print("Identifying to services...")
         c.privmsg("NickServ", "RELEASE %s %s" % (self.nickname, self.password))
         c.privmsg("NickServ", "IDENTIFY %s" % self.password)
-        time.sleep(5)  # Let identification succeed before joining channels
+        time.sleep(8)  # Let identification succeed before joining channels
         c.join(self.channel)
         print("Joined %s" % self.channel)
 
