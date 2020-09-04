@@ -1007,148 +1007,152 @@ class WikimediaBot():
 
     def run(self):
         stream = 'https://stream.wikimedia.org/v2/stream/recentchange'
-        for event in EventSource(stream):
-            if bot1.quiet:
+        while True:
+            try:
+                for event in EventSource(stream):
+                    if bot1.quiet:
+                        continue
+
+                    if event.event == 'message':
+                        try:
+                            change = json.loads(event.data)
+                        except ValueError:
+                            continue
+                        if change['wiki'] == 'metawiki':
+                            if change['bot']:
+                                if change['type'] == 'log':
+                                    if change['log_type'] != 'rights':
+                                        continue
+                                    if "bot" not in change['log_params']['newgroups'] and "flood" not in change['log_params']['newgroups']:
+                                        continue
+                                else:
+                                    continue
+
+                            if change['type'] == 'edit':
+                                if change['title'] not in self.stalked:
+                                    continue
+
+                                if change['user'] in self.ignored:
+                                    continue
+
+                                rccomment = change['comment'].strip()
+                                m = self.RE_SECTION.search(rccomment)
+                                if m:
+                                    section = "#" + m.group('section')
+                                else:
+                                    section = ""
+                                comment = " with the following comment: 07" + \
+                                    rccomment.strip(" ") + ""
+                                bot1.msg(
+                                    "03%s edited 10[[%s%s]] 02https://meta.wikimedia.org/wiki/Special:Diff/%s%s" %
+                                    (change['user'], change['title'], section, change['revision']['new'], comment))
+                            elif change['type'] == "log":
+                                if change['log_type'] == "rights":
+                                    performer = change['user']
+                                    target = change['title'].replace('User:', '')
+                                    selff = ""
+                                    bott = ""
+                                    if performer == re.sub(r"@.*", "", target):
+                                        selff = "06(self) "
+                                    if "bot" in change['log_params']['newgroups'] or "bot" in change['log_params']['oldgroups']:
+                                        bott = "06(bot) "
+
+                                    # construct from_rights
+                                    from_rights = []
+                                    for i in range(len(change['log_params']['oldgroups'])):
+                                        group = change['log_params']['oldgroups'][i]
+                                        if change['log_params']['oldmetadata'][i] == []:
+                                            from_rights.append(group)
+                                        else:
+                                            expiry = datetime.strptime(change['log_params']['oldmetadata'][i]['expiry'], '%Y%m%d%H%M%S')
+                                            from_rights.append('%s (expiry: %s)' % (group, expiry.strftime('%H:%M, %d %B %Y')))
+
+                                    # construct to_rights
+                                    to_rights = []
+                                    for i in range(len(change['log_params']['newgroups'])):
+                                        group = change['log_params']['newgroups'][i]
+                                        metadata = change['log_params']['newmetadata'][i]
+                                        if metadata == []:
+                                            to_rights.append(group)
+                                        else:
+                                            expiry = datetime.strptime(metadata['expiry'], '%Y%m%d%H%M%S')
+                                            to_rights.append('%s (expiry: %s)' % (group, expiry.strftime('%H:%M, %d %B %Y')))
+
+                                    from_rights_text = "(none)"
+                                    if len(from_rights) > 0:
+                                        from_rights_text = ", ".join(from_rights)
+
+                                    to_rights_text = "(none)"
+                                    if len(to_rights) > 0:
+                                        to_rights_text = ", ".join(to_rights)
+                                    bot1.msg(
+                                        "%s%s03%s changed user rights for %s from 04%s to 04%s: 07%s" % (
+                                            selff,
+                                            bott,
+                                            performer,
+                                            target,
+                                            from_rights_text,
+                                            to_rights_text,
+                                            change['comment']
+                                        )
+                                    )
+                                elif change['log_type'] == "gblblock":
+                                    target = change['title'].replace('User:', '')
+                                    performer = change['user']
+                                    expiry = ''
+                                    comment = " with the following comment: 7" + \
+                                        change['comment'].strip(" ") + ""
+                                    if change['log_action'] == 'gblock2':
+                                        expiry = change['log_params'][0]
+                                        action_description = 'globally blocked'
+                                    elif change['log_action'] == 'gunblock':
+                                        action_description = 'removed global block on'
+                                    else:
+                                        expiry = change['log_params'][0]
+                                        action_description = 'modified the global block on'
+                                    bot1.msg(
+                                        "03%s %s %s (%s) %s" %
+                                        (performer, action_description, target, expiry, comment)
+                                    )
+                                elif change['log_type'] == 'globalauth':
+                                    target = change['title'].replace('User:', '').replace('@global', '').strip()
+                                    comment = change['comment']
+                                    if comment != "":
+                                        comment = "with the following comment: 07" + \
+                                            comment.strip(" ") + ""
+
+                                    if change['log_params'][0] == 'locked':
+                                        action_description = 'locked global account'
+                                    else:
+                                        action_description = 'unlocked global account'
+
+                                    bot1.msg("03%s %s %s %s" % (change['user'], action_description, target, comment))
+                                elif change['log_type'] == 'gblrights':
+                                    if change['log_action'] == 'usergroups':
+                                        target = change['title'].replace('User:', '')
+                                        bot1.msg(
+                                            "03%s changed global group membership for %s from 04%s to 04%s: 07%s" %
+                                            (
+                                                change['user'],
+                                                target,
+                                                change['log_params'][0],
+                                                change['log_params'][1],
+                                                change['comment']
+                                            )
+                                        )
+                                    elif change['log_action'] == 'groupprms2':
+                                        bot1.msg(
+                                            "03%s changed global group permissions for %s, added 04%s, removed 04%s: 07%s" %
+                                            (
+                                                change['user'],
+                                                change['title'].replace('Special:GlobalUsers/', ''),
+                                                change['log_params'][0],
+                                                change['log_params'][1],
+                                                change['comment']
+                                            )
+                                        )
+            except StopIteration:
                 continue
-
-            if event.event == 'message':
-                try:
-                    change = json.loads(event.data)
-                except ValueError:
-                    continue
-                if change['wiki'] == 'metawiki':
-                    if change['bot']:
-                        if change['type'] == 'log':
-                            if change['log_type'] != 'rights':
-                                continue
-                            if "bot" not in change['log_params']['newgroups'] and "flood" not in change['log_params']['newgroups']:
-                                continue
-                        else:
-                            continue
-
-                    if change['type'] == 'edit':
-                        if change['title'] not in self.stalked:
-                            continue
-
-                        if change['user'] in self.ignored:
-                            continue
-
-                        rccomment = change['comment'].strip()
-                        m = self.RE_SECTION.search(rccomment)
-                        if m:
-                            section = "#" + m.group('section')
-                        else:
-                            section = ""
-                        comment = " with the following comment: 07" + \
-                            rccomment.strip(" ") + ""
-                        bot1.msg(
-                            "03%s edited 10[[%s%s]] 02https://meta.wikimedia.org/wiki/Special:Diff/%s%s" %
-                            (change['user'], change['title'], section, change['revision']['new'], comment))
-                    elif change['type'] == "log":
-                        if change['log_type'] == "rights":
-                            performer = change['user']
-                            target = change['title'].replace('User:', '')
-                            selff = ""
-                            bott = ""
-                            if performer == re.sub(r"@.*", "", target):
-                                selff = "06(self) "
-                            if "bot" in change['log_params']['newgroups'] or "bot" in change['log_params']['oldgroups']:
-                                bott = "06(bot) "
-
-                            # construct from_rights
-                            from_rights = []
-                            for i in range(len(change['log_params']['oldgroups'])):
-                                group = change['log_params']['oldgroups'][i]
-                                if change['log_params']['oldmetadata'][i] == []:
-                                    from_rights.append(group)
-                                else:
-                                    expiry = datetime.strptime(change['log_params']['oldmetadata'][i]['expiry'], '%Y%m%d%H%M%S')
-                                    from_rights.append('%s (expiry: %s)' % (group, expiry.strftime('%H:%M, %d %B %Y')))
-
-                            # construct to_rights
-                            to_rights = []
-                            for i in range(len(change['log_params']['newgroups'])):
-                                group = change['log_params']['newgroups'][i]
-                                metadata = change['log_params']['newmetadata'][i]
-                                if metadata == []:
-                                    to_rights.append(group)
-                                else:
-                                    expiry = datetime.strptime(metadata['expiry'], '%Y%m%d%H%M%S')
-                                    to_rights.append('%s (expiry: %s)' % (group, expiry.strftime('%H:%M, %d %B %Y')))
-
-                            from_rights_text = "(none)"
-                            if len(from_rights) > 0:
-                                from_rights_text = ", ".join(from_rights)
-
-                            to_rights_text = "(none)"
-                            if len(to_rights) > 0:
-                                to_rights_text = ", ".join(to_rights)
-                            bot1.msg(
-                                "%s%s03%s changed user rights for %s from 04%s to 04%s: 07%s" % (
-                                    selff,
-                                    bott,
-                                    performer,
-                                    target,
-                                    from_rights_text,
-                                    to_rights_text,
-                                    change['comment']
-                                )
-                            )
-                        elif change['log_type'] == "gblblock":
-                            target = change['title'].replace('User:', '')
-                            performer = change['user']
-                            expiry = ''
-                            comment = " with the following comment: 7" + \
-                                change['comment'].strip(" ") + ""
-                            if change['log_action'] == 'gblock2':
-                                expiry = change['log_params'][0]
-                                action_description = 'globally blocked'
-                            elif change['log_action'] == 'gunblock':
-                                action_description = 'removed global block on'
-                            else:
-                                expiry = change['log_params'][0]
-                                action_description = 'modified the global block on'
-                            bot1.msg(
-                                "03%s %s %s (%s) %s" %
-                                (performer, action_description, target, expiry, comment)
-                            )
-                        elif change['log_type'] == 'globalauth':
-                            target = change['title'].replace('User:', '').replace('@global', '').strip()
-                            comment = change['comment']
-                            if comment != "":
-                                comment = "with the following comment: 07" + \
-                                    comment.strip(" ") + ""
-
-                            if change['log_params'][0] == 'locked':
-                                action_description = 'locked global account'
-                            else:
-                                action_description = 'unlocked global account'
-
-                            bot1.msg("03%s %s %s %s" % (change['user'], action_description, target, comment))
-                        elif change['log_type'] == 'gblrights':
-                            if change['log_action'] == 'usergroups':
-                                target = change['title'].replace('User:', '')
-                                bot1.msg(
-                                    "03%s changed global group membership for %s from 04%s to 04%s: 07%s" %
-                                    (
-                                        change['user'],
-                                        target,
-                                        change['log_params'][0],
-                                        change['log_params'][1],
-                                        change['comment']
-                                    )
-                                )
-                            elif change['log_action'] == 'groupprms2':
-                                bot1.msg(
-                                    "03%s changed global group permissions for %s, added 04%s, removed 04%s: 07%s" %
-                                    (
-                                        change['user'],
-                                        change['title'].replace('Special:GlobalUsers/', ''),
-                                        change['log_params'][0],
-                                        change['log_params'][1],
-                                        change['comment']
-                                    )
-                                )
 
 
 class IgnoreErrorsBuffer(buffer.DecodingLineBuffer):
