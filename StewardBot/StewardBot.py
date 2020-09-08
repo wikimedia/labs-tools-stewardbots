@@ -344,6 +344,10 @@ class FreenodeBot(SingleServerIRCBot):
                 self.disconnect()
                 os._exit(os.EX_OK)
 
+        elif cmd.lower() == "restart":
+            self.msg("Restarting. I will be back soon.")
+            os.system('bash /data/project/stewardbots/stewardbots/StewardBot/restart_stewardbot.sh')
+
         # Other
         elif not self.quiet:
             pass  # self.msg(self.badsyntax, target)
