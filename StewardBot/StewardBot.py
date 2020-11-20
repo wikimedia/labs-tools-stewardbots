@@ -178,7 +178,7 @@ class FreenodeBot(SingleServerIRCBot):
             if a[0] == "@" or a.lower().startswith(
                     self.nickname.lower() + ":"):
                 # Start of Anti-PiR hack
-                evilchars = (";", "'", '"')
+                evilchars = (";", '"')
                 for evilchar in evilchars:
                     if evilchar in a:
                         self.msg(
