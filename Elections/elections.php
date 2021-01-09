@@ -37,7 +37,7 @@ function getPages( $titles ) {
 	echo "<!-- $URL -->";
 	$ch = curl_init( $URL );
 	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-	curl_setopt( $ch, CURLOPT_USERAGENT, 'Toolforge Bot - https://tools.wmflabs.org/stewardbots' );
+	curl_setopt( $ch, CURLOPT_USERAGENT, 'Toolforge Bot - https://stewardbots.toolforge.org/' );
 	$result = unserialize( curl_exec( $ch ) );
 	curl_close( $ch );
 	$resultPages = $result['query']['pages'];
@@ -67,8 +67,8 @@ function titleSort( $a, $b ) {
 <head>
 	<title><?php echo "Steward elections $year"; ?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<link rel="stylesheet" type="text/css" href="/stewardbots/resources/Common.css" />
-	<link rel="stylesheet" type="text/css" href="/stewardbots/resources/stylesheet.css" />
+	<link rel="stylesheet" type="text/css" href="/resources/Common.css" />
+	<link rel="stylesheet" type="text/css" href="/resources/stylesheet.css" />
 	<script src="https://tools-static.wmflabs.org/static/jquery/2.1.0/jquery.min.js"></script>
 	<script src="https://tools-static.wmflabs.org/static/jquery-tablesorter/2.0.5/jquery.tablesorter.min.js"></script>
 	<script lang="javascript">
