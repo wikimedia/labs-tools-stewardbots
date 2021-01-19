@@ -10,7 +10,7 @@
 		"source": "https://phabricator.wikimedia.org/diffusion/TSTW/"
 	},
 	"require": {
-		"php": "^7.2",
+		"php": ">=7.2",
 		"ext-curl": "*"
 	},
 	"require-dev": {
