@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from sseclient import SSEClient as EventSource
-from irc.bot import SingleServerIRCBot
+from ib3 import Bot
+from ib3.auth import SASL
+from ib3.connection import SSL
+from ib3.mixins import DisconnectOnError
+from ib3.nick import Ghost
 from irc.client import NickMask
 from datetime import datetime
-from jaraco.stream import buffer
-from irc.client import ServerConnection
 import irc.client
+import logging
 import pymysql
 import os
 import re
-import sys
 import threading
 import time
 import json
@@ -36,6 +38,17 @@ queries = {
     "stewardnicks": "select s_nick from stewards",
     "stewardoptin": "select s_nick from stewards where s_optin=1",
 }
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+    datefmt='%Y-%m-%dT%H:%M:%SZ'
+)
+logging.captureWarnings(True)
+
+logger = logging.getLogger('stewardbot')
+logger.setLevel(logging.DEBUG)
 
 
 def nm_to_n(nm):
@@ -72,13 +85,10 @@ def modquery(sqlquery):
     db.close()
 
 
-class FreenodeBot(SingleServerIRCBot):
-
+class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
     def __init__(self):
-        self.server = config.server
         self.channel = config.channel
         self.nickname = config.nick
-        self.password = config.password
         self.owner = config.owner
         self.privileged = query(queries["privcloaks"])
         self.listened = query(queries["listenedchannels"])
@@ -89,29 +99,14 @@ class FreenodeBot(SingleServerIRCBot):
         self.randmess = config.randmess
         self.listen = True
         self.badsyntax = "Unrecognized command. Type @help for more info."
-        SingleServerIRCBot.__init__(
-            self, [(self.server, 6667)], self.nickname, self.nickname)
 
-    def on_error(self, c, e):
-        print(e.target)
-        self.die()
-
-    def on_nicknameinuse(self, c, e):
-        c.nick(c.get_nickname() + "_")
-        time.sleep(1)  # latency problem?
-        c.privmsg("NickServ", 'GHOST ' + self.nickname + ' ' + self.password)
-        c.nick(self.nickname)
-        time.sleep(1)  # latency problem?
-        c.privmsg("NickServ", 'IDENTIFY ' + self.password)
-
-    def on_welcome(self, c, e):
-        c.privmsg("NickServ", 'GHOST ' + self.nickname + ' ' + self.password)
-        c.privmsg("NickServ", 'IDENTIFY ' + self.password)
-        time.sleep(10)  # let identification succeed before joining channels
-        c.join(self.channel)
-        if self.listen and self.listened:
-            for chan in self.listened:
-                c.join(chan)
+        super().__init__(
+            server_list=[(config.server, 6697)],
+            nickname=self.nickname,
+            realname=self.nickname,
+            ident_password=config.password,
+            channels=[self.channel] + self.listened
+        )
 
     def on_ctcp(self, c, event):
         if event.arguments[0] == "VERSION":
@@ -120,13 +115,12 @@ class FreenodeBot(SingleServerIRCBot):
                     event.source),
                 "Bot for informing Wikimedia stewards on " +
                 self.channel)
-        elif event.arguments[0] == "PING":
-            if len(event.arguments) > 1:
-                c.ctcp_reply(nm_to_n(event.source), "PING " + event.arguments[1])
+        elif event.arguments[0] == "PING" and len(event.arguments) > 1:
+            c.ctcp_reply(nm_to_n(event.source), "PING " + event.arguments[1])
 
     def on_action(self, c, event):
         who = "<" + self.channel + "/" + nm_to_n(event.source) + "> "
-        print("[" + time.strftime("%d.%m.%Y %H:%M:%S") + "] * " + who + event.arguments[0])
+        logger.info("* " + who + event.arguments[0])
 
     def on_privmsg(self, c, e):
         nick = nm_to_n(e.source)
@@ -167,14 +161,15 @@ class FreenodeBot(SingleServerIRCBot):
                 self.msg(a)
 
     def on_pubmsg(self, c, event):
-        timestamp = "[" + time.strftime("%d.%m.%Y %H:%M:%S",
-                                        time.localtime(time.time())) + "] "
+        if not self.has_primary_nick():
+            return
+
         nick = event.source.nick
         a = event.arguments[0]
         where = event.target
         who = "<" + where + "/" + nick + "> "
         if where == self.channel:
-            print(timestamp + who + a)
+            logger.info(who + a)
             if a[0] == "@" or a.lower().startswith(
                     self.nickname.lower() + ":"):
                 # Start of Anti-PiR hack
@@ -214,7 +209,7 @@ class FreenodeBot(SingleServerIRCBot):
                     pass
         if a.lower().startswith("!steward"):
             if where != self.channel:
-                print(timestamp + who + a)
+                logger.info(who + a)
             reason = re.sub("(?i)!steward", "", a).strip(" ")
             self.attention(nick, where, reason)
 
@@ -222,7 +217,6 @@ class FreenodeBot(SingleServerIRCBot):
         nick = nm_to_n(e)
         if not target:
             target = self.channel
-        c = self.connection
 
         # On/Off
         if cmd.lower() == "quiet":
@@ -330,19 +324,16 @@ class FreenodeBot(SingleServerIRCBot):
         elif cmd.lower() == "die":
             if self.getcloak(e) != self.owner:
                 if not self.quiet:
+                    logger.warning('Unprivileged %s requested exit', self.getcloak(e))
                     self.msg("You can't kill me; you're not my owner! :P")
             else:
                 self.msg("Goodbye!")
-                c.part(self.channel, ":Process terminated.")
-                bot2.connection.part(bot2.channel)
-                if self.listen and self.listened:
-                    for chan in self.listened:
-                        self.connection.part(chan, ":Process terminated.")
-                bot2.connection.quit()
-                bot2.disconnect()
-                c.quit()
+
+                # cause recent changes listener to stop on next event
+                bot2.should_exit = True
+
+                self.connection.part(self.channels)
                 self.disconnect()
-                os._exit(os.EX_OK)
 
         elif cmd.lower() == "restart":
             self.msg("Restarting. I will be back soon.")
@@ -981,12 +972,13 @@ class FreenodeBot(SingleServerIRCBot):
             if not self.quiet:
                 self.msg(self.badsyntax, target)
 
-    def msg(self, poruka, target=None):
+    def msg(self, message, target=None):
         if not target:
             target = self.channel
         try:
-            self.connection.privmsg(target, poruka)
+            self.connection.privmsg(target, message)
         except irc.client.MessageTooLong:
+            logger.warning('Attempted to send a message that is too long: %s', message)
             self.connection.privmsg(
                 target,
                 "The message is too long. Please fill a task in Phabricator under #stewardbots describing what you tried to do."
@@ -1003,17 +995,21 @@ class FreenodeBot(SingleServerIRCBot):
         return False
 
 
-class WikimediaBot():
+class RecentChangesBot:
     def __init__(self):
         self.stalked = query(queries["stalkedpages"])
         self.ignored = query(queries["ignoredusers"])
+        self.should_exit = False
         self.RE_SECTION = re.compile(r"/\* *(?P<section>.+?) *\*/", re.DOTALL)
 
-    def run(self):
+    def start(self):
         stream = 'https://stream.wikimedia.org/v2/stream/recentchange'
-        while True:
+        while not self.should_exit:
             try:
                 for event in EventSource(stream):
+                    if self.should_exit:
+                        break
+
                     if bot1.quiet:
                         continue
 
@@ -1156,55 +1152,36 @@ class WikimediaBot():
                                             )
                                         )
             except StopIteration:
-                continue
-
-
-class IgnoreErrorsBuffer(buffer.DecodingLineBuffer):
-    def handle_exception(self):
-        pass
+                pass
+            except Exception:
+                logger.exception('Recent changes listener encountered an error')
 
 
 class BotThread(threading.Thread):
-
     def __init__(self, bot):
-        self.b = bot
         threading.Thread.__init__(self)
+        self.b = bot
 
     def run(self):
-        self.startbot(self.b)
-
-    def startbot(self, bot):
-        ServerConnection.buffer_class = IgnoreErrorsBuffer
-        bot.start()
-
-
-class RecentChangesThread(threading.Thread):
-    def __init__(self, bot):
-        self.b = bot
-        threading.Thread.__init__(self)
-
-    def run(self):
-        self.b.run()
-
-
-def main():
-    global bot1, bot2
-    bot1 = FreenodeBot()
-    bot2 = WikimediaBot()
-    try:
-        BotThread(bot1).start()
-        RecentChangesThread(bot2).start()  # can raise ServerNotConnectedError
-    except KeyboardInterrupt:
-        raise
+        self.b.start()
 
 
 if __name__ == "__main__":
     global bot1, bot2
+    bot1 = FreenodeBot()
+    bot2 = RecentChangesBot()
+
     try:
-        main()
-    except IOError:
-        print("No config file! You should start this script from its directory like 'python stewardbot.py'")
+        freenodeThread = BotThread(bot1)
+        rcThread = BotThread(bot2)
+
+        freenodeThread.start()
+        rcThread.start()
+    except KeyboardInterrupt:
+        bot1.disconnect('Killed by a KeyboardInterrupt')
+    except Exception:
+        logger.exception('Killed by an unhandled exception')
+        bot1.disconnect('StewardBot encountered an unhandled exception')
     finally:
-        bot1.die()
-        bot2.die()
-        sys.exit()
+        # no matter how something failed, just get out of here
+        raise SystemExit()
