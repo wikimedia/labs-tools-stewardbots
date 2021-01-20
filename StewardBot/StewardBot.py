@@ -99,6 +99,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         self.randmess = config.randmess
         self.listen = True
         self.badsyntax = "Unrecognized command. Type @help for more info."
+        self.emergency_cooldowns = {}
 
         super().__init__(
             server_list=[(config.server, 6697)],
@@ -211,7 +212,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             if where != self.channel:
                 logger.info(who + a)
             reason = re.sub("(?i)!steward", "", a).strip(" ")
-            self.attention(nick, where, reason)
+            self.attention(nick, self.getcloak(event.source), where, reason)
 
     def do_command(self, e, cmd, target=None):
         nick = nm_to_n(e)
@@ -343,7 +344,22 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         elif not self.quiet:
             pass  # self.msg(self.badsyntax, target)
 
-    def attention(self, nick, channel=None, reason=None):
+    def attention(self, nick, cloak, channel=None, reason=None):
+        cooldown_remove_threshold = time.time() - 90
+        for key in self.emergency_cooldowns.keys():
+            value = self.emergency_cooldowns[key]
+
+            # if the cooldown has expired, just remove it
+            if value < cooldown_remove_threshold:
+                del self.emergency_cooldowns[key]
+                continue
+
+            # not expired, check if this entry is for the current user and then apply cooldown.
+            if key == cloak:
+                logger.info('%s@%s attempted to use !steward on cooldown (last use %i seconds ago)', nick, cloak, (time.time() - value))
+                self.msg('%s: Sorry, you are on a cooldown for having emergencies.' % nick, channel)
+                return
+
         if self.notify:
             if not channel or channel == self.channel:
                 self.msg("Stewards: Attention requested by %s ( %s )" %
@@ -355,6 +371,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 if reason:
                     messg += " with the following reason: " + reason
                 self.msg(messg)
+            self.emergency_cooldowns[cloak] = time.time()
 
     def do_privileged(self, cmd, target, nick):
         if cmd.lower().startswith("list"):
