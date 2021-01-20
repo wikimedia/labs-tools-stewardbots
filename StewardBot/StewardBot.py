@@ -229,9 +229,9 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 self.quiet = False
         elif cmd.lower() == "mlock":
             if not self.quiet:
-                self.msg("You have 10 seconds!", target)
+                self.msg("You have 20 seconds!", target)
                 self.quiet = True
-                time.sleep(10)
+                time.sleep(20)
                 self.quiet = False
         elif cmd.lower() == "notify on":
             if not self.notify:
