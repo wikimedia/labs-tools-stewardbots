@@ -959,7 +959,7 @@ def main():
     # other config data is in the database itself, but we need to know
     # where that db is & connect successfully before we can actually start.
     myhost = 'tools-db'
-    mydatabase = 's51541_sulwatcher'
+    mydatabase = 's51541__sulwatcher'
 
     db = Querier(host=myhost, db=mydatabase)
     nickname = getConfig('nickname')
