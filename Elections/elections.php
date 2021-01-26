@@ -37,7 +37,7 @@ function getPages( $titles ) {
 	echo "<!-- $URL -->";
 	$ch = curl_init( $URL );
 	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-	curl_setopt( $ch, CURLOPT_USERAGENT, 'Toolforge Bot - https://stewardbots.toolforge.org/' );
+	curl_setopt( $ch, CURLOPT_USERAGENT, 'Toolforge Bot - https://stewardbots-legacy.toolforge.org/' );
 	$result = unserialize( curl_exec( $ch ) );
 	curl_close( $ch );
 	$resultPages = $result['query']['pages'];
@@ -235,7 +235,7 @@ if ( $useCache ) {
 			<div class="portlet" id="p-logo">
 				<a style="background-image:
 url(//upload.wikimedia.org/wikipedia/commons/thumb/8/89/Toolforge_logo_with_text.svg/135px-Toolforge_logo_with_text.svg.png);"
-href="//tools.wmflabs.org/stewardbots/Elections/elections.php" title="Elections"></a>
+href="/Elections/elections.php" title="Elections"></a>
 			</div>
 			<div class="portlet" id="p-navigation">
 				<h3>Stewards</h3>

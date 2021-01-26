@@ -13,7 +13,7 @@ $(document).ready(function()
 </script>
 </head>
 <body>
-This is a replacement for erwin85's projects tool. For special rights, see <a href="http://tools.wmflabs.org/rightstool/cgi-bin/rightsstats">Dungodung's tool</a>.
+This is a replacement for erwin85's projects tool. For special rights, see <a href="https://rightstool.toolforge.org/cgi-bin/rightsstats">Dungodung's tool</a>.
 
 <br /><br />
 <table id="projects" class="tablesorter">
@@ -66,6 +66,6 @@ This is a replacement for erwin85's projects tool. For special rights, see <a hr
 </tbody>
 </table>
 <br />
-<p>This tool was written by <a href="https://meta.wikimedia.org/wiki/User:Rschen7754">Rschen7754</a>. Acknowledgements to <a href="http://tools.wmflabs.org/erwin85/">erwin85</a> for the original tool and many of the queries, and to <a href="http://tools.wmflabs.org/pathoschild-contrib/">Pathoschild</a> for creating the extensive suite of tools that were used as an example.</p>
+<p>This tool was written by <a href="https://meta.wikimedia.org/wiki/User:Rschen7754">Rschen7754</a>. Acknowledgements to <a href="https://erwin85.toolforge.org/">erwin85</a> for the original tool and many of the queries, and to <a href="https://pathoschild-contrib.toolforge.org/">Pathoschild</a> for creating the extensive suite of tools that were used as an example.</p>
 </body>
 </html>

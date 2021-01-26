@@ -197,7 +197,7 @@ class FreenodeBot(SingleServerIRCBot):
             except CommanderError as event:
                 print('CommanderError: %s' % event.value)
                 self.msg('You have to follow the proper syntax. See '
-                         '\x0302https://tools.wmflabs.org/stewardbots/'
+                         '\x0302https://stewardbots-legacy.toolforge.org/'
                          'SULWatcher\x03', nick)  # Make this translatable
             except Exception:
                 (exceptionType, exceptionValue,
@@ -241,8 +241,8 @@ class FreenodeBot(SingleServerIRCBot):
                     except CommanderError as event:
                         print('CommanderError: %s' % event.value)
                         self.msg('You have to follow the proper syntax. See '
-                                 '\x0302https://tools.wmflabs.org/stewardbots'
-                                 '/SULWatcher\x03', target)
+                                 '\x0302https://stewardbots-legacy.toolforge.org/'
+                                 'SULWatcher\x03', target)
                     except Exception:
                         (exceptionType, exceptionValue,
                          exceptionTraceback) = sys.exc_info()
@@ -425,9 +425,9 @@ class FreenodeBot(SingleServerIRCBot):
                         time.sleep(2)  # sleep a bit to avoid flooding?
                 else:
                     self.msg("Sorry, can't do. I'm afraid of flooding. You "
-                             'can view the list at https://tools.wmflabs.org/'
-                             'stewardbots/SULWatcher/ or force me to display '
-                             'it by repeating this command as operator.',
+                             'can view the list at https://stewardbots-legacy.toolforge.org/'
+                             'SULWatcher/ or force me to display it by repeating'
+                             'this command as operator.',
                              target)
             elif args[1] == 'whitelist':
                 self.msg('Whitelisted users: %s'

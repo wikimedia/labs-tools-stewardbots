@@ -157,8 +157,8 @@ Number of admins (maximum 10): <input type="text" name="number" value="<?php $ad
 </tbody>
 </table>
 <br />
-<p>Acknowledgements to <a href="http://tools.wmflabs.org/erwin85/">erwin85</a> for the
-original tool and many of the queries, and to <a href="http://tools.wmflabs.org/pathoschild-contrib/">Pathoschild</a>
+<p>Acknowledgements to <a href="https://erwin85.toolforge.org/">erwin85</a> for the
+original tool and many of the queries, and to <a href="https://pathoschild-contrib.toolforge.org/">Pathoschild</a>
 for creating the extensive suite of tools that I used as an example.</p>
 </body>
 </html>
