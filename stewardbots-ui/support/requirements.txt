@@ -1,0 +1,14 @@
+flask
+pyyaml
+mwoauth==0.3.2
+requests
+simplejson
+flask-mwoauth
+mwparserfromhell
+toolforge
+Flask-JSONLocale
+Flask-SQLAlchemy
+SQLAlchemy-Utils
+Flask-Migrate
+sparqlwrapper
+mysqlclient

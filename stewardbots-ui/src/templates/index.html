@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>{{ _('restarting-interface') }}</h1>
+    <p>{{ _('introduction-index') }}</p>
+
+    <h2>{{ _('stewardbots') }}</h2>
+    <form action="{{ url_for('restart', tool='stewardbots') }}" method="post">
+        <input type="submit" class="btn btn-primary btn-danger" value="{{ _('submit') }}">
+    </form>
+
+    <h2>{{ _('sulwatchers') }}</h2>
+    <form action="{{ url_for('restart', tool='sulwatcher') }}" method="post">
+        <input type="submit" class="btn btn-primary btn-danger" value="{{ _('submit') }}">
+    </form>
+</div>
+{% endblock %}

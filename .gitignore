@@ -12,3 +12,4 @@ __pycache__
 *.pyo
 *.bak
 /venv
+/stewardbots-ui/venv
