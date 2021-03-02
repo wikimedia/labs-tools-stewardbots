@@ -346,7 +346,9 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
 
     def attention(self, nick, cloak, channel=None, reason=None):
         cooldown_remove_threshold = time.time() - 90
-        for key in self.emergency_cooldowns.keys():
+
+        # wrap keys in list() to avoid crashes from cleanup causing the list to be resized during iteration
+        for key in list(self.emergency_cooldowns.keys()):
             value = self.emergency_cooldowns[key]
 
             # if the cooldown has expired, just remove it
