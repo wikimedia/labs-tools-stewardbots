@@ -10,9 +10,11 @@ import sys
 import os
 import re
 import time
+import json
 import threading
 import traceback
 from urllib.parse import quote
+from sseclient import SSEClient as EventStream
 
 # Needs irc lib
 from irc.bot import SingleServerIRCBot
@@ -481,12 +483,6 @@ class FreenodeBot(SingleServerIRCBot):
                     quitmsg = getConfig('quitmsg')
                 try:
                     rawquitmsg = ':' + quitmsg
-                    rcreader.connection.part(rcreader.rcfeed)
-                    rcreader.connection.quit()
-                    rcreader.disconnect()
-                except Exception:
-                    raise BotConnectionError("RC reader didn't disconnect")
-                try:
                     bot1.connection.part(bot1.channel, rawquitmsg)
                     bot1.connection.quit(rawquitmsg)
                     bot1.disconnect()
@@ -516,17 +512,6 @@ class FreenodeBot(SingleServerIRCBot):
                     quitmsg = getConfig('quitmsg')
                     print('Restarting all bots with message: "%s"' % quitmsg)
                     rawquitmsg = ':' + quitmsg
-                    try:
-                        rcreader.connection.part(rcfeed)
-                        rcreader.connection.quit()
-                        rcreader.disconnect()
-                        BotThread(rcreader).start()
-                    except Exception:
-                        raise BotConnectionError(
-                            "rcreader didn't recover: {} {} {}"
-                            .format(sys.exc_info()[1],
-                                    sys.exc_info()[1],
-                                    sys.exc_info()[2]))
                     try:
                         bot1.connection.part(mainchannel, rawquitmsg)
                         bot1.connection.quit()
@@ -563,16 +548,15 @@ class FreenodeBot(SingleServerIRCBot):
                 elif len(args) > 1 and args[1] == 'rc':
                     self.msg('Restarting RC reader', target)
                     try:
-                        rcreader.connection.part(rcfeed)
-                        rcreader.connection.quit()
-                        rcreader.disconnect()
-                        BotThread(rcreader).start()
-                    except Exception:
-                        raise BotConnectionError(
-                            "rcreader didn't recover: {} {} {}"
-                            .format(sys.exc_info()[1],
-                                    sys.exc_info()[1],
-                                    sys.exc_info()[2]))
+                        global stop_event, watcher, bot1, bot2, bot3
+                        stop_event.set()
+                        watcher = threading.Thread(name="EventStream", target=listener,
+                                                   args=(bot1, bot2, bot3, stop_event))
+                        stop_event.clear()
+                        watcher.start()
+
+                    except Exception as e:
+                        raise BotConnectionError(str(e))
                 else:
                     raise CommanderError("Invalid command")
             else:
@@ -805,117 +789,82 @@ class FreenodeBot(SingleServerIRCBot):
             raise ParseHostMaskError("Hostmask %s seems invalid." % mask)
 
 
-class WikimediaBot(SingleServerIRCBot):
+def listener(bot1, bot2, bot3, stop):
+    counter = 1
+    url = "https://stream.wikimedia.org/v2/stream/recentchange"
+    ca = "https://meta.wikimedia.org/wiki/Special:CentralAuth/"
+    while not stop.isSet():  # Thread will die when there isn't anything in the EventStream. Keep alive.
+        for event in EventStream(url):  # Listen to EventStream
+            if stop.isSet():  # Check flag inside loop
+                break
+            elif event.event != 'message':
+                continue
 
-    def __init__(self, rcfeed, nickname, server, port=6667):
-        SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
-        self.server = server
-        self.rcfeed = rcfeed
-        self.nickname = nickname
-        self.lastsulname = None
-        self.lastbot = bot1
+            try:
+                change = json.loads(event.data)
 
-    def on_error(self, c, event):
-        print(event.target)
-        # self.die()
+                if change['type'] != 'log':  # We don't want edits
+                    continue
+                if change['log_type'] != 'newusers':  # We only want newusers, not blocks or etc
+                    continue
 
-    def on_nicknameinuse(self, c, e):
-        c.nick(c.get_nickname() + '_')
-
-    def on_welcome(self, c, e):
-        # The Freenode bots connect comparatively slowly & have a 5s delay
-        # to identify to services before joining channels
-        time.sleep(5)
-        c.join(self.rcfeed)
-
-    def on_ctcp(self, c, event):
-        if event.arguments[0] == 'VERSION':
-            c.ctcp_reply(nm_to_n(event.source),
-                         "Bot for filtering account unifications in {}"
-                         .format(self.rcfeed))
-        elif event.arguments[0] == 'PING':
-            if len(event.arguments) > 1:
-                c.ctcp_reply(nm_to_n(event.source),
-                             "PING " + event.arguments[1])
-
-    def on_pubmsg(self, c, event):
-        global badwords, whitelist
-        centralwiki = 'https://meta.wikimedia.org/wiki/Special:CentralAuth/'
-        a = event.arguments[0]
-        # bot1.msg(a)
-        # Parsing the rcbot output:
-        # \x0314[[\x0307Usu\xc3\xa1rio:Liliaan\x0314]]\x034@ptwiki\x0310
-        # \x0302http://pt.wikipedia.org/wiki/Usu%C3%A1rio:Liliaan\x03
-        # \x035*\x03 \x0303Liliaan\x03 \x035*\x03
-        parse = re.compile(r"\x0314\[\[\x0307(?P<localname>.*)\x0314\]\]"
-                           r"\x034@(?P<sulwiki>.*)\x0310.*\x0303(?P<sulname>"
-                           r".*)\x03 \x035\*\x03", re.UNICODE)
-        try:
-            # localname = parse.search(a).group('localname')
-            sulwiki = parse.search(a).group('sulwiki')
-            sulname = parse.search(a).group('sulname')
-            if sulwiki != 'loginwiki':
-                return
-            if (not self.lastsulname or
-                    self.lastsulname != sulname):
                 bad = False
                 good = False
-                # print("%s@%s" % (sulname, sulwiki))
                 matches = []
-                for (idx, bw) in badwords:
-                    if (bw.search(sulname)):
+
+                for (idx, bw) in badwords:  # Use old method for checking badwords
+                    if re.search(bw, change['user']):
                         bad = True
-                        matches.append(bw.pattern)
-                for wl in whitelist:
-                    if sulname == wl:
-                        print("Skipped '%s'; user is whitelisted" % sulname)
+                        matches.append(bw)
+                for wl in whitelist:  # Use old method to check for whitelist
+                    if change['user'] == wl:
+                        print("Skipped '%s'; user is whitelisted" % change['user'])
                         good = True
-                urlname = quote(sulname)
-#                print('original: %s' % urlname)
-                if urlname.endswith('.'):
-                    urlname = re.sub(r'\.$', '%2E', urlname)
-#                print('Replacement: %s' % sulname)
-                if not bad and not good:
-                    self.lastbot.msg(
-                        "\x0303{0} \x0302{1}{2}\x03".format(
-                            sulname,
-                            centralwiki,
-                            urlname
-                        )
+
+                if not bad and not good:  # Use old method to build bot spam
+                    botsay = "\x0303{0} \x0302{1}{2}\x03".format(
+                        change['user'],
+                        ca,
+                        quote(change['user']).replace('.', "%2E")
                     )
-                    if self.lastbot == bot1:
-                        self.lastbot = bot2
-                    elif self.lastbot == bot2:
-                        self.lastbot = bot3
-                    else:
-                        self.lastbot = bot1
                 elif bad and not good:
                     for m in matches:
                         try:
                             sql = ('INSERT INTO logging (l_regex,l_user,'
                                    'l_timestamp) VALUES '
                                    '(%s,%s,%s);')
-                            args = (m, sulname, time.strftime('%Y%m%d%H%M%S'))
+                            args = (m, change['user'], time.strftime('%Y%m%d%H%M%S'))
                             db.do(sql, args)
                         except Exception:
                             print('Could not log hit to database.')
-                    self.lastbot.msg(
-                        "\x0303{0} \x0305\x02".format(sulname) +
-                        "matches badword {0}".format('; '.join(matches)) +
-                        "\017: \x0302{0}{1}\x03".format(centralwiki, urlname)
+                    botsay = "\x0303{0} \x0305\x02 matches badword {1} \017: \x0302{2}{3}\x03".format(
+                        change['user'],
+                        '; '.join(matches),
+                        ca,
+                        quote(change['user']).replace('.', "%2E")
                     )
-                    if self.lastbot == bot1:
-                        self.lastbot = bot2
-                    elif self.lastbot == bot2:
-                        self.lastbot = bot3
-                    else:
-                        self.lastbot = bot1
-            self.lastsulname = sulname
-        except Exception:  # Should be specific about what might happen here
-            print(
-                'RC reader error: %s %s %s'
-                % (sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
-            )
+                else:
+                    botsay = None
+
+                if botsay is not None:  # Make sure we have a message to send to the bots
+                    if counter == 1:  # Send to bot1
+                        bot1.msg(botsay)
+                        counter += 1
+                    elif counter == 2:  # Send to bot2
+                        bot2.msg(botsay)
+                        counter += 1
+                    else:  # Send to bot3 or regain sanity
+                        bot3.msg(botsay)
+                        counter = 1
+
+            except ValueError:  # Sometimes EventStream sends garbage. Catch and throw it away
+                pass
+            except Exception as e:  # Should be specific about what might happen here
+                print(
+                    'RC reader error: %s %s %s'
+                    % (sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
+                )
+                bot1.msg(str(e))
 
 
 class IgnoreErrorsBuffer(buffer.DecodingLineBuffer):
@@ -951,7 +900,7 @@ def getConfig(param):
 
 
 def main():
-    global bot1, bot2, bot3, rcreader, nickname, alias, password, mainchannel
+    global bot1, bot2, bot3, stop_event, nickname, alias, password, mainchannel
     global mainserver, wmserver, rcfeed, db
 
     # These vars should be customized - in the future, they should be
@@ -973,9 +922,10 @@ def main():
     bot1 = FreenodeBot(mainchannel, nickname, mainserver, password, 8001)
     bot2 = FreenodeBot(mainchannel, alias, mainserver, password, 8001)
     bot3 = FreenodeBot(mainchannel, alias2, mainserver, password, 8001)
-    rcreader = WikimediaBot(rcfeed, 'SULW', wmserver, 8001)
+    stop_event = threading.Event()
+    watcher = threading.Thread(name="EventStream", target=listener, args=(bot1, bot2, bot3, stop_event))
     try:
-        BotThread(rcreader).start()  # Can cause ServerNotConnectedError
+        watcher.start()
         BotThread(bot1).start()
         BotThread(bot2).start()
         BotThread(bot3).start()
@@ -985,7 +935,7 @@ def main():
 
 
 if __name__ == "__main__":
-    global bot1, rcreader, bot2, bot3
+    global bot1, rcreader, bot2, bot3, stop_event
 # main()
     try:
         main()
@@ -1003,8 +953,8 @@ if __name__ == "__main__":
         traceback.print_exception(
             exceptionType, exceptionValue, exceptionTraceback)
     finally:
+        stop_event.set()
         bot1.die()
-        rcreader.die()
         bot2.die()
         bot3.die()
         sys.exit()
