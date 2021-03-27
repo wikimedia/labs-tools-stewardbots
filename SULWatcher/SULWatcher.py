@@ -815,7 +815,7 @@ def listener(bot1, bot2, bot3, stop):
                 for (idx, bw) in badwords:  # Use old method for checking badwords
                     if re.search(bw, change['user']):
                         bad = True
-                        matches.append(bw)
+                        matches.append(bw.pattern)
                 for wl in whitelist:  # Use old method to check for whitelist
                     if change['user'] == wl:
                         print("Skipped '%s'; user is whitelisted" % change['user'])
@@ -925,10 +925,10 @@ def main():
     stop_event = threading.Event()
     watcher = threading.Thread(name="EventStream", target=listener, args=(bot1, bot2, bot3, stop_event))
     try:
-        watcher.start()
         BotThread(bot1).start()
         BotThread(bot2).start()
         BotThread(bot3).start()
+        watcher.start()
 
     except KeyboardInterrupt:
         raise
