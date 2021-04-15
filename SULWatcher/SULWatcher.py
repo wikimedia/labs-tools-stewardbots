@@ -104,11 +104,17 @@ class ParseHostMaskError(SULWatcherException):
 
 
 class FreenodeBot(SingleServerIRCBot):
+    def __init__(self, sulwatcher, channel, nickname, server, password, port=6667):
+        SingleServerIRCBot.__init__(
+            self,
+            [
+                (server, port, "%s:%s" % (nickname, password))
+            ],
+            nickname,
+            nickname
+        )
 
-    def __init__(self, channel, nickname, server, password, port=6667):
-        SingleServerIRCBot.__init__(self, [(server, port, "%s:%s"
-                                            % (nickname, password))],
-                                    nickname, nickname)
+        self.sulwatcher = sulwatcher
         self.server = server
         self.channel = channel
         self.nickname = nickname
@@ -274,14 +280,14 @@ class FreenodeBot(SingleServerIRCBot):
         if args[0] == '_':  # I forget why this was needed :(
             args.remove('_')
         if args[0] == 'help':
-            self.msg(getConfig('help'), nick)
+            self.msg(self.sulwatcher.get_config_result('help'), nick)
         elif args[0] == 'test':  # Notifications
             if len(args) >= 4:
                 try:
                     i = args.index('regex')
                     string = ' '.join(args[1:i])
                     probe = ' '.join(args[i + 1:])
-                    if (re.search(probe, string, re.IGNORECASE)):
+                    if re.search(probe, string, re.IGNORECASE):
                         self.msg('"%s" matches case insensitive regex "%s"'
                                  % (string, probe), target)
                     else:
@@ -301,7 +307,7 @@ class FreenodeBot(SingleServerIRCBot):
                     # Test MySQL connection
                     sql = ('SELECT l_regex,l_user,l_timestamp FROM '
                            'logging ORDER BY l_id DESC LIMIT 1;')
-                    result = db.do(sql)
+                    result = self.sulwatcher.querier.do(sql)
                 except Exception:
                     result = None
 
@@ -341,7 +347,7 @@ class FreenodeBot(SingleServerIRCBot):
                 sql = ('SELECT r_regex FROM regex '
                        'WHERE r_cloak=%s AND r_active=1;')
                 args = (adder,)
-                results = db.do(sql, args)
+                results = self.sulwatcher.querier.do(sql, args)
                 regexes = [r['r_regex'] for r in results]
                 if len(regexes) == 0:
                     self.msg('%s has added no regexes.' % adder, target)
@@ -370,8 +376,8 @@ class FreenodeBot(SingleServerIRCBot):
                 sql = ('UPDATE regex SET r_regex=%s,r_cloak=%s,'
                        'r_timestamp=%s WHERE r_id=%s')
                 args = (regex, adder, time.strftime('%Y%m%d%H%M%S'), index)
-                db.do(sql, args)
-                if db.cursor.rowcount > 0:
+                self.sulwatcher.querier.do(sql, args)
+                if self.sulwatcher.querier.cursor.rowcount > 0:
                     self.msg('Regex #%s updated.' % (index), target=target)
                     self.getPrintRegex(index=index, target=target)
                     self.buildRegex()
@@ -389,8 +395,8 @@ class FreenodeBot(SingleServerIRCBot):
                     sql = ('UPDATE regex SET r_reason=%s,r_timestamp=%s '
                            'WHERE r_id=%s')
                     args = (reason, time.strftime('%Y%m%d%H%M%S'), index)
-                db.do(sql, args)
-                if db.cursor.rowcount > 0:
+                self.sulwatcher.querier.do(sql, args)
+                if self.sulwatcher.querier.cursor.rowcount > 0:
                     self.msg('Regex #%s updated.' % (index), target=target)
                     self.getPrintRegex(index=index, target=target)
             elif args[2] == 'enable' or args[2] == 'active':
@@ -403,8 +409,8 @@ class FreenodeBot(SingleServerIRCBot):
                     sql = ('UPDATE regex SET r_case=0,r_timestamp=%s '
                            'WHERE r_id=%s')
                 args = (time.strftime('%Y%m%d%H%M%S'), index)
-                db.do(sql, args)
-                if db.cursor.rowcount > 0:
+                self.sulwatcher.querier.do(sql, args)
+                if self.sulwatcher.querier.cursor.rowcount > 0:
                     self.msg('Regex #%s updated.' % (index), target=target)
                     self.getPrintRegex(index=index, target=target)
                     self.buildRegex()
@@ -414,7 +420,7 @@ class FreenodeBot(SingleServerIRCBot):
                     args[1] == 'regex' or args[1] == 'regexes'):
                 if self.channels[self.channel].is_oper(nick):
                     sql = ('SELECT r_regex FROM regex WHERE r_active=1;')
-                    results = db.do(sql)
+                    results = self.sulwatcher.querier.do(sql)
                     longlist = [r['r_regex'] for r in results]
                     maxlen = 20
                     shortlists = [longlist[i:i + maxlen]
@@ -453,8 +459,8 @@ class FreenodeBot(SingleServerIRCBot):
                     sql = ('UPDATE regex SET r_reason=%s,r_timestamp=%s '
                            'WHERE r_id=%s')
                     args = (reason, time.strftime('%Y%m%d%H%M%S'), index)
-                db.do(sql, args)
-                if db.cursor.rowcount > 0:
+                self.sulwatcher.querier.do(sql, args)
+                if self.sulwatcher.querier.cursor.rowcount > 0:
                     self.msg('Regex #%s updated.' % (index), target=target)
                     self.getPrintRegex(index=index, target=target)
             elif args[1] == 'whitelist':
@@ -480,26 +486,17 @@ class FreenodeBot(SingleServerIRCBot):
                 if len(args) > 1:
                     quitmsg = ' '.join(args[1:])
                 else:
-                    quitmsg = getConfig('quitmsg')
-                try:
-                    rawquitmsg = ':' + quitmsg
-                    bot1.connection.part(bot1.channel, rawquitmsg)
-                    bot1.connection.quit(rawquitmsg)
-                    bot1.disconnect()
-                except Exception:
-                    raise BotConnectionError("bot1 didn't disconnect")
-                try:
-                    bot2.connection.part(bot2.channel, rawquitmsg)
-                    bot2.connection.quit(rawquitmsg)
-                    bot2.disconnect()
-                except Exception:
-                    raise BotConnectionError("bot2 didn't disconnect")
-                try:
-                    bot3.connection.part(bot3.channel, rawquitmsg)
-                    bot3.connection.quit(rawquitmsg)
-                    bot3.disconnect()
-                except Exception:
-                    raise BotConnectionError("bot3 didn't disconnect")
+                    quitmsg = self.sulwatcher.get_config_result('quitmsg')
+                for botinstance in self.sulwatcher.irc_bots:
+                    try:
+                        rawquitmsg = ':' + quitmsg
+                        botinstance.connection.part(botinstance.channel, rawquitmsg)
+                        botinstance.connection.quit(rawquitmsg)
+                        botinstance.disconnect()
+                    except Exception:
+                        # let's exit anyways
+                        print(traceback.format_exc())
+                        print("a bot didn't disconnect")
                 print('Killed. Now exiting...')
                 # sys.exit(0) # 0 is a normal exit status
                 os._exit(os.EX_OK)  # really really kill things off!!
@@ -509,51 +506,27 @@ class FreenodeBot(SingleServerIRCBot):
             if self.channels[self.channel].is_oper(nick):
                 print('%s is opped - restarting...' % nick)
                 if len(args) == 1:
-                    quitmsg = getConfig('quitmsg')
+                    quitmsg = self.sulwatcher.get_config_result('quitmsg')
                     print('Restarting all bots with message: "%s"' % quitmsg)
                     rawquitmsg = ':' + quitmsg
-                    try:
-                        bot1.connection.part(mainchannel, rawquitmsg)
-                        bot1.connection.quit()
-                        bot1.disconnect()
-                        BotThread(bot1).start()
-                    except Exception:
-                        raise BotConnectionError(
-                            "bot1 didn't recover: {} {} {}"
-                            .format(sys.exc_info()[1],
-                                    sys.exc_info()[1],
-                                    sys.exc_info()[2]))
-                    try:
-                        bot2.connection.part(mainchannel, rawquitmsg)
-                        bot2.connection.quit()
-                        bot2.disconnect()
-                        BotThread(bot2).start()
-                    except Exception:
-                        raise BotConnectionError(
-                            "bot2 didn't recover: {} {} {}"
-                            .format(sys.exc_info()[1],
-                                    sys.exc_info()[1],
-                                    sys.exc_info()[2]))
-                    try:
-                        bot3.connection.part(mainchannel, rawquitmsg)
-                        bot3.connection.quit()
-                        bot3.disconnect()
-                        BotThread(bot3).start()
-                    except Exception:
-                        raise BotConnectionError(
-                            "bot3 didn't recover: {} {} {}"
-                            .format(sys.exc_info()[1],
-                                    sys.exc_info()[1],
-                                    sys.exc_info()[2]))
+                    for botinstance in self.sulwatcher.irc_bots:
+                        try:
+                            rawquitmsg = ':' + quitmsg
+                            botinstance.connection.part(botinstance.channel, rawquitmsg)
+                            botinstance.connection.quit(rawquitmsg)
+                            botinstance.disconnect()
+                            BotThread(botinstance).start()
+                        except Exception:
+                            raise BotConnectionError(
+                                "a bot didn't recover: {} {} {}"
+                                .format(sys.exc_info()[1],
+                                        sys.exc_info()[1],
+                                        sys.exc_info()[2]))
                 elif len(args) > 1 and args[1] == 'rc':
                     self.msg('Restarting RC reader', target)
                     try:
-                        global stop_event, watcher, bot1, bot2, bot3
-                        stop_event.set()
-                        watcher = threading.Thread(name="EventStream", target=listener,
-                                                   args=(bot1, bot2, bot3, stop_event))
-                        stop_event.clear()
-                        watcher.start()
+                        self.sulwatcher.eventstreams_stop.set()
+                        self.sulwatcher.start_eventstreams()
 
                     except Exception as e:
                         raise BotConnectionError(str(e))
@@ -566,7 +539,7 @@ class FreenodeBot(SingleServerIRCBot):
         print('buildRegex(self)')
         global badwords
         sql = ('SELECT r_id,r_regex,r_case FROM regex WHERE r_active=1;')
-        results = db.do(sql)
+        results = self.sulwatcher.querier.do(sql)
         badwords = []
         for r in results:
             index = r['r_id']
@@ -587,24 +560,24 @@ class FreenodeBot(SingleServerIRCBot):
         print('buildWhitelist(self)')
         global whitelist
         sql = ("SELECT s_value FROM setup WHERE s_param='whitelist';")
-        result = db.do(sql)
+        result = self.sulwatcher.querier.do(sql)
         whitelist = [r['s_value'] for r in result]
 
     def addRegex(self, regex, cloak, target):
         print("addRegex(self, '%s', '%s', '%s')" % (regex, cloak, target))
         sql = ('SELECT r_id FROM regex WHERE r_regex=%s;')
         args = (regex,)
-        result = db.do(sql, args)
+        result = self.sulwatcher.querier.do(sql, args)
         if not result:
             sql = ('INSERT IGNORE INTO regex (r_regex,r_cloak,r_timestamp) '
                    'VALUES (%s,%s,%s)')
             args = (regex, cloak, time.strftime('%Y%m%d%H%M%S'))
-            db.do(sql, args)
-            if db.cursor.rowcount > 0:
+            self.sulwatcher.querier.do(sql, args)
+            if self.sulwatcher.querier.cursor.rowcount > 0:
                 self.msg('%s added %s to the list of regexes. If you would '
                          'like to set a reason, say "SULWatcher: add reason '
                          '%s reason for adding the regex".'
-                         % (cloak, regex, db.cursor.lastrowid), target)
+                         % (cloak, regex, self.sulwatcher.querier.cursor.lastrowid), target)
                 self.buildRegex()
         else:
             self.msg('%s is already listed as a regex.' % (regex), target)
@@ -622,8 +595,8 @@ class FreenodeBot(SingleServerIRCBot):
             args = (time.strftime('%Y%m%d%H%M%S'), index)
         else:
             return
-        db.do(sql, args)
-        if db.cursor.rowcount > 0:
+        self.sulwatcher.querier.do(sql, args)
+        if self.sulwatcher.querier.cursor.rowcount > 0:
             if regex:
                 self.msg('Disabled regex %s.' % (regex), target)
             elif index:
@@ -640,8 +613,8 @@ class FreenodeBot(SingleServerIRCBot):
         sql = ('UPDATE regex SET r_active=1 '
                'WHERE r_id=%s;')
         args = (index,)
-        db.do(sql, args)
-        if db.cursor.rowcount > 0:
+        self.sulwatcher.querier.do(sql, args)
+        if self.sulwatcher.querier.cursor.rowcount > 0:
             self.msg('Enabled regex #%s.' % (index), target)
             self.buildRegex()
 
@@ -667,7 +640,7 @@ class FreenodeBot(SingleServerIRCBot):
             args = (index,)
         else:
             return None
-        result = db.do(sql, args)
+        result = self.sulwatcher.querier.do(sql, args)
         # "no results" is really one row of Nones:
         # {'hits': None, 'r_regex': None, 'r_cloak': None, 'r_id': None,
         # 'r_timestamp': None, 'r_case': None, 'r_reason': None,
@@ -710,15 +683,15 @@ class FreenodeBot(SingleServerIRCBot):
 
     def addToList(self, who, groupname, target):
         print("addToList(self, '%s', '%s', '%s')" % (who, groupname, target))
-        group_members = getConfig(groupname)
+        group_members = self.sulwatcher.get_config_result(groupname)
         if not group_members:
             self.msg("Could not find '%s'." % (groupname), target)
         elif who not in group_members:
             sql = ('INSERT INTO setup (s_param,s_value) '
                    'VALUES (%s,%s);')
             args = (groupname, who)
-            db.do(sql, args)
-            if db.cursor.rowcount > 0:
+            self.sulwatcher.querier.do(sql, args)
+            if self.sulwatcher.querier.cursor.rowcount > 0:
                 self.msg('Added %s to %s.' % (who, groupname), target)
                 # Rebuild whitelist if necessary
                 if groupname == 'whitelist':
@@ -731,14 +704,14 @@ class FreenodeBot(SingleServerIRCBot):
             "removeFromList(self, '%s', '%s', '%s')"
             % (who, groupname, target)
         )
-        group_members = getConfig(groupname)
+        group_members = self.sulwatcher.get_config_result(groupname)
         if not group_members:
             self.msg("Could not find '%s'." % (groupname), target)
         elif who in group_members:
             sql = ('DELETE FROM setup WHERE s_param=%s AND s_value=%s;')
             args = (groupname, who)
-            db.do(sql, args)
-            if db.cursor.rowcount > 0:
+            self.sulwatcher.querier.do(sql, args)
+            if self.sulwatcher.querier.cursor.rowcount > 0:
                 self.msg('Removed %s from %s.' % (who, groupname), target)
                 # Rebuild whitelist if necessary
                 if groupname == 'whitelist':
@@ -789,82 +762,86 @@ class FreenodeBot(SingleServerIRCBot):
             raise ParseHostMaskError("Hostmask %s seems invalid." % mask)
 
 
-def listener(bot1, bot2, bot3, stop):
-    counter = 1
-    url = "https://stream.wikimedia.org/v2/stream/recentchange"
-    ca = "https://meta.wikimedia.org/wiki/Special:CentralAuth/"
-    while not stop.isSet():  # Thread will die when there isn't anything in the EventStream. Keep alive.
-        for event in EventStream(url):  # Listen to EventStream
-            if stop.isSet():  # Check flag inside loop
-                break
-            elif event.event != 'message':
-                continue
+class EventstreamsListener:
+    def __init__(self, sulwatcher):
+        self.sulwatcher = sulwatcher
 
-            try:
-                change = json.loads(event.data)
-
-                if change['type'] != 'log':  # We don't want edits
-                    continue
-                if change['log_type'] != 'newusers':  # We only want newusers, not blocks or etc
+    def start(self):
+        counter = 0
+        url = "https://stream.wikimedia.org/v2/stream/recentchange"
+        ca = "https://meta.wikimedia.org/wiki/Special:CentralAuth/"
+        while not self.sulwatcher.eventstreams_stop.isSet():  # Thread will die when there isn't anything in the EventStream. Keep alive.
+            for event in EventStream(url):  # Listen to EventStream
+                if self.sulwatcher.eventstreams_stop.isSet():  # Check flag inside loop
+                    break
+                elif event.event != 'message':
                     continue
 
-                bad = False
-                good = False
-                matches = []
+                try:
+                    change = json.loads(event.data)
 
-                for (idx, bw) in badwords:  # Use old method for checking badwords
-                    if re.search(bw, change['user']):
-                        bad = True
-                        matches.append(bw.pattern)
-                for wl in whitelist:  # Use old method to check for whitelist
-                    if change['user'] == wl:
-                        print("Skipped '%s'; user is whitelisted" % change['user'])
-                        good = True
+                    if change['type'] != 'log':  # We don't want edits
+                        continue
+                    if change['log_type'] != 'newusers':  # We only want newusers, not blocks or etc
+                        continue
 
-                if not bad and not good:  # Use old method to build bot spam
-                    botsay = "\x0303{0} \x0302{1}{2}\x03".format(
-                        change['user'],
-                        ca,
-                        quote(change['user']).replace('.', "%2E")
-                    )
-                elif bad and not good:
-                    for m in matches:
-                        try:
-                            sql = ('INSERT INTO logging (l_regex,l_user,'
-                                   'l_timestamp) VALUES '
-                                   '(%s,%s,%s);')
-                            args = (m, change['user'], time.strftime('%Y%m%d%H%M%S'))
-                            db.do(sql, args)
-                        except Exception:
-                            print('Could not log hit to database.')
-                    botsay = "\x0303{0} \x0305\x02 matches badword {1} \017: \x0302{2}{3}\x03".format(
-                        change['user'],
-                        '; '.join(matches),
-                        ca,
-                        quote(change['user']).replace('.', "%2E")
-                    )
-                else:
+                    bad = False
+                    good = False
+                    matches = []
                     botsay = None
 
-                if botsay is not None:  # Make sure we have a message to send to the bots
-                    if counter == 1:  # Send to bot1
-                        bot1.msg(botsay)
-                        counter += 1
-                    elif counter == 2:  # Send to bot2
-                        bot2.msg(botsay)
-                        counter += 1
-                    else:  # Send to bot3 or regain sanity
-                        bot3.msg(botsay)
-                        counter = 1
+                    for (idx, bw) in badwords:  # Use old method for checking badwords
+                        if re.search(bw, change['user']):
+                            bad = True
+                            matches.append(bw.pattern)
+                    for wl in whitelist:  # Use old method to check for whitelist
+                        if change['user'] == wl:
+                            print("Skipped '%s'; user is whitelisted" % change['user'])
+                            good = True
 
-            except ValueError:  # Sometimes EventStream sends garbage. Catch and throw it away
-                pass
-            except Exception as e:  # Should be specific about what might happen here
-                print(
-                    'RC reader error: %s %s %s'
-                    % (sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
-                )
-                bot1.msg(str(e))
+                    if not bad and not good:  # Use old method to build bot spam
+                        botsay = "\x0303{0} \x0302{1}{2}\x03".format(
+                            change['user'],
+                            ca,
+                            quote(change['user']).replace('.', "%2E")
+                        )
+                    elif bad and not good:
+                        for m in matches:
+                            try:
+                                sql = ('INSERT INTO logging (l_regex,l_user,'
+                                       'l_timestamp) VALUES '
+                                       '(%s,%s,%s);')
+                                args = (m, change['user'], time.strftime('%Y%m%d%H%M%S'))
+                                self.sulwatcher.querier.do(sql, args)
+                            except Exception:
+                                print('Could not log hit to database.')
+                        botsay = "\x0303{0} \x0305\x02 matches badword {1} \017: \x0302{2}{3}\x03".format(
+                            change['user'],
+                            '; '.join(matches),
+                            ca,
+                            quote(change['user']).replace('.', "%2E")
+                        )
+
+                    if botsay is not None:
+                        self.sulwatcher.irc_bots[counter % len(self.sulwatcher.irc_bots)].msg(botsay)
+                        counter += 1
+                except ValueError:  # Sometimes EventStream sends garbage. Catch and throw it away
+                    pass
+                except Exception as e:  # Should be specific about what might happen here
+                    print(
+                        'RC reader error: %s %s %s'
+                        % (sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
+                    )
+                    self.sulwatcher.irc_bots[0].msg(str(e))
+
+
+class EventstreamsThread(threading.Thread):
+    def __init__(self, listener):
+        threading.Thread.__init__(self)
+        self.listener = listener
+
+    def run(self):
+        self.listener.start()
 
 
 class IgnoreErrorsBuffer(buffer.DecodingLineBuffer):
@@ -873,88 +850,81 @@ class IgnoreErrorsBuffer(buffer.DecodingLineBuffer):
 
 
 class BotThread(threading.Thread):
-
     def __init__(self, bot):
-        self.b = bot
         threading.Thread.__init__(self)
+        self.bot = bot
 
     def run(self):
-        self.startbot(self.b)
-
-    def startbot(self, bot):
         ServerConnection.buffer_class = IgnoreErrorsBuffer
-        bot.start()
+        self.bot.start()
 
 
-def getConfig(param):
-    print("getConfig(self, '%s')" % (param))
-    sql = ('SELECT s_value FROM setup WHERE s_param=%s;')
-    args = (param,)
-    result = db.do(sql, args)
-    result = [r['s_value'] for r in result]
-    if len(result) > 1:
-        return result
-    if len(result) == 1:
-        return result[0]
-    return None
+class SULWatcher:
+    """
+    Main SULWatcher class holding references to other objects.
+    """
+
+    def __init__(self):
+        # TODO: those should not be hardcoded
+        self.querier = Querier(host="tools.db.svc.eqiad.wmflabs", db="s51541__sulwatcher")
+
+        self.irc_bots = None
+        self.eventstreams_stop = None
+        self.eventstreams_listener = None
+
+    def get_config_result(self, key):
+        print('getConfig(%s)' % key)
+        result = [r['s_value'] for r in self.querier.do('SELECT s_value FROM setup WHERE s_param = %s;', (key, ))]
+        if len(result) > 1:
+            return result
+        if len(result) == 1:
+            return result[0]
+        return None
+
+    def start_irc_bots(self):
+        if self.irc_bots is None:
+            irc_password = self.get_config_result('password')
+            irc_server = self.get_config_result('server')
+            irc_channel = self.get_config_result('channel')
+            self.irc_bots = [
+                FreenodeBot(self, irc_channel, self.get_config_result('nickname'), irc_server, irc_password, 8001),
+                FreenodeBot(self, irc_channel, self.get_config_result('alias'), irc_server, irc_password, 8001),
+                FreenodeBot(self, irc_channel, self.get_config_result('alias2'), irc_server, irc_password, 8001),
+            ]
+
+        for bot in self.irc_bots:
+            print("starting", bot.nickname)
+            BotThread(bot).start()
+
+    def start_eventstreams(self):
+        if self.eventstreams_listener is None:
+            self.eventstreams_listener = EventstreamsListener(self)
+        if self.eventstreams_stop is None:
+            self.eventstreams_stop = threading.Event()
+        else:
+            self.eventstreams_stop.clear()
+
+        EventstreamsThread(self.eventstreams_listener).start()
+        print("starting EventStream")
+
+    def start_bots(self):
+        """Start all the bots"""
+        self.start_irc_bots()
+        self.start_eventstreams()
 
 
 def main():
-    global bot1, bot2, bot3, stop_event, nickname, alias, password, mainchannel
-    global mainserver, wmserver, rcfeed, db
-
-    # These vars should be customized - in the future, they should be
-    # read from a simple external config file for bootstrapping - all
-    # other config data is in the database itself, but we need to know
-    # where that db is & connect successfully before we can actually start.
-    myhost = 'tools-db'
-    mydatabase = 's51541__sulwatcher'
-
-    db = Querier(host=myhost, db=mydatabase)
-    nickname = getConfig('nickname')
-    alias = getConfig('alias')
-    alias2 = getConfig('alias2')
-    password = getConfig('password')
-    mainchannel = getConfig('channel')
-    mainserver = getConfig('server')
-    wmserver = getConfig('wmserver')
-    rcfeed = getConfig('rcfeed')
-    bot1 = FreenodeBot(mainchannel, nickname, mainserver, password, 8001)
-    bot2 = FreenodeBot(mainchannel, alias, mainserver, password, 8001)
-    bot3 = FreenodeBot(mainchannel, alias2, mainserver, password, 8001)
-    stop_event = threading.Event()
-    watcher = threading.Thread(name="EventStream", target=listener, args=(bot1, bot2, bot3, stop_event))
+    sulwatcher = SULWatcher()
     try:
-        BotThread(bot1).start()
-        BotThread(bot2).start()
-        BotThread(bot3).start()
-        watcher.start()
-
+        sulwatcher.start_bots()
     except KeyboardInterrupt:
-        raise
+        pass
+    finally:
+        for bot in sulwatcher.irc_bots:
+            bot.die()
+
+        sulwatcher.eventstreams_stop.set()
 
 
 if __name__ == "__main__":
-    global bot1, rcreader, bot2, bot3, stop_event
-# main()
-    try:
-        main()
-    # We should be specific about what kinds of errors actually necessitate
-    # dying, and which ones have better failure modes.
-    except KeyboardInterrupt:
-        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-        traceback.print_exception(
-            exceptionType, exceptionValue, exceptionTraceback)
-        os._exit(os.EX_OK)
-        raise
-    except Exception:
-        print('\nUnexpected error:\n')
-        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-        traceback.print_exception(
-            exceptionType, exceptionValue, exceptionTraceback)
-    finally:
-        stop_event.set()
-        bot1.die()
-        bot2.die()
-        bot3.die()
-        sys.exit()
+    main()
