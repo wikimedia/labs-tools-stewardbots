@@ -17,10 +17,15 @@ from urllib.parse import quote
 from sseclient import SSEClient as EventStream
 
 # Needs irc lib
-from irc.bot import SingleServerIRCBot
 from irc.client import NickMask
 from irc.client import ServerConnection
 from jaraco.stream import buffer
+
+from ib3 import Bot
+from ib3.auth import SASL
+from ib3.connection import SSL
+from ib3.mixins import DisconnectOnError
+from ib3.nick import Ghost
 
 import pymysql
 
@@ -102,63 +107,20 @@ class ParseHostMaskError(SULWatcherException):
 
     pass
 
-
-class FreenodeBot(SingleServerIRCBot):
-    def __init__(self, sulwatcher, channel, nickname, server, password, port=6667):
-        SingleServerIRCBot.__init__(
-            self,
-            [
-                (server, port, "%s:%s" % (nickname, password))
-            ],
-            nickname,
-            nickname
-        )
-
+class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
+    def __init__(self, sulwatcher, channel, nickname, server, password, port=6697):
         self.sulwatcher = sulwatcher
-        self.server = server
         self.channel = channel
         self.nickname = nickname
-        self.password = password
         self.buildRegex()
         self.buildWhitelist()
-
-    def on_error(self, c, event):
-        """
-        Called when some kind of IRC error happens.
-
-        WTF does that mean?!
-        """
-        print("Error:")
-        print("Arguments: %s" % event.arguments())
-        print("Target: %s" % event.target())
-        self.die()
-        sys.exit(1)
-
-    def on_nicknameinuse(self, c, e):
-        """
-        Called when the server tells us our nick is already in use.
-
-        We attempt to ghost the nick and acquire it.
-        """
-        print("Nick %s is in use, trying to acquire it..." % self.nickname)
-        c.nick(c.get_nickname() + "_")
-        c.privmsg("NickServ", "GHOST %s %s" % (self.nickname, self.password))
-        c.nick(self.nickname)
-        print("Acquired nick %s; identifying..." % self.nickname)
-        c.privmsg("NickServ", "IDENTIFY %s" % self.password)
-
-    def on_welcome(self, c, e):
-        """
-        Called when the server welcomes us after successfully connecting.
-
-        We log the fact, and identify to nickserv.
-        """
-        print("Identifying to services...")
-        c.privmsg("NickServ", "RELEASE %s %s" % (self.nickname, self.password))
-        c.privmsg("NickServ", "IDENTIFY %s" % self.password)
-        time.sleep(8)  # Let identification succeed before joining channels
-        c.join(self.channel)
-        print("Joined %s" % self.channel)
+        super.__init__(
+            server_list=[(server, port)],
+            nickname=nickname,
+            realname=nickname,
+            ident_password=password,
+            channels=[self.channel]
+        )
 
     def on_ctcp(self, c, event):
         """
@@ -174,10 +136,8 @@ class FreenodeBot(SingleServerIRCBot):
             c.ctcp_reply(
                 self.getNick(event.source),
                 "Bot for filtering account unifications in %s" % self.channel)
-        elif event.arguments[0] == "PING":
-            if len(event.arguments) > 1:
-                c.ctcp_reply(
-                    self.getNick(event.source), "PING " + event.arguments[1])
+        elif event.arguments[0] == "PING" and len(event.arguments) > 1:
+            c.ctcp_reply(self.getNick(event.source), "PING " + event.arguments[1])
         elif event.arguments[0] == "SOURCE":
             c.ctcp_reply(self.getNick(event.source),
                          "git://git.hashbang.ca/SULWatcher")
@@ -231,6 +191,8 @@ class FreenodeBot(SingleServerIRCBot):
          * help is replied to in PM
          * ??
         """
+        if not self.has_primary_nick():
+            return
         # timestamp = time.strftime('%d.%m.%Y %H:%M:%S',
         #                           time.localtime(time.time()))
         nick = nm_to_n(event.source)
