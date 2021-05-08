@@ -1170,6 +1170,69 @@ class RecentChangesBot:
                                                 change['comment']
                                             )
                                         )
+                                    elif change['log_action'] == 'groupprms3':
+                                        bot1.msg(
+                                            "03%s changed group restricted wikis set for %s from 04%s to 04%s: 07%s" %
+                                            (
+                                                change['user'],
+                                                change['title'].replace('Special:GlobalUsers/', ''),
+                                                change['log_params'][0],
+                                                change['log_params'][1],
+                                                change['comment']
+                                            )
+                                        )
+                                    elif change['log_action'] == 'newset':
+                                        bot1.msg(
+                                            "03%s created the new 12%s wikiset %s containing 04%s: 07%s" %
+                                            (
+                                                change['user'],
+                                                change['log_params'][1],
+                                                change['log_params'][0],
+                                                change['log_params'][2],
+                                                change['comment']
+                                            )
+                                        )
+                                    elif change['log_action'] == 'deleteset':
+                                        bot1.msg(
+                                            "03%s deleted wikiset %s: 07%s" %
+                                            (
+                                                change['user'],
+                                                change['log_params'][0],
+                                                change['comment']
+                                            )
+                                        )
+                                    elif change['log_action'] == 'setchange':
+                                        bot1.msg(
+                                            "03%s changed wikis in %s, added 04%s, removed 04%s: 07%s" %
+                                            (
+                                                change['user'],
+                                                change['log_params'][0],
+                                                change['log_params'][1],
+                                                change['log_params'][2],
+                                                change['comment']
+                                            )
+                                        )
+                                    elif change['log_action'] == 'setrename':
+                                        bot1.msg(
+                                            "03%s renamed wikiset %s to 04%s: 07%s" %
+                                            (
+                                                change['user'],
+                                                change['log_params'][1],
+                                                change['log_params'][0],
+                                                change['comment']
+                                            )
+                                        )
+                                    elif change['log_action'] == 'setnewtype':
+                                        bot1.msg(
+                                            "03%s changed type of %s from 04%s to 04%s: 07%s" %
+                                            (
+                                                change['user'],
+                                                change['log_params'][0],
+                                                change['log_params'][1],
+                                                change['log_params'][2],
+                                                change['comment']
+                                            )
+                                        )
             except StopIteration:
                 pass
             except Exception:
