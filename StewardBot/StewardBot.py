@@ -1183,7 +1183,7 @@ class RecentChangesBot:
                                         )
                                     elif change['log_action'] == 'newset':
                                         bot1.msg(
-                                            "03%s created the new 12%s wikiset %s containing 04%s: 07%s" %
+                                            "03%s created 12%s wiki set %s containing 04%s: 07%s" %
                                             (
                                                 change['user'],
                                                 change['log_params'][1],
@@ -1194,7 +1194,7 @@ class RecentChangesBot:
                                         )
                                     elif change['log_action'] == 'deleteset':
                                         bot1.msg(
-                                            "03%s deleted wikiset %s: 07%s" %
+                                            "03%s deleted wiki set %s: 07%s" %
                                             (
                                                 change['user'],
                                                 change['log_params'][0],
@@ -1202,19 +1202,17 @@ class RecentChangesBot:
                                             )
                                         )
                                     elif change['log_action'] == 'setchange':
-                                        bot1.msg(
-                                            "03%s changed wikis in %s, added 04%s, removed 04%s: 07%s" %
-                                            (
-                                                change['user'],
-                                                change['log_params'][0],
-                                                change['log_params'][1],
-                                                change['log_params'][2],
-                                                change['comment']
-                                            )
-                                        )
+                                        message = "03%s changed wikis in %s" % (change['user'], change['log_params'][0])
+                                        added_wikis = ['log_params'][1]
+                                        if added_wikis != "":
+                                            message += ", added 04%s" % added_wikis
+                                        removed_wikis = ['log_params'][2]
+                                        if removed_wikis != "":
+                                            message += ", removed 04%s" % removed_wikis
+                                        bot1.msg(message + ": 07%s" % change['comment'])
                                     elif change['log_action'] == 'setrename':
                                         bot1.msg(
-                                            "03%s renamed wikiset %s to 04%s: 07%s" %
+                                            "03%s renamed wiki set %s to 04%s: 07%s" %
                                             (
                                                 change['user'],
                                                 change['log_params'][1],
