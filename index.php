@@ -41,8 +41,6 @@ return $process->getOutput();
 
 <ul>
 	<li><a href="/Elections/elections.php">Elections</a>: Breakdown of the steward elections.</li>
-	<li><a href="/hat-web-tool/delete.php">Delete</a>: Overview of open speedy deletion requests.</li>
-	<li><a href="/hat-web-tool/projects.php">Projects</a>: Overview of the number of administrators, bureaucrats, CheckUsers and Oversighters on the Wikimedia Wikis.</li>
 </ul>
 
 <h4>Help pages for the bots</h4>

@@ -97,12 +97,6 @@ def restart(tool):
 def legacy_elections(path=""):
     return redirect('https://stewardbots-legacy.toolforge.org/Elections/%s' % path)
 
-@app.route('/hat-web-tool')
-@app.route('/hat-web-tool/')
-@app.route('/hat-web-tool/<path:path>')
-def legacy_hat_web_tool(path=""):
-    return redirect('https://stewardbots-legacy.toolforge.org/hat-web-tool/%s' % path)
-
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
