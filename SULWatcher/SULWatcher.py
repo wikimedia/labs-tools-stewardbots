@@ -18,7 +18,6 @@ from sseclient import SSEClient as EventStream
 
 # Needs irc lib
 from irc.client import NickMask
-from irc.client import ServerConnection
 from jaraco.stream import buffer
 
 from ib3 import Bot
@@ -817,7 +816,6 @@ class BotThread(threading.Thread):
         self.bot = bot
 
     def run(self):
-        ServerConnection.buffer_class = IgnoreErrorsBuffer
         self.bot.start()
 
 
@@ -849,9 +847,9 @@ class SULWatcher:
             irc_server = self.get_config_result('server')
             irc_channel = self.get_config_result('channel')
             self.irc_bots = [
-                FreenodeBot(self, irc_channel, self.get_config_result('nickname'), irc_server, irc_password, 8001),
-                FreenodeBot(self, irc_channel, self.get_config_result('alias'), irc_server, irc_password, 8001),
-                FreenodeBot(self, irc_channel, self.get_config_result('alias2'), irc_server, irc_password, 8001),
+                FreenodeBot(self, irc_channel, self.get_config_result('nickname'), irc_server, irc_password),
+                FreenodeBot(self, irc_channel, self.get_config_result('alias'), irc_server, irc_password),
+                FreenodeBot(self, irc_channel, self.get_config_result('alias2'), irc_server, irc_password),
             ]
 
         for bot in self.irc_bots:
