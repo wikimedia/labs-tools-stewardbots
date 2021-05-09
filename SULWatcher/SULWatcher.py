@@ -113,7 +113,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         self.nickname = nickname
         self.buildRegex()
         self.buildWhitelist()
-        super.__init__(
+        super().__init__(
             server_list=[(server, port)],
             nickname=nickname,
             realname=nickname,
