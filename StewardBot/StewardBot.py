@@ -70,8 +70,7 @@ def query(sqlquery, one=True):
     res.sort(key=lambda x: x if isinstance(x, str) else "")
     if one:
         return [i[0] for i in res if i]
-    else:
-        return res
+    return res
 
 
 def modquery(sqlquery):

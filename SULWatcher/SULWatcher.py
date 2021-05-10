@@ -286,11 +286,11 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 else:
                     self.msg('MySQL connection seems to be down. '
                              'Please restart the bots.')
-        elif args[0] == 'find' or args[0] == 'search':
-            if args[1] == 'regex' or args[1] == 'badword':
+        elif args[0] in ('find', 'search'):
+            if args[1] in ('regex', 'badword'):
                 badword = ' '.join(args[2:])
                 self.getPrintRegex(regex=badword, target=target)
-            elif args[1] == 'match' or args[1] == 'matches':
+            elif args[1] in ('match', 'matches'):
                 string = ' '.join(args[2:])
                 matches = []
                 for (idx, bw) in badwords:
@@ -329,9 +329,9 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                          '"SULWatcher: find regex \bregex\b", or you can find '
                          'the regex matching a string by saying "SULWatcher: '
                          'find match String to test".', target)
-        elif args[0] == 'edit' or args[0] == 'change':
+        elif args[0] in ('edit', 'change'):
             index = args[1]
-            if args[2] == 'regex' or args[2] == 'badword':
+            if args[2] in ('regex', 'badword'):
                 regex = ' '.join(args[3:])
                 adder = self.getCloak(e.source)
                 sql = ('UPDATE regex SET r_regex=%s,r_cloak=%s,'
@@ -342,7 +342,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                     self.msg('Regex #%s updated.' % (index), target=target)
                     self.getPrintRegex(index=index, target=target)
                     self.buildRegex()
-            elif args[2] == 'note' or args[2] == 'reason':
+            elif args[2] in ('note', 'reason'):
                 cloak = self.getCloak(e.source)
                 # Re-attribute regex to cloak.
                 if args[3] == '!':
@@ -360,9 +360,9 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 if self.sulwatcher.querier.cursor.rowcount > 0:
                     self.msg('Regex #%s updated.' % (index), target=target)
                     self.getPrintRegex(index=index, target=target)
-            elif args[2] == 'enable' or args[2] == 'active':
+            elif args[2] in ('enable', 'active'):
                 self.enableRegex(index, target)
-            elif args[2] == 'case' or args[2] == 'casesensitive':
+            elif args[2] in ('case', 'casesensitive'):
                 if args[3] == 'true':
                     sql = ('UPDATE regex SET r_case=1,r_timestamp=%s '
                            'WHERE r_id=%s')
@@ -377,8 +377,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                     self.buildRegex()
 
         elif args[0] == 'list':  # Lists: modify and show
-            if (args[1] == 'badword' or args[1] == 'badwords' or
-                    args[1] == 'regex' or args[1] == 'regexes'):
+            if args[1] in ('badword', 'badwords', 'regex', 'regexes'):
                 if self.channels[self.channel].is_oper(nick):
                     sql = ('SELECT r_regex FROM regex WHERE r_active=1;')
                     results = self.sulwatcher.querier.do(sql)
@@ -402,7 +401,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 self.msg('Whitelisted users: %s'
                          % ', '.join(whitelist), target)
         elif args[0] == 'add':
-            if args[1] == 'badword' or args[1] == 'regex':
+            if args[1] in ('badword', 'regex'):
                 badword = ' '.join(args[2:])
                 adder = self.getCloak(e.source)
                 self.addRegex(badword, adder, target)
@@ -428,7 +427,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 who = ' '.join(args[2:])
                 self.addToList(who, 'whitelist', target)
         elif args[0] == 'remove':
-            if args[1] == 'badword' or args[1] == 'regex':
+            if args[1] in ('badword', 'regex'):
                 badword = ' '.join(args[2:])
                 self.removeRegex(regex=badword, target=target)
             elif args[1] == 'whitelist':
@@ -611,8 +610,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             return None
         if result:
             return result[0]
-        else:
-            return None
+        return None
 
     def getPrintRegex(self, regex=None, index=None, target=None):
         print("getPrintRegex(self, '%s', '%s', '%s')" % (regex, index, target))
@@ -695,8 +693,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         # print("getCloak(self, '%s')" % mask)
         if "@" in mask:
             return mask.split("@")[1]
-        else:
-            raise ParseHostMaskError("Hostmask %s seems invalid." % mask)
+        raise ParseHostMaskError("Hostmask %s seems invalid." % mask)
 
     def getUser(self, mask):
         """
@@ -707,8 +704,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         # print("getUser(self, '%s')" % mask)
         if "!" in mask and "@" in mask:
             return mask.split("!")[1].split("@")[0]
-        else:
-            raise ParseHostMaskError("Hostmask %s seems invalid." % mask)
+        raise ParseHostMaskError("Hostmask %s seems invalid." % mask)
 
     def getNick(self, mask):
         """
@@ -719,8 +715,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         # print("getNick(self, '%s')" % mask)
         if "!" in mask:
             return mask.split("!")[0]
-        else:
-            raise ParseHostMaskError("Hostmask %s seems invalid." % mask)
+        raise ParseHostMaskError("Hostmask %s seems invalid." % mask)
 
 
 class EventstreamsListener:
@@ -735,7 +730,7 @@ class EventstreamsListener:
             for event in EventStream(url):  # Listen to EventStream
                 if self.sulwatcher.eventstreams_stop.isSet():  # Check flag inside loop
                     break
-                elif event.event != 'message':
+                if event.event != 'message':
                     continue
 
                 try:
