@@ -1,0 +1,32 @@
+---
+# Run StewardBot on kubernetes
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stewardbot
+  namespace: tool-stewardbots
+  labels:
+    name: stewardbots
+    # Mount NFS
+    toolforge: tool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: stewardbot
+      toolforge: tool
+  template:
+    metadata:
+      labels:
+        name: stewardbot
+        toolforge: tool
+    spec:
+      containers:
+        - name: bot
+          image: docker-registry.tools.wmflabs.org/toolforge-python37-sssd-base:latest
+          command: [ "/data/project/stewardbots/stewardbots/StewardBot/manage.sh", "run" ]
+          workingDir: /data/project/stewardbots
+          env:
+            - name: HOME
+              value: /data/project/stewardbots
+          imagePullPolicy: Always
