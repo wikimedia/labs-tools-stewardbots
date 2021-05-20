@@ -5,7 +5,7 @@
 	"license": "GPL-3.0-only",
 	"support": {
 		"issues": "https://phabricator.wikimedia.org/",
-		"irc": "irc://irc.freenode.net/wikimedia-stewards",
+		"irc": "ircs://irc.libera.chat/wikimedia-stewards",
 		"wiki": "https://wikitech.wikimedia.org/wiki/Tool:Stewardbots",
 		"source": "https://phabricator.wikimedia.org/diffusion/TSTW/"
 	},
