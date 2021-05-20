@@ -3,28 +3,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: stewardbot
+  name: sulwatcher
   namespace: tool-stewardbots
   labels:
-    name: stewardbot
+    name: sulwatcher
     # Mount NFS
     toolforge: tool
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: stewardbot
+      name: sulwatcher
       toolforge: tool
   template:
     metadata:
       labels:
-        name: stewardbot
+        name: sulwatcher
         toolforge: tool
     spec:
       containers:
         - name: bot
           image: docker-registry.tools.wmflabs.org/toolforge-python37-sssd-base:latest
-          command: [ "/data/project/stewardbots/stewardbots/StewardBot/manage.sh", "run" ]
+          command: [ "/data/project/stewardbots/stewardbots/SULWatcher/manage.sh", "run" ]
           workingDir: /data/project/stewardbots
           env:
             - name: HOME
