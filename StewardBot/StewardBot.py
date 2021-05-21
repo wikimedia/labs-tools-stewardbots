@@ -324,6 +324,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         # Kubernetes will restart the process if it exists
         elif cmd.lower() == "restart":
             self.msg("See you soon!")
+            logger.info("Restarting based on request by %s", e)
 
             # cause recent changes listener to stop on next event
             bot2.should_exit = True
