@@ -988,6 +988,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             target = self.channel
         try:
             self.connection.privmsg(target, message)
+            logger.info("<%s/[self]> %s", target, message)
         except irc.client.MessageTooLong:
             logger.warning('Attempted to send a message that is too long: %s', message)
             self.connection.privmsg(
@@ -1030,8 +1031,10 @@ class RecentChangesBot:
         stream = 'https://stream.wikimedia.org/v2/stream/recentchange'
         while not self.should_exit:
             try:
+                logger.info('Starting EventStream listener')
                 for event in EventSource(stream):
                     if self.should_exit:
+                        logger.info('Exiting EventStream listener')
                         break
 
                     if bot1.quiet:
