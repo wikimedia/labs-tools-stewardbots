@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from irc.bot import Channel
 from sseclient import SSEClient as EventSource
 from ib3 import Bot
 from ib3.auth import SASL
@@ -148,7 +149,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             # elif command.lower().startswith("huggle"):
             #    self.msg(nocando, nick)
             # End of Anti-PiR hack
-            elif self.getcloak(e.source).lower() in self.privileged:
+            elif self.is_privileged(e.source):
                 self.do_command(e.source, command.strip(), nick)
             else:
                 self.msg(self.badsyntax, nick)
@@ -188,7 +189,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 else:
                     command = re.sub("(?i)%s:" %
                                      self.nickname.lower(), "", a).strip(" ")
-                if command.lower() in ["die"] or self.startswitharray(
+                if self.startswitharray(
                     command.lower(),
                     [
                         "steward",
@@ -203,7 +204,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                         "stew optin",
                         "stew info"]):
                     self.do_command(event.source, command.strip())
-                elif self.getcloak(event.source) and self.getcloak(event.source).lower() in self.privileged:
+                elif self.is_privileged(event.source):
                     self.do_command(event.source, command.strip())
                 else:
                     # if not self.quiet: self.msg("You're not allowed to issue commands.")
@@ -321,24 +322,15 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             who = cmd[6:].strip(" ")
             self.connection.action(self.channel, "huggles " + who)
 
-        # Die
-        elif cmd.lower() == "die":
-            if self.getcloak(e) != self.owner:
-                if not self.quiet:
-                    logger.warning('Unprivileged %s requested exit', self.getcloak(e))
-                    self.msg("You can't kill me; you're not my owner! :P")
-            else:
-                self.msg("Goodbye!")
-
-                # cause recent changes listener to stop on next event
-                bot2.should_exit = True
-
-                self.connection.part(self.channels)
-                self.disconnect()
-
+        # Kubernetes will restart the process if it exists
         elif cmd.lower() == "restart":
-            self.msg("Restarting. I will be back soon.")
-            os.system('bash /data/project/stewardbots/stewardbots/StewardBot/restart_stewardbot.sh')
+            self.msg("See you soon!")
+
+            # cause recent changes listener to stop on next event
+            bot2.should_exit = True
+
+            self.connection.part(self.channels)
+            self.disconnect()
 
         # Other
         elif not self.quiet:
@@ -1011,6 +1003,19 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         for entry in array:
             if text.startswith(entry):
                 return True
+        return False
+
+    def is_privileged(self, source: str) -> bool:
+        nickmask = NickMask(source)
+        channel: Channel = self.channels.get(self.channel)
+
+        if channel.is_oper(nickmask.nick) or channel.is_voiced(nickmask.nick):
+            return True
+
+        cloak = self.getcloak(source)
+        if cloak:
+            return cloak.lower() in self.privileged
+
         return False
 
 
