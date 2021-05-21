@@ -31,7 +31,7 @@ case "$1" in
         date +%Y-%m-%dT%H:%M:%S
         echo "Running SULWatcher..."
         cd ${TOOL_DIR}
-        exec python StewardBot.py
+        exec python SULWatcher.py
         ;;
     stop)
         echo "Stopping SULWatcher k8s deployment..."
