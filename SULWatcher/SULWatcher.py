@@ -6,6 +6,7 @@
 # LICENSE:      GPL
 # CREDITS:      Mike.lifeguard, Erwin, Dungodung (Filip Maljkovic)
 #
+import argparse
 import sys
 import os
 import re
@@ -34,22 +35,20 @@ def nm_to_n(nm):
     return NickMask(nm).nick
 
 
-class Querier(object):
-
+class Querier:
     """A wrapper for PyMySQL"""
 
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-
-        if 'read_default_file' not in self.kwargs:
-            self.kwargs['read_default_file'] = '~/.my.cnf'
-
         self.kwargs['cursorclass'] = pymysql.cursors.DictCursor
+
+        self.cursor = None
+        self.db = None
 
         self.connect()
 
-    def connect(self, *args, **kwargs):
+    def connect(self):
         """Connect to the database server."""
         self.cursor = None
         self.db = pymysql.connect(*self.args, **self.kwargs)
@@ -485,7 +484,6 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 elif len(args) > 1 and args[1] == 'rc':
                     self.msg('Restarting RC reader', target)
                     try:
-                        self.sulwatcher.eventstreams_stop.set()
                         self.sulwatcher.start_eventstreams()
 
                     except Exception as e:
@@ -624,10 +622,10 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 info += ', case sensitive'
             try:
                 timestamp = time.strftime('%H:%M, %d %B %Y',
-                                          time.strptime(r['r_timestamp'],
+                                          time.strptime(r['r_timestamp'].decode(),
                                                         '%Y%m%d%H%M%S'))
             except ValueError:
-                timestamp = r['r_timestamp']
+                timestamp = r['r_timestamp'].decode()
             self.msg('Regex %s (#%s, %s, %s hits) added by %s with last '
                      'update at %s and note: \'%s\'.'
                      % (r['r_regex'], r['r_id'], info, r['hits'],
@@ -721,14 +719,15 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
 class EventstreamsListener:
     def __init__(self, sulwatcher):
         self.sulwatcher = sulwatcher
+        self.stop = threading.Event()
 
     def start(self):
         counter = 0
         url = "https://stream.wikimedia.org/v2/stream/recentchange"
         ca = "https://meta.wikimedia.org/wiki/Special:CentralAuth/"
-        while not self.sulwatcher.eventstreams_stop.isSet():  # Thread will die when there isn't anything in the EventStream. Keep alive.
+        while not self.stop.isSet():  # Thread will die when there isn't anything in the EventStream. Keep alive.
             for event in EventStream(url):  # Listen to EventStream
-                if self.sulwatcher.eventstreams_stop.isSet():  # Check flag inside loop
+                if self.stop.isSet():  # Check flag inside loop
                     break
                 if event.event != 'message':
                     continue
@@ -819,12 +818,10 @@ class SULWatcher:
     Main SULWatcher class holding references to other objects.
     """
 
-    def __init__(self):
-        # TODO: those should not be hardcoded
-        self.querier = Querier(host="tools.db.svc.eqiad.wmflabs", db="s51541__sulwatcher")
+    def __init__(self, db_config, db_name):
+        self.querier = Querier(read_default_file=db_config, db=db_name)
 
         self.irc_bots = None
-        self.eventstreams_stop = None
         self.eventstreams_listener = None
 
     def get_config_result(self, key):
@@ -852,13 +849,10 @@ class SULWatcher:
             BotThread(bot).start()
 
     def start_eventstreams(self):
-        if self.eventstreams_listener is None:
-            self.eventstreams_listener = EventstreamsListener(self)
-        if self.eventstreams_stop is None:
-            self.eventstreams_stop = threading.Event()
-        else:
-            self.eventstreams_stop.clear()
+        if self.eventstreams_listener is not None:
+            self.eventstreams_listener.stop.set()
 
+        self.eventstreams_listener = EventstreamsListener(self)
         EventstreamsThread(self.eventstreams_listener).start()
         print("starting EventStream")
 
@@ -869,7 +863,13 @@ class SULWatcher:
 
 
 def main():
-    sulwatcher = SULWatcher()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--db-config', default='~/.my.cnf',
+                        help='MySQL .cnf file to load username, password and hostname')
+    parser.add_argument('--db-name', default='s51541__sulwatcher', help='Database name')
+    args = parser.parse_args()
+
+    sulwatcher = SULWatcher(args.db_config, args.db_name)
     try:
         sulwatcher.start_bots()
     except KeyboardInterrupt:
@@ -878,7 +878,7 @@ def main():
         for bot in sulwatcher.irc_bots:
             bot.die()
 
-        sulwatcher.eventstreams_stop.set()
+        sulwatcher.eventstreams_listener.stop.set()
 
 
 if __name__ == "__main__":
