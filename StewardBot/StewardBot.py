@@ -309,7 +309,7 @@ class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         # Help
         elif cmd.lower() == "help":
             self.msg(
-                "Help = https://stewardbots.toolforge.org/StewardBot/StewardBot.html",
+                "Help = https://stewardbots-legacy.toolforge.org/StewardBot/StewardBot.html",
                 nick)
 
         # Test
