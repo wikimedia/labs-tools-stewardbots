@@ -1150,6 +1150,9 @@ class RecentChangesBot:
 
                                     if change['log_params'][0] == 'locked':
                                         action_description = 'locked global account'
+                                    elif change['log_params'][1] == 'hidden':
+                                        # handle unhiding without unlocking, see T284164
+                                        action_description = 'unhid global account'
                                     else:
                                         action_description = 'unlocked global account'
 
