@@ -5,8 +5,8 @@
 # LICENSE:      GPL
 # CREDITS:      Erwin
 #
-from configparser import ConfigParser
 import time
+from configparser import ConfigParser
 
 import pymysql
 
@@ -15,10 +15,10 @@ class querier:
     """A wrapper for PyMySQL."""
 
     def __init__(self, *args, **kwargs):
-        if 'read_default_file' not in kwargs:
-            kwargs['read_default_file'] = '~/.my.cnf'
+        if "read_default_file" not in kwargs:
+            kwargs["read_default_file"] = "~/.my.cnf"
 
-        kwargs['cursorclass'] = pymysql.cursors.DictCursor
+        kwargs["cursorclass"] = pymysql.cursors.DictCursor
 
         self.db = pymysql.connect(*args, **kwargs)
         self.db.autocommit(True)  # Autocommit transactions
@@ -39,21 +39,21 @@ class querier:
 
 def main():
     config = ConfigParser()
-    config.read('SULWatcher.ini')
+    config.read("SULWatcher.ini")
 
-    db = querier(host='sql')
+    db = querier(host="sql")
 
     for section in config.sections():
-        if section == 'Setup':
+        if section == "Setup":
             for option in config.options(section):
                 value = config.get(section, option)
-                if '<|>' in value:
-                    values = value.split('<|>')
+                if "<|>" in value:
+                    values = value.split("<|>")
                 else:
                     values = [value]
-                sql = 'INSERT INTO p_stewardbots_sulwatcher.setup (s_param, s_value) VALUES '
-                sql += '(%s, %s), ' * len(values)
-                sql = sql[:-2] + ';'
+                sql = "INSERT INTO p_stewardbots_sulwatcher.setup (s_param, s_value) VALUES "
+                sql += "(%s, %s), " * len(values)
+                sql = sql[:-2] + ";"
                 args = []
                 for v in values:
                     args.append(option)
@@ -61,14 +61,14 @@ def main():
                 args = tuple(args)
                 db.do(sql, args)
         else:
-            regex = config.get(section, 'regex')
-            cloak = config.get(section, 'adder')
-            timestamp = time.strftime('%Y%m%d%H%M%S')
-            if config.has_option(section, 'reason'):
-                sql = 'INSERT IGNORE INTO p_stewardbots_sulwatcher.regex (r_regex, r_cloak, r_reason, r_timestamp) VALUES (%s, %s, %s, %s)'
-                args = (regex, cloak, config.get(section, 'reason'), timestamp)
+            regex = config.get(section, "regex")
+            cloak = config.get(section, "adder")
+            timestamp = time.strftime("%Y%m%d%H%M%S")
+            if config.has_option(section, "reason"):
+                sql = "INSERT IGNORE INTO p_stewardbots_sulwatcher.regex (r_regex, r_cloak, r_reason, r_timestamp) VALUES (%s, %s, %s, %s)"
+                args = (regex, cloak, config.get(section, "reason"), timestamp)
             else:
-                sql = 'INSERT IGNORE INTO p_stewardbots_sulwatcher.regex (r_regex, r_cloak, r_timestamp) VALUES (%s, %s, %s)'
+                sql = "INSERT IGNORE INTO p_stewardbots_sulwatcher.regex (r_regex, r_cloak, r_timestamp) VALUES (%s, %s, %s)"
                 args = (regex, cloak, timestamp)
 
             db.do(sql, args)
