@@ -8,7 +8,7 @@ DEPLOYMENT=sulwatcher
 POD_NAME=sulwatcher
 
 TOOL_DIR=/data/project/stewardbots/stewardbots/SULWatcher
-VENV=/data/project/stewardbots/venv-k8s-py37
+VENV=/data/project/stewardbots/venv-k8s-py39
 if [[ -f ${VENV}/bin/activate ]]; then
     # Enable virtualenv
     source ${VENV}/bin/activate

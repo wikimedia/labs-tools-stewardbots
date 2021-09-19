@@ -8,7 +8,7 @@ DEPLOYMENT=stewardbot
 POD_NAME=stewardbot
 
 TOOL_DIR=/data/project/stewardbots/stewardbots/StewardBot
-VENV=/data/project/stewardbots/venv-k8s-py37
+VENV=/data/project/stewardbots/venv-k8s-py39
 if [[ -f ${VENV}/bin/activate ]]; then
     # Enable virtualenv
     source ${VENV}/bin/activate
