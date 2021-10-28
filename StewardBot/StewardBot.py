@@ -77,7 +77,7 @@ def modquery(sqlquery):
     db.close()
 
 
-class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
+class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
     def __init__(self):
         self.channel = config.channel
         self.nickname = config.nick
@@ -1365,14 +1365,14 @@ class BotThread(threading.Thread):
 
 if __name__ == "__main__":
     global bot1, bot2
-    bot1 = FreenodeBot()
+    bot1 = LiberaBot()
     bot2 = RecentChangesBot()
 
     try:
-        freenodeThread = BotThread(bot1)
+        liberaThread = BotThread(bot1)
         rcThread = BotThread(bot2)
 
-        freenodeThread.start()
+        liberaThread.start()
         rcThread.start()
     except KeyboardInterrupt:
         bot1.disconnect("Killed by a KeyboardInterrupt")

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # SYNPOPSIS:    This bot parses the RC feed for CentralAuth using
-#               regex, and reports to a freenode channel.
+#               regex, and reports to a libera channel.
 # LICENSE:      GPL
 # CREDITS:      Mike.lifeguard, Erwin, Dungodung (Filip Maljkovic)
 #
@@ -105,7 +105,7 @@ class ParseHostMaskError(SULWatcherException):
     pass
 
 
-class FreenodeBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
+class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
     def __init__(self, sulwatcher, channel, nickname, server, password, port=6697):
         self.sulwatcher = sulwatcher
         self.channel = channel
@@ -916,21 +916,21 @@ class SULWatcher:
             irc_server = self.get_config_result("server")
             irc_channel = self.get_config_result("channel")
             self.irc_bots = [
-                FreenodeBot(
+                LiberaBot(
                     self,
                     irc_channel,
                     self.get_config_result("nickname"),
                     irc_server,
                     irc_password,
                 ),
-                FreenodeBot(
+                LiberaBot(
                     self,
                     irc_channel,
                     self.get_config_result("alias"),
                     irc_server,
                     irc_password,
                 ),
-                FreenodeBot(
+                LiberaBot(
                     self,
                     irc_channel,
                     self.get_config_result("alias2"),

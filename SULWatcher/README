@@ -1,7 +1,7 @@
 == SULWatcher ==
 
 SULWatcher is an IRC bot that parses the RC feed for CentralAuth using regex
-and reports to a freenode channel.
+and reports to a libera channel.
 
 SULWatcher was written by:
 * Mike.lifeguard
