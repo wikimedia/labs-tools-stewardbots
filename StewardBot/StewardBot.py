@@ -1230,18 +1230,17 @@ class RecentChangesBot:
                                             + ""
                                         )
 
-                                    if change["log_params"][0] == "locked":
-                                        action_description = "locked global account"
-                                    elif change["log_params"][1] == "hidden":
-                                        # handle unhiding without unlocking, see T284164
-                                        action_description = "unhid global account"
-                                    elif change["log_params"][1] == "suppressed":
-                                        # handle unsuppressing without unlocking
-                                        action_description = (
-                                            "unsuppressed global account"
+                                    action_description = ""
+                                    if len(change["log_params"]["added"]) > 0:
+                                        action_description += "set " + ", ".join(
+                                            change["log_params"]["added"]
                                         )
-                                    else:
-                                        action_description = "unlocked global account"
+                                    if len(change["log_params"]["removed"]) > 0:
+                                        if len(action_description) > 0:
+                                            action_description += ", "
+                                        action_description += "unset " + ", ".join(
+                                            change["log_params"]["removed"]
+                                        )
 
                                     bot1.msg(
                                         "03%s %s %s %s"
