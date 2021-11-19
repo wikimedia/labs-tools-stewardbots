@@ -1232,15 +1232,22 @@ class RecentChangesBot:
 
                                     action_description = ""
                                     if len(change["log_params"]["added"]) > 0:
-                                        action_description += "set " + ", ".join(
+                                        action_description += ", ".join(
                                             change["log_params"]["added"]
                                         )
                                     if len(change["log_params"]["removed"]) > 0:
                                         if len(action_description) > 0:
                                             action_description += ", "
-                                        action_description += "unset " + ", ".join(
-                                            change["log_params"]["removed"]
+                                        action_description += ", ".join(
+                                            [
+                                                f"un{action}"
+                                                for action in change["log_params"][
+                                                    "removed"
+                                                ]
+                                            ]
                                         )
+
+                                    action_description += " account"
 
                                     bot1.msg(
                                         "03%s %s %s %s"
