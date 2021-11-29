@@ -1230,40 +1230,24 @@ class RecentChangesBot:
                                             + ""
                                         )
 
-                                    if "added" in change["log_params"]:
-                                        action_description = ""
-                                        if len(change["log_params"]["added"]) > 0:
-                                            action_description += ", ".join(
-                                                change["log_params"]["added"]
-                                            )
-                                        if len(change["log_params"]["removed"]) > 0:
-                                            if len(action_description) > 0:
-                                                action_description += ", "
-                                            action_description += ", ".join(
-                                                [
-                                                    f"un{action}"
-                                                    for action in change["log_params"][
-                                                        "removed"
-                                                    ]
+                                    action_description = ""
+                                    if len(change["log_params"]["added"]) > 0:
+                                        action_description += ", ".join(
+                                            change["log_params"]["added"]
+                                        )
+                                    if len(change["log_params"]["removed"]) > 0:
+                                        if len(action_description) > 0:
+                                            action_description += ", "
+                                        action_description += ", ".join(
+                                            [
+                                                f"un{action}"
+                                                for action in change["log_params"][
+                                                    "removed"
                                                 ]
-                                            )
+                                            ]
+                                        )
 
-                                        action_description += " account"
-                                    else:
-                                        if change["log_params"][0] == "locked":
-                                            action_description = "locked global account"
-                                        elif change["log_params"][1] == "hidden":
-                                            # handle unhiding without unlocking, see T284164
-                                            action_description = "unhid global account"
-                                        elif change["log_params"][1] == "suppressed":
-                                            # handle unsuppressing without unlocking
-                                            action_description = (
-                                                "unsuppressed global account"
-                                            )
-                                        else:
-                                            action_description = (
-                                                "unlocked global account"
-                                            )
+                                    action_description += " account"
 
                                     bot1.msg(
                                         "03%s %s %s %s"
