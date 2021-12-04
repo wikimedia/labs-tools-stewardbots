@@ -1298,13 +1298,20 @@ class RecentChangesBot:
                                             )
                                         )
                                     elif change["log_action"] == "newset":
+                                        if "wikis" in change["log_params"]:
+                                            wikis = ", ".join(
+                                                change["log_params"]["wikis"]
+                                            )
+                                        else:
+                                            wikis = change["log_params"][2]
+
                                         bot1.msg(
                                             "03%s created 12%s wiki set %s containing 04%s: 07%s"
                                             % (
                                                 change["user"],
                                                 change["log_params"][1],
                                                 change["log_params"][0],
-                                                change["log_params"][2],
+                                                wikis,
                                                 change["comment"],
                                             )
                                         )
@@ -1322,10 +1329,17 @@ class RecentChangesBot:
                                             change["user"],
                                             change["log_params"][0],
                                         )
-                                        added_wikis = ["log_params"][1]
+                                        if "added" in change["log_params"]:
+                                            added_wikis = change["log_params"]["added"]
+                                            removed_wikis = change["log_params"][
+                                                "removed"
+                                            ]
+                                        else:
+                                            added_wikis = change["log_params"][1]
+                                            removed_wikis = change["log_params"][2]
+
                                         if added_wikis != "":
                                             message += ", added 04%s" % added_wikis
-                                        removed_wikis = ["log_params"][2]
                                         if removed_wikis != "":
                                             message += (
                                                 ", removed 04%s" % removed_wikis
