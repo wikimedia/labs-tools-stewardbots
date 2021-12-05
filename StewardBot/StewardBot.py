@@ -1261,17 +1261,40 @@ class RecentChangesBot:
                                 elif change["log_type"] == "gblrights":
                                     if change["log_action"] == "usergroups":
                                         target = change["title"].replace("User:", "")
+
+                                        if "oldGroups" in change["log_params"]:
+                                            oldGroups = change["log_params"][
+                                                "oldGroups"
+                                            ]
+                                            newGroups = change["log_params"][
+                                                "newGroups"
+                                            ]
+                                        else:
+                                            oldGroups = change["log_params"][0]
+                                            newGroups = change["log_params"][1]
+
                                         bot1.msg(
                                             "03%s changed global group membership for %s from 04%s to 04%s: 07%s"
                                             % (
                                                 change["user"],
                                                 target,
-                                                change["log_params"][0],
-                                                change["log_params"][1],
+                                                oldGroups,
+                                                newGroups,
                                                 change["comment"],
                                             )
                                         )
                                     elif change["log_action"] == "groupprms2":
+                                        if "addRights" in change["log_params"]:
+                                            addedRights = change["log_params"][
+                                                "addRights"
+                                            ]
+                                            removedRights = change["log_params"][
+                                                "removeRights"
+                                            ]
+                                        else:
+                                            addedRights = change["log_params"][0]
+                                            removedRights = change["log_params"][1]
+
                                         bot1.msg(
                                             "03%s changed global group permissions for %s, added 04%s, removed 04%s: 07%s"
                                             % (
@@ -1279,12 +1302,19 @@ class RecentChangesBot:
                                                 change["title"].replace(
                                                     "Special:GlobalUsers/", ""
                                                 ),
-                                                change["log_params"][0],
-                                                change["log_params"][1],
+                                                addedRights,
+                                                removedRights,
                                                 change["comment"],
                                             )
                                         )
                                     elif change["log_action"] == "groupprms3":
+                                        if "addRights" in change["log_params"]:
+                                            oldSet = change["log_params"]["old"]
+                                            newSet = change["log_params"]["new"]
+                                        else:
+                                            oldSet = change["log_params"][0]
+                                            newSet = change["log_params"][1]
+
                                         bot1.msg(
                                             "03%s changed group restricted wikis set for %s from 04%s to 04%s: 07%s"
                                             % (
@@ -1292,8 +1322,8 @@ class RecentChangesBot:
                                                 change["title"].replace(
                                                     "Special:GlobalUsers/", ""
                                                 ),
-                                                change["log_params"][0],
-                                                change["log_params"][1],
+                                                oldSet,
+                                                newSet,
                                                 change["comment"],
                                             )
                                         )
