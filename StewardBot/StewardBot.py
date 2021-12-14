@@ -1266,9 +1266,17 @@ class RecentChangesBot:
                                             oldGroups = change["log_params"][
                                                 "oldGroups"
                                             ]
+                                            if len(oldGroups) == 0:
+                                                oldGroups = "(none)"
+                                            else:
+                                                oldGroups = ", ".join(oldGroups)
                                             newGroups = change["log_params"][
                                                 "newGroups"
                                             ]
+                                            if len(newGroups) == 0:
+                                                newGroups = "(none)"
+                                            else:
+                                                newGroups = ", ".join(newGroups)
                                         else:
                                             oldGroups = change["log_params"][0]
                                             newGroups = change["log_params"][1]
