@@ -1,5 +1,4 @@
-@import "https://meta.wikimedia.org/w/load.php?debug=false&lang=en&modules=skins.monobook.responsive&only=styles&skin=monobook";
-@import "https://www.wikimedia.org/static/current/resources/src/mediawiki.skinning/legacy.less";
+@import "https://meta.wikimedia.org/w/load.php?lang=en&modules=skins.monobook.styles&only=styles&skin=monobook";
 @import "https://meta.wikimedia.org/w/index.php?title=MediaWiki:Common.css&action=raw&ctype=text/css";
 
 #column-one {

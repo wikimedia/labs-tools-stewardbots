@@ -3,7 +3,7 @@ include '../vendor/autoload.php';
 use Symfony\Component\Process\Process;
 
 // Election year
-$year = 2021;
+$year = 2022;
 
 // Get git hash
 $rev = getGitInfo( [ 'rev-parse', '--short' ] );
@@ -12,14 +12,14 @@ $rev = getGitInfo( [ 'rev-parse', '--short' ] );
 $lastModified = getGitInfo( [ 'show', '-s', '--format=format:%cD' ] );
 
 function getGitInfo( $command ) {
-$process = new Process( array_merge( [ 'git' ], $command, [ 'HEAD' ] ) );
-$process->run();
+	$process = new Process( array_merge( [ 'git' ], $command, [ 'HEAD' ] ) );
+	$process->run();
 
-if ( !$process->isSuccessful() ) {
-	throw new ProcessFailedException( $process );
-}
+	if ( !$process->isSuccessful() ) {
+		throw new ProcessFailedException( $process );
+	}
 
-return $process->getOutput();
+	return $process->getOutput();
 }
 
 function getPages( $titles ) {
@@ -113,7 +113,6 @@ if ( $useCache ) {
 			<table class="wikitable sortable">
 				<thead>
 					<tr>
-						<th>#</th>
 						<th style="width:300px;">Candidate</th>
 						<th>Yes</th>
 						<th>No</th>
@@ -193,7 +192,6 @@ if ( $useCache ) {
 				// Output row
 ?>
 				<tr>
-					<td><?php echo $i;?></td>
 					<?php echo "<td><a href='//meta.wikimedia.org/wiki/Stewards/Elections_$year/Votes/$encodedUser'>$user</a></td>";?>
 					<td <?php echo $bgyes;?>><?php echo $votes['yes'];?></td>
 					<td><?php echo $votes['no'];?></td>
@@ -266,14 +264,11 @@ href="/Elections/elections.php" title="Elections"></a>
 
 		<div id="footer">
 			<div id="f-poweredbyico">
-				<a href="/"><img style = "border:0; float:left; padding: 5px;"
-src="//upload.wikimedia.org/wikipedia/commons/4/46/Powered_by_labs_button.png" alt="Powered by
-Wikimedia Labs" title="Powered by Wikimedia Labs" height="31"
-width="88" /></a>
+				<a href="/"><img src="https://tools-static.wmflabs.org/toolforge/banners/Powered-by-Toolforge-button.png" alt="Powered by Wikimedia Toolforge" title="Powered by Wikimedia Toolforge"/></a>
 			</div>
 			<ul id="f-list">
 				<li id="lastmod">This page is based on remote version <?php echo $rev;?> modified <?php echo $lastModified;?>.</li>
-				<li id="about">This tool was written by <a href="//meta.wikimedia.org/wiki/User:Erwin">Erwin</a> and is mantained by the stewardbots project.</li>
+				<li id="about">This tool was written by <a href="//meta.wikimedia.org/wiki/User:Erwin">Erwin</a> and is maintained by the stewardbots project.</li>
 			</ul>
 		</div>
 	</div>
