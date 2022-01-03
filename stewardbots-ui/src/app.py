@@ -75,7 +75,11 @@ def inject_base_variables():
 
 @app.before_request
 def check_permissions():
-    if "/login" in request.path or "/oauth-callback" in request.path:
+    if (
+        request.path.startswith("/login")
+        or request.path.startswith("/oauth-callback")
+        or request.path.startswith("/Elections")
+    ):
         return
 
     if not logged():
