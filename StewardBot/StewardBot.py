@@ -8,6 +8,7 @@ import threading
 import time
 from configparser import ConfigParser
 from datetime import datetime
+from typing import List, Tuple
 
 import config
 import irc.client
@@ -1124,62 +1125,22 @@ class RecentChangesBot:
                             ):
                                 bott = "06(bot) "
 
-                            # construct from_rights
-                            from_rights = []
-                            for i in range(len(change["log_params"]["oldgroups"])):
-                                group = change["log_params"]["oldgroups"][i]
-                                if change["log_params"]["oldmetadata"][i] == []:
-                                    from_rights.append(group)
-                                else:
-                                    expiry = datetime.strptime(
-                                        change["log_params"]["oldmetadata"][i][
-                                            "expiry"
-                                        ],
-                                        "%Y%m%d%H%M%S",
-                                    )
-                                    from_rights.append(
-                                        "%s (expiry: %s)"
-                                        % (
-                                            group,
-                                            expiry.strftime("%H:%M, %d %B %Y"),
-                                        )
-                                    )
+                            removed_groups, added_groups = self.get_changed_groups(
+                                change["log_params"]["oldgroups"],
+                                change["log_params"]["oldmetadata"],
+                                change["log_params"]["newgroups"],
+                                change["log_params"]["newmetadata"],
+                            )
 
-                            # construct to_rights
-                            to_rights = []
-                            for i in range(len(change["log_params"]["newgroups"])):
-                                group = change["log_params"]["newgroups"][i]
-                                metadata = change["log_params"]["newmetadata"][i]
-                                if metadata == []:
-                                    to_rights.append(group)
-                                else:
-                                    expiry = datetime.strptime(
-                                        metadata["expiry"], "%Y%m%d%H%M%S"
-                                    )
-                                    to_rights.append(
-                                        "%s (expiry: %s)"
-                                        % (
-                                            group,
-                                            expiry.strftime("%H:%M, %d %B %Y"),
-                                        )
-                                    )
-
-                            from_rights_text = "(none)"
-                            if len(from_rights) > 0:
-                                from_rights_text = ", ".join(from_rights)
-
-                            to_rights_text = "(none)"
-                            if len(to_rights) > 0:
-                                to_rights_text = ", ".join(to_rights)
                             bot1.msg(
-                                "%s%s03%s changed user rights for %s from 04%s to 04%s: 07%s"
+                                "%s%s03%s changed user rights for %s: removed 04%s; added 04%s: 07%s"
                                 % (
                                     selff,
                                     bott,
                                     performer,
                                     target,
-                                    from_rights_text,
-                                    to_rights_text,
+                                    removed_groups,
+                                    added_groups,
                                     change["comment"],
                                 )
                             )
@@ -1255,24 +1216,20 @@ class RecentChangesBot:
                             if change["log_action"] == "usergroups":
                                 target = change["title"].replace("User:", "")
 
-                                oldGroups = change["log_params"]["oldGroups"]
-                                if len(oldGroups) == 0:
-                                    oldGroups = "(none)"
-                                else:
-                                    oldGroups = ", ".join(oldGroups)
-                                newGroups = change["log_params"]["newGroups"]
-                                if len(newGroups) == 0:
-                                    newGroups = "(none)"
-                                else:
-                                    newGroups = ", ".join(newGroups)
+                                removed_groups, added_groups = self.get_changed_groups(
+                                    change["log_params"]["oldGroups"],
+                                    change["log_params"]["oldMetadata"],
+                                    change["log_params"]["newGroups"],
+                                    change["log_params"]["newMetadata"],
+                                )
 
                                 bot1.msg(
-                                    "03%s changed global group membership for %s from 04%s to 04%s: 07%s"
+                                    "03%s changed global group membership for %s: removed 04%s; added 04%s: 07%s"
                                     % (
                                         change["user"],
                                         target,
-                                        oldGroups,
-                                        newGroups,
+                                        removed_groups,
+                                        added_groups,
                                         change["comment"],
                                     )
                                 )
@@ -1365,6 +1322,52 @@ class RecentChangesBot:
                 pass
             except Exception:
                 logger.exception("Recent changes listener encountered an error")
+
+    def get_changed_groups(
+        self,
+        old_groups: List[str],
+        old_metadata: List[dict],
+        new_groups: List[str],
+        new_metadata: List[dict],
+    ) -> Tuple[str, str]:
+        old_groups_formatted = set()
+        new_groups_formatted = set()
+
+        for i in range(len(old_groups)):
+            group = old_groups[i]
+            if "expiry" not in old_metadata[i] or old_metadata[i]["expiry"] is None:
+                old_groups_formatted.add(group)
+            else:
+                expiry = datetime.strptime(
+                    old_metadata[i]["expiry"],
+                    "%Y%m%d%H%M%S",
+                )
+
+                expiry_formatted = expiry.strftime("%H:%M, %d %B %Y")
+                old_groups_formatted.add(f"{group} (expiry: {expiry_formatted})")
+
+        for i in range(len(new_groups)):
+            group = new_groups[i]
+            if "expiry" not in new_metadata[i] or new_metadata[i]["expiry"] is None:
+                new_groups_formatted.add(group)
+            else:
+                expiry = datetime.strptime(
+                    new_metadata[i]["expiry"],
+                    "%Y%m%d%H%M%S",
+                )
+
+                expiry_formatted = expiry.strftime("%H:%M, %d %B %Y")
+                new_groups_formatted.add(f"{group} (expiry: {expiry_formatted})")
+
+        old_groups_text = "(none)"
+        if len(old_groups_formatted - new_groups_formatted) > 0:
+            old_groups_text = ", ".join(old_groups_formatted - new_groups_formatted)
+
+        new_groups_text = "(none)"
+        if len(new_groups_formatted - old_groups_formatted) > 0:
+            new_groups_text = ", ".join(new_groups_formatted - old_groups_formatted)
+
+        return old_groups_text, new_groups_text
 
 
 class BotThread(threading.Thread):
