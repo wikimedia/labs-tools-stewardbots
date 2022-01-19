@@ -37,8 +37,8 @@ queries = {
     "stalkedpages": "select f_page from followed",
     "listenedchannels": "select l_channel from listen",
     "stewardusers": "select s_username from stewards",
-    "stewardnicks": "select s_nick from stewards",
-    "stewardoptin": "select s_nick from stewards where s_optin=1",
+    "stewardnicks": "select s_nick from stewards where s_nick is not null",
+    "stewardoptin": "select s_nick from stewards where s_nick is not null and s_optin=1",
 }
 
 
