@@ -1235,7 +1235,15 @@ class RecentChangesBot:
                                 )
                             elif change["log_action"] == "groupprms2":
                                 addedRights = change["log_params"]["addRights"]
+                                if len(addedRights) == 0:
+                                    addedRights = "(none)"
+                                else:
+                                    addedRights = ", ".join(addedRights)
                                 removedRights = change["log_params"]["removeRights"]
+                                if len(removedRights) == 0:
+                                    removedRights = "(none)"
+                                else:
+                                    removedRights = ", ".join(removedRights)
 
                                 bot1.msg(
                                     "03%s changed global group permissions for %s, added 04%s, removed 04%s: 07%s"
