@@ -1296,7 +1296,7 @@ class RecentChangesBot:
                             elif change["log_action"] == "setchange":
                                 message = "03%s changed wikis in %s" % (
                                     change["user"],
-                                    change["log_params"][0],
+                                    change["log_params"]["name"],
                                 )
                                 added_wikis = change["log_params"]["added"]
                                 removed_wikis = change["log_params"]["removed"]
