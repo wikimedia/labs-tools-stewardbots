@@ -1278,8 +1278,8 @@ class RecentChangesBot:
                                     "03%s created 12%s wiki set %s containing 04%s: 07%s"
                                     % (
                                         change["user"],
-                                        change["log_params"][1],
-                                        change["log_params"][0],
+                                        change["log_params"]["type"],
+                                        change["log_params"]["name"],
                                         wikis,
                                         change["comment"],
                                     )
@@ -1289,29 +1289,38 @@ class RecentChangesBot:
                                     "03%s deleted wiki set %s: 07%s"
                                     % (
                                         change["user"],
-                                        change["log_params"][0],
+                                        change["log_params"]["name"],
                                         change["comment"],
                                     )
                                 )
                             elif change["log_action"] == "setchange":
-                                message = "03%s changed wikis in %s" % (
-                                    change["user"],
-                                    change["log_params"]["name"],
-                                )
                                 added_wikis = change["log_params"]["added"]
                                 removed_wikis = change["log_params"]["removed"]
-                                if added_wikis != "":
-                                    message += ", added 04%s" % added_wikis
-                                if removed_wikis != "":
-                                    message += ", removed 04%s" % removed_wikis
-                                bot1.msg(message + ": 07%s" % change["comment"])
+                                if len(added_wikis) == 0:
+                                    added_wikis = "(none)"
+                                else:
+                                    added_wikis = ", ".join(added_wikis.values())
+                                if len(removed_wikis) == 0:
+                                    added_wikis = "(none)"
+                                else:
+                                    removed_wikis = ", ".join(removed_wikis.values())
+                                bot1.msg(
+                                    "03%s changed wikis in %s, added 04%s, removed 04%s: 07%s"
+                                    % (
+                                        change["user"],
+                                        change["log_params"]["name"],
+                                        added_wikis,
+                                        removed_wikis,
+                                        change["comment"],
+                                    )
+                                )
                             elif change["log_action"] == "setrename":
                                 bot1.msg(
                                     "03%s renamed wiki set %s to 04%s: 07%s"
                                     % (
                                         change["user"],
-                                        change["log_params"][1],
-                                        change["log_params"][0],
+                                        change["log_params"]["oldName"],
+                                        change["log_params"]["name"],
                                         change["comment"],
                                     )
                                 )
@@ -1320,9 +1329,9 @@ class RecentChangesBot:
                                     "03%s changed type of %s from 04%s to 04%s: 07%s"
                                     % (
                                         change["user"],
-                                        change["log_params"][0],
-                                        change["log_params"][1],
-                                        change["log_params"][2],
+                                        change["log_params"]["name"],
+                                        change["log_params"]["oldType"],
+                                        change["log_params"]["type"],
                                         change["comment"],
                                     )
                                 )
