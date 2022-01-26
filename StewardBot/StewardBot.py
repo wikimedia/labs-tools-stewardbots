@@ -1301,7 +1301,7 @@ class RecentChangesBot:
                                 else:
                                     added_wikis = ", ".join(added_wikis.values())
                                 if len(removed_wikis) == 0:
-                                    added_wikis = "(none)"
+                                    removed_wikis = "(none)"
                                 else:
                                     removed_wikis = ", ".join(removed_wikis.values())
                                 bot1.msg(
