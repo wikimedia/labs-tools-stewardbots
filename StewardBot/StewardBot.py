@@ -1104,7 +1104,7 @@ class RecentChangesBot:
                         bot1.msg(
                             "03%s edited 10[[%s%s]] 02https://meta.wikimedia.org/wiki/Special:Diff/%s%s"
                             % (
-                                change["user"],
+                                self.dont_ping(change["user"]),
                                 change["title"],
                                 section,
                                 change["revision"]["new"],
@@ -1113,10 +1113,11 @@ class RecentChangesBot:
                         )
                     elif change["type"] == "log":
                         if change["log_type"] == "rights":
-                            performer = change["user"]
+                            performer = self.dont_ping(change["user"])
                             target = change["title"].replace("User:", "")
                             selff = ""
                             bott = ""
+
                             if performer == re.sub(r"@.*", "", target):
                                 selff = "06(self) "
                             if (
@@ -1146,7 +1147,6 @@ class RecentChangesBot:
                             )
                         elif change["log_type"] == "gblblock":
                             target = change["title"].replace("User:", "")
-                            performer = change["user"]
                             expiry = ""
                             comment = (
                                 " with the following comment: 7"
@@ -1164,7 +1164,7 @@ class RecentChangesBot:
                             bot1.msg(
                                 "03%s %s %s (%s) %s"
                                 % (
-                                    performer,
+                                    self.dont_ping(change["user"]),
                                     action_description,
                                     target,
                                     expiry,
@@ -1206,7 +1206,7 @@ class RecentChangesBot:
                             bot1.msg(
                                 "03%s %s %s %s"
                                 % (
-                                    change["user"],
+                                    self.dont_ping(change["user"]),
                                     action_description,
                                     target,
                                     comment,
@@ -1226,7 +1226,7 @@ class RecentChangesBot:
                                 bot1.msg(
                                     "03%s changed global group membership for %s: removed 04%s; added 04%s: 07%s"
                                     % (
-                                        change["user"],
+                                        self.dont_ping(change["user"]),
                                         target,
                                         removed_groups,
                                         added_groups,
@@ -1248,7 +1248,7 @@ class RecentChangesBot:
                                 bot1.msg(
                                     "03%s changed global group permissions for %s, added 04%s, removed 04%s: 07%s"
                                     % (
-                                        change["user"],
+                                        self.dont_ping(change["user"]),
                                         change["title"].replace(
                                             "Special:GlobalUsers/", ""
                                         ),
@@ -1263,7 +1263,7 @@ class RecentChangesBot:
                                 bot1.msg(
                                     "03%s changed group restricted wikis set for %s from 04%s to 04%s: 07%s"
                                     % (
-                                        change["user"],
+                                        self.dont_ping(change["user"]),
                                         change["title"].replace(
                                             "Special:GlobalUsers/", ""
                                         ),
@@ -1277,7 +1277,7 @@ class RecentChangesBot:
                                 bot1.msg(
                                     "03%s created 12%s wiki set %s containing 04%s: 07%s"
                                     % (
-                                        change["user"],
+                                        self.dont_ping(change["user"]),
                                         change["log_params"]["type"],
                                         change["log_params"]["name"],
                                         wikis,
@@ -1288,7 +1288,7 @@ class RecentChangesBot:
                                 bot1.msg(
                                     "03%s deleted wiki set %s: 07%s"
                                     % (
-                                        change["user"],
+                                        self.dont_ping(change["user"]),
                                         change["log_params"]["name"],
                                         change["comment"],
                                     )
@@ -1307,7 +1307,7 @@ class RecentChangesBot:
                                 bot1.msg(
                                     "03%s changed wikis in %s, added 04%s, removed 04%s: 07%s"
                                     % (
-                                        change["user"],
+                                        self.dont_ping(change["user"]),
                                         change["log_params"]["name"],
                                         added_wikis,
                                         removed_wikis,
@@ -1318,17 +1318,18 @@ class RecentChangesBot:
                                 bot1.msg(
                                     "03%s renamed wiki set %s to 04%s: 07%s"
                                     % (
-                                        change["user"],
+                                        self.dont_ping(change["user"]),
                                         change["log_params"]["oldName"],
                                         change["log_params"]["name"],
                                         change["comment"],
                                     )
                                 )
                             elif change["log_action"] == "setnewtype":
+
                                 bot1.msg(
                                     "03%s changed type of %s from 04%s to 04%s: 07%s"
                                     % (
-                                        change["user"],
+                                        self.dont_ping(change["user"]),
                                         change["log_params"]["name"],
                                         change["log_params"]["oldType"],
                                         change["log_params"]["type"],
@@ -1385,6 +1386,10 @@ class RecentChangesBot:
             new_groups_text = ", ".join(new_groups_formatted - old_groups_formatted)
 
         return old_groups_text, new_groups_text
+
+    def dont_ping(self, user):
+        performer = user[:1] + "\u200B" + user[1:]
+        return performer
 
 
 class BotThread(threading.Thread):
