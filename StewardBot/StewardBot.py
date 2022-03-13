@@ -145,7 +145,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         elif a.lower().startswith("!steward"):
             # self.attention(nick)
             self.msg(nocando, nick)
-        elif self.getcloak(e.source).lower() == self.owner:
+        elif self.getcloak(e.source) == self.owner:
             if a[0] == "!":
                 self.connection.action(self.channel, a[1:])
             else:
