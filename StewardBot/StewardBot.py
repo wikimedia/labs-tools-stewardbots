@@ -13,6 +13,7 @@ from typing import List, Tuple
 import config
 import irc.client
 import pymysql
+import requests
 from ib3 import Bot
 from ib3.auth import SASL
 from ib3.connection import SSL
@@ -41,6 +42,8 @@ queries = {
     "stewardoptin": "select s_nick from stewards where s_nick is not null and s_optin=1",
 }
 
+# Dynamic list of Stewards from API
+STEWARDS = set()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -76,6 +79,28 @@ def modquery(sqlquery):
     cursor.execute(sqlquery)
     db.commit()
     db.close()
+
+
+def get_stewards():
+    stew_list = set()
+    url = "https://meta.wikimedia.org/w/api.php"
+    headers = {
+        "User-Agent": "StewardBot https://stewardbots-legacy.toolforge.org/StewardBot/StewardBot.html"
+    }
+
+    payload = {
+        "action": "query",
+        "format": "json",
+        "list": "globalallusers",
+        "agulimit": 100,
+        "agugroup": "steward",
+    }
+
+    d = requests.get(url, headers=headers, params=payload).json()
+    for item in d["query"]["globalallusers"]:
+        stew_list.add(item["name"])
+
+    return stew_list
 
 
 class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
@@ -284,6 +309,11 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         elif cmd.lower() == "test":
             self.msg("The bot seems to see your message")
 
+        # Update Dynamic Steward list
+        elif cmd.lower() == "getstewards":
+            self.update_stewards()
+            self.msg("List of Stewards updated.")
+
         # Huggle
         elif cmd.lower().startswith("huggle"):
             who = cmd[6:].strip(" ")
@@ -303,6 +333,10 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         # Other
         elif not self.quiet:
             pass  # self.msg(self.badsyntax, target)
+
+    def update_stewards(self):
+        global STEWARDS
+        STEWARDS.update(get_stewards())
 
     def attention(self, nick, cloak, channel=None, reason=None):
         cooldown_remove_threshold = time.time() - 90
@@ -1213,6 +1247,12 @@ class RecentChangesBot:
                                     comment,
                                 )
                             )
+                            if target in STEWARDS:
+                                bot1.msg(
+                                    "!steward Steward account "
+                                    + target
+                                    + " was locked!!"
+                                )
                         elif change["log_type"] == "gblrights":
                             if change["log_action"] == "usergroups":
                                 target = change["title"].replace("User:", "")
@@ -1403,9 +1443,10 @@ class BotThread(threading.Thread):
 
 
 if __name__ == "__main__":
-    global bot1, bot2
+    global bot1, bot2, STEWARDS
     bot1 = LiberaBot()
     bot2 = RecentChangesBot()
+    STEWARDS.update(get_stewards())
 
     try:
         liberaThread = BotThread(bot1)
