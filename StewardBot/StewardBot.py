@@ -333,14 +333,15 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         if self.notify:
             if not channel or channel == self.channel:
                 self.msg(
-                    "Stewards: Attention requested by %s ( %s )"
+                    "Stewards: Emergency attention requested by %s ( %s )"
                     % (nick, " ".join(self.steward))
                 )
             else:
                 self.msg(
-                    "Stewards: Attention requested ( %s )" % (" ".join(self.steward))
+                    "Stewards: Emergency attention requested ( %s )"
+                    % (" ".join(self.steward))
                 )
-                messg = "Attention requested by %s on %s" % (nick, channel)
+                messg = "Emergency attention requested by %s on %s" % (nick, channel)
                 if reason:
                     messg += " with the following reason: " + reason
                 self.msg(messg)
