@@ -804,25 +804,30 @@ class EventstreamsListener:
                     ):  # We only want newusers, not blocks or etc
                         continue
 
+                    # create2 and byemail log_actions set change["user"] to
+                    # the acting user, not the created username
+                    username = change["title"].partition(":")[2]
+
                     bad = False
                     good = False
                     matches = []
                     botsay = None
 
                     for (idx, bw) in badwords:  # Use old method for checking badwords
-                        if re.search(bw, change["user"]):
+                        if re.search(bw, username):
                             bad = True
                             matches.append(bw.pattern)
                     for wl in whitelist:  # Use old method to check for whitelist
+                        # Apply wl to acting user
                         if change["user"] == wl:
                             print("Skipped '%s'; user is whitelisted" % change["user"])
                             good = True
 
                     if not bad and not good:  # Use old method to build bot spam
                         botsay = "\x0303{0} \x0302{1}{2}\x03".format(
-                            change["user"],
+                            username,
                             ca,
-                            quote(change["user"]).replace(".", "%2E"),
+                            quote(username).replace(".", "%2E"),
                         )
                     elif bad and not good:
                         for m in matches:
@@ -834,17 +839,17 @@ class EventstreamsListener:
                                 )
                                 args = (
                                     m,
-                                    change["user"],
+                                    username,
                                     time.strftime("%Y%m%d%H%M%S"),
                                 )
                                 self.sulwatcher.querier.do(sql, args)
                             except Exception:
                                 print("Could not log hit to database.")
                         botsay = "\x0303{0} \x0305\x02 matches badword {1} \017: \x0302{2}{3}\x03".format(
-                            change["user"],
+                            username,
                             "; ".join(matches),
                             ca,
-                            quote(change["user"]).replace(".", "%2E"),
+                            quote(username).replace(".", "%2E"),
                         )
 
                     if botsay is not None:
