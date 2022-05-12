@@ -23,13 +23,24 @@ from irc.bot import Channel
 from irc.client import NickMask
 from sseclient import SSEClient as EventSource
 
-# DB data
-dbconfig = ConfigParser()
-dbconfig.read_string(open(os.path.expanduser("~/.my.cnf"), "r").read())
-SQLuser = dbconfig["client"]["user"]
-SQLpassword = dbconfig["client"]["password"]
-SQLhost = dbconfig["client"]["host"]
-SQLdb = config.dbname
+# Fetch configuration
+get_config = ConfigParser()
+
+# DB config
+get_config.read_string(open(os.path.expanduser("~/replica.my.cnf"), "r").read())
+SQL = {
+    "user": get_config["client"]["user"].strip("'"),
+    "password": get_config["client"]["password"].strip("'"),
+    "host": "tools-db",
+    "db": config.dbname,
+}
+
+# Pushover config
+get_config.read_string(open(os.path.expanduser("~/StewardBot.cnf"), "r").read())
+PUSHOVER = {
+    "bot": get_config["pushover"]["bot"],
+    "group": get_config["pushover"]["group"],
+}
 
 # common queries
 queries = {
@@ -42,9 +53,7 @@ queries = {
     "stewardoptin": "select s_nick from stewards where s_nick is not null and s_optin=1",
 }
 
-# Dynamic list of Stewards from API
-STEWARDS = set()
-
+# Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(name)s %(levelname)s: %(message)s",
@@ -62,7 +71,9 @@ def nm_to_n(nm):
 
 
 def query(sqlquery, one=True):
-    db = pymysql.connect(db=SQLdb, host=SQLhost, user=SQLuser, passwd=SQLpassword)
+    db = pymysql.connect(
+        db=SQL["db"], host=SQL["host"], user=SQL["user"], passwd=SQL["password"]
+    )
     cursor = db.cursor()
     cursor.execute(sqlquery)
     db.close()
@@ -74,33 +85,13 @@ def query(sqlquery, one=True):
 
 
 def modquery(sqlquery):
-    db = pymysql.connect(db=SQLdb, host=SQLhost, user=SQLuser, passwd=SQLpassword)
+    db = pymysql.connect(
+        db=SQL["db"], host=SQL["host"], user=SQL["user"], passwd=SQL["password"]
+    )
     cursor = db.cursor()
     cursor.execute(sqlquery)
     db.commit()
     db.close()
-
-
-def get_stewards():
-    stew_list = set()
-    url = "https://meta.wikimedia.org/w/api.php"
-    headers = {
-        "User-Agent": "StewardBot https://stewardbots-legacy.toolforge.org/StewardBot/StewardBot.html"
-    }
-
-    payload = {
-        "action": "query",
-        "format": "json",
-        "list": "globalallusers",
-        "agulimit": 100,
-        "agugroup": "steward",
-    }
-
-    d = requests.get(url, headers=headers, params=payload).json()
-    for item in d["query"]["globalallusers"]:
-        stew_list.add(item["name"])
-
-    return stew_list
 
 
 class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
@@ -309,11 +300,6 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         elif cmd.lower() == "test":
             self.msg("The bot seems to see your message")
 
-        # Update Dynamic Steward list
-        elif cmd.lower() == "getstewards":
-            self.update_stewards()
-            self.msg("List of Stewards updated.")
-
         # Huggle
         elif cmd.lower().startswith("huggle"):
             who = cmd[6:].strip(" ")
@@ -333,10 +319,6 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         # Other
         elif not self.quiet:
             pass  # self.msg(self.badsyntax, target)
-
-    def update_stewards(self):
-        global STEWARDS
-        STEWARDS.update(get_stewards())
 
     def attention(self, nick, cloak, channel=None, reason=None):
         cooldown_remove_threshold = time.time() - 90
@@ -1080,6 +1062,7 @@ class RecentChangesBot:
     def __init__(self):
         self.stalked = query(queries["stalkedpages"])
         self.ignored = query(queries["ignoredusers"])
+        self.stewards = query(queries["stewardusers"])
         self.should_exit = False
         self.RE_SECTION = re.compile(r"/\* *(?P<section>.+?) *\*/", re.DOTALL)
 
@@ -1247,12 +1230,20 @@ class RecentChangesBot:
                                     comment,
                                 )
                             )
-                            if target in STEWARDS:
-                                bot1.msg(
-                                    "!steward Steward account "
-                                    + target
-                                    + " was locked!!"
-                                )
+                            if target in self.stewards:
+                                # Casually look for Steward accounts in lock reports
+                                if self.confirm_steward(target):
+                                    # Actively verify Steward account is still a Steward
+                                    # If so, set off lots of noise
+                                    msg = "!steward Steward account {} was locked!!".format(
+                                        target
+                                    )
+                                    pushover = self.send_pushover(msg)
+                                    bot1.msg(msg)
+                                    if pushover is False:
+                                        bot1.msg(
+                                            "Pushover notification service failed!"
+                                        )
                         elif change["log_type"] == "gblrights":
                             if change["log_action"] == "usergroups":
                                 target = change["title"].replace("User:", "")
@@ -1431,6 +1422,64 @@ class RecentChangesBot:
     def dont_ping(self, user):
         performer = user[:1] + "\u200B" + user[1:]
         return performer
+
+    def confirm_steward(self, target):
+        # Actively get current set of Stewards and verify target in set
+        # This is to confirm what's in the database is not out of date
+        # before sending Pushover notification due to a removal or etc
+        stew_list = set()
+        url = "https://meta.wikimedia.org/w/api.php"
+        headers = {
+            "User-Agent": "StewardBot https://wikitech.wikimedia.org/wiki/Tool:Stewardbots"
+        }
+
+        payload = {
+            "action": "query",
+            "format": "json",
+            "list": "globalallusers",
+            "agulimit": 100,
+            "agugroup": "steward",
+        }
+
+        try:
+            d = requests.get(url, headers=headers, params=payload).json()
+        except Exception as e:
+            # If the API request fails, fail to assuming target is Steward
+            # and log the exception
+            logger.exception(str(e))
+            return True
+
+        for item in d["query"]["globalallusers"]:
+            stew_list.add(item["name"])
+
+        return target in stew_list
+
+    def send_pushover(self, msg):
+        # Send Pushover notification with highest priority
+        # Set to re-alert every 30 seconds for 5 minutes (10 total notifications)
+        # Unless ack'd by user
+        pushover = "https://api.pushover.net/1/messages.json"
+        header = {
+            "User-Agent": "StewardBot https://wikitech.wikimedia.org/wiki/Tool:Stewardbots"
+        }
+        alert = {
+            "token": PUSHOVER["bot"],
+            "user": PUSHOVER["group"],
+            "title": "Steward Alert!",
+            "message": msg,
+            "priority": 2,
+            "retry": 30,
+            "expire": 180,
+        }
+
+        try:
+            data = requests.post(pushover, headers=header, data=alert).json()
+        except Exception as e:
+            # If the API request fails, log problem and assume Pushover didn't go through
+            logger.exception(str(e))
+            return False
+
+        return data.get("status") == 1
 
 
 class BotThread(threading.Thread):
