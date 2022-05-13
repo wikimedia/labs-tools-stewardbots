@@ -1443,10 +1443,9 @@ class BotThread(threading.Thread):
 
 
 if __name__ == "__main__":
-    global bot1, bot2, STEWARDS
+    global bot1, bot2
     bot1 = LiberaBot()
     bot2 = RecentChangesBot()
-    STEWARDS.update(get_stewards())
 
     try:
         liberaThread = BotThread(bot1)
