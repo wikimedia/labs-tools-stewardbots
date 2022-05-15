@@ -30,7 +30,7 @@ from sseclient import SSEClient as EventStream
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s %(name)s %(threadName) %(levelname)s: %(message)s",
+    format="%(asctime)s %(name)s %(threadName)s %(levelname)s: %(message)s",
     datefmt="%Y-%m-%dT%H:%M:%SZ",
 )
 logging.captureWarnings(True)
