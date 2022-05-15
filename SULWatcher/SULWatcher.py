@@ -8,12 +8,12 @@
 #
 import argparse
 import json
+import logging
 import os
 import re
 import sys
 import threading
 import time
-import traceback
 from urllib.parse import quote
 
 import pymysql
@@ -27,6 +27,16 @@ from ib3.nick import Ghost
 from irc.client import NickMask
 from jaraco.stream import buffer
 from sseclient import SSEClient as EventStream
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(name)s %(threadName) %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%SZ",
+)
+logging.captureWarnings(True)
+
+logger = logging.getLogger("SULWatcher")
+logger.setLevel(logging.DEBUG)
 
 
 def nm_to_n(nm):
@@ -162,7 +172,8 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             try:
                 self.do_command(event, command, target)
             except CommanderError as event:
-                print("CommanderError: %s" % event.value)
+                logger.debug("<%s/%s>: %s", event.target, event.source, a)
+                logger.error("CommanderError: %s", event.value)
                 self.msg(
                     "You have to follow the proper syntax. See "
                     "\x0302https://stewardbots-legacy.toolforge.org/"
@@ -170,10 +181,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                     nick,
                 )  # Make this translatable
             except Exception:
-                (exceptionType, exceptionValue, exceptionTraceback) = sys.exc_info()
-                traceback.print_exception(
-                    exceptionType, exceptionValue, exceptionTraceback
-                )
+                logger.exception("<%s/%s>: %s", event.target, event.source, a)
                 self.msg(
                     "Unknown internal error: %s target: %s; traceback in console"
                     % (sys.exc_info()[1], target)
@@ -213,7 +221,8 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                     try:
                         self.do_command(event, command, target)
                     except CommanderError as event:
-                        print("CommanderError: %s" % event.value)
+                        logger.debug("<%s/%s>: %s", event.target, event.source, a)
+                        logger.error("CommanderError: %s", event.value)
                         self.msg(
                             "You have to follow the proper syntax. See "
                             "\x0302https://stewardbots-legacy.toolforge.org/"
@@ -221,14 +230,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                             target,
                         )
                     except Exception:
-                        (
-                            exceptionType,
-                            exceptionValue,
-                            exceptionTraceback,
-                        ) = sys.exc_info()
-                        traceback.print_exception(
-                            exceptionType, exceptionValue, exceptionTraceback
-                        )
+                        logger.exception("<%s/%s>: %s", event.target, event.source, a)
                         self.msg(
                             "Unknown internal error: {}; traceback in console.".format(
                                 sys.exc_info()[1]
@@ -251,7 +253,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         This should be split into a command_parse method, which hands
         off only valid commands to do_X methods.
         """
-        print("do_command(self, e, '%s', '%s')" % (cmd, target))
+        logger.info("do_command(self, e, '%s', '%s')", cmd, target)
         global badwords, whitelist
         nick = nm_to_n(e.source)
         args = cmd.split(" ")  # Should use regex to parse here
@@ -275,13 +277,13 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                         self.msg(
                             '"%s" does not match regex "%s"' % (string, probe), target
                         )
-                except IndexError:
-                    print("IndexError: %s" % sys.exc_info()[1])
+                except IndexError as err:
+                    logger.exception(err)
                     raise CommanderError(
                         "You didn't use the right format for "
                         "testing: 'SULWatcher: test <string to test> regex "
                         "\bregular ?expression\b'"
-                    )
+                    ) from err
             elif len(args) == 1:
                 self.msg(
                     "Yes, I'm alive. You can test a string against a "
@@ -488,7 +490,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 raise CommanderError("Who is the target of these malicious huggles?!")
         elif args[0] == "die":  # Die
             if self.channels[self.channel].is_oper(nick):
-                print("%s is opped - dying..." % nick)
+                logger.info("%s is opped - dying...", nick)
                 if len(args) > 1:
                     quitmsg = " ".join(args[1:])
                 else:
@@ -501,19 +503,18 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                         botinstance.disconnect()
                     except Exception:
                         # let's exit anyways
-                        print(traceback.format_exc())
-                        print("a bot didn't disconnect")
-                print("Killed. Now exiting...")
+                        logger.exception("a bot didn't disconnect")
+                logger.info("Killed. Now exiting...")
                 # sys.exit(0) # 0 is a normal exit status
                 os._exit(os.EX_OK)  # really really kill things off!!
             else:
                 self.msg("You can't kill me; you're not opped!", target)
         elif args[0] == "restart":  # Restart
             if self.channels[self.channel].is_oper(nick):
-                print("%s is opped - restarting..." % nick)
+                logger.info("%s is opped - restarting...", nick)
                 if len(args) == 1:
                     quitmsg = self.sulwatcher.get_config_result("quitmsg")
-                    print('Restarting all bots with message: "%s"' % quitmsg)
+                    logger.info('Restarting all bots with message: "%s"', quitmsg)
                     rawquitmsg = ":" + quitmsg
                     for botinstance in self.sulwatcher.irc_bots:
                         try:
@@ -522,28 +523,28 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                             botinstance.connection.quit(rawquitmsg)
                             botinstance.disconnect()
                             BotThread(botinstance).start()
-                        except Exception:
+                        except Exception as err:
                             raise BotConnectionError(
                                 "a bot didn't recover: {} {} {}".format(
                                     sys.exc_info()[1],
                                     sys.exc_info()[1],
                                     sys.exc_info()[2],
                                 )
-                            )
+                            ) from err
                 elif len(args) > 1 and args[1] == "rc":
                     self.msg("Restarting RC reader", target)
                     try:
                         self.sulwatcher.start_eventstreams()
 
                     except Exception as e:
-                        raise BotConnectionError(str(e))
+                        raise BotConnectionError(str(e)) from e
                 else:
                     raise CommanderError("Invalid command")
             else:
                 self.msg("You can't restart me; you're not opped!", target)
 
     def buildRegex(self):
-        print("buildRegex(self)")
+        logger.debug("buildRegex(self)")
         global badwords
         sql = "SELECT r_id,r_regex,r_case FROM regex WHERE r_active=1;"
         results = self.sulwatcher.querier.do(sql)
@@ -566,14 +567,14 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         return badwords
 
     def buildWhitelist(self):
-        print("buildWhitelist(self)")
+        logger.debug("buildWhitelist(self)")
         global whitelist
         sql = "SELECT s_value FROM setup WHERE s_param='whitelist';"
         result = self.sulwatcher.querier.do(sql)
         whitelist = [r["s_value"] for r in result]
 
     def addRegex(self, regex, cloak, target):
-        print("addRegex(self, '%s', '%s', '%s')" % (regex, cloak, target))
+        logger.info("addRegex(self, '%s', '%s', '%s')", regex, cloak, target)
         sql = "SELECT r_id FROM regex WHERE r_regex=%s;"
         args = (regex,)
         result = self.sulwatcher.querier.do(sql, args)
@@ -598,7 +599,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             self.getPrintRegex(regex=regex, target=target)
 
     def removeRegex(self, regex=None, index=None, target=None):
-        print("removeRegex(self, '%s', '%s', '%s')" % (regex, index, target))
+        logger.info("removeRegex(self, '%s', '%s', '%s')", regex, index, target)
         if regex:
             sql = "UPDATE regex SET r_active=0,r_timestamp=%s WHERE r_regex=%s;"
             args = (time.strftime("%Y%m%d%H%M%S"), regex)
@@ -621,7 +622,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 self.msg("Could not disable regex #%s." % (index), target)
 
     def enableRegex(self, index, target):
-        print("enableRegex(self, '%s', '%s')" % (index, target))
+        logger.info("enableRegex(self, '%s', '%s')", index, target)
         sql = "UPDATE regex SET r_active=1 WHERE r_id=%s;"
         args = (index,)
         self.sulwatcher.querier.do(sql, args)
@@ -630,7 +631,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             self.buildRegex()
 
     def getRegex(self, regex=None, index=None):
-        print("getRegex(self, '%s', '%s')" % (regex, index))
+        logger.debug("getRegex(self, '%s', '%s')", regex, index)
         if regex:
             sql = """
                   SELECT r_id, r_regex, r_active, r_case, r_cloak, r_reason, r_timestamp, sum(if(l_id, 1, 0)) AS hits
@@ -664,7 +665,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         return None
 
     def getPrintRegex(self, regex=None, index=None, target=None):
-        print("getPrintRegex(self, '%s', '%s', '%s')" % (regex, index, target))
+        logger.debug("getPrintRegex(self, '%s', '%s', '%s')", regex, index, target)
         r = self.getRegex(regex=regex, index=index)
         if r:
             if r["r_active"]:
@@ -703,7 +704,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
                 self.msg("That record couldn't be found.", target)
 
     def addToList(self, who, groupname, target):
-        print("addToList(self, '%s', '%s', '%s')" % (who, groupname, target))
+        logger.info("addToList(self, '%s', '%s', '%s')", who, groupname, target)
         group_members = self.sulwatcher.get_config_result(groupname)
         if not group_members:
             self.msg("Could not find '%s'." % (groupname), target)
@@ -720,7 +721,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             self.msg("%s is already in %s." % (who, groupname), target)
 
     def removeFromList(self, who, groupname, target):
-        print("removeFromList(self, '%s', '%s', '%s')" % (who, groupname, target))
+        logger.info("removeFromList(self, '%s', '%s', '%s')", who, groupname, target)
         group_members = self.sulwatcher.get_config_result(groupname)
         if not group_members:
             self.msg("Could not find '%s'." % (groupname), target)
@@ -820,7 +821,9 @@ class EventstreamsListener:
                     for wl in whitelist:  # Use old method to check for whitelist
                         # Apply wl to acting user
                         if change["user"] == wl:
-                            print("Skipped '%s'; user is whitelisted" % change["user"])
+                            logger.info(
+                                "Skipped '%s'; user is whitelisted", change["user"]
+                            )
                             good = True
 
                     if not bad and not good:  # Use old method to build bot spam
@@ -844,7 +847,7 @@ class EventstreamsListener:
                                 )
                                 self.sulwatcher.querier.do(sql, args)
                             except Exception:
-                                print("Could not log hit to database.")
+                                logger.exception("Could not log hit to database.")
                         botsay = "\x0303{0} \x0305\x02 matches badword {1} \017: \x0302{2}{3}\x03".format(
                             username,
                             "; ".join(matches),
@@ -860,10 +863,7 @@ class EventstreamsListener:
                 except ValueError:  # Sometimes EventStream sends garbage. Catch and throw it away
                     pass
                 except Exception as e:  # Should be specific about what might happen here
-                    print(
-                        "RC reader error: %s %s %s"
-                        % (sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
-                    )
+                    logger.exception("RC reader error:", exc_info=e)
                     self.sulwatcher.irc_bots[0].msg(str(e))
 
 
@@ -902,7 +902,7 @@ class SULWatcher:
         self.eventstreams_listener = None
 
     def get_config_result(self, key):
-        print("getConfig(%s)" % key)
+        logger.debug("getConfig(%s)", key)
         result = [
             r["s_value"]
             for r in self.querier.do(
@@ -945,7 +945,7 @@ class SULWatcher:
             ]
 
         for bot in self.irc_bots:
-            print("starting", bot.nickname)
+            logger.info("starting", bot.nickname)
             BotThread(bot).start()
 
     def start_eventstreams(self):
@@ -954,7 +954,7 @@ class SULWatcher:
 
         self.eventstreams_listener = EventstreamsListener(self)
         EventstreamsThread(self.eventstreams_listener).start()
-        print("starting EventStream")
+        logger.info("starting EventStream")
 
     def start_bots(self):
         """Start all the bots"""
