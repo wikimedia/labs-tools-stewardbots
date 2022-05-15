@@ -1153,7 +1153,7 @@ class RecentChangesBot:
                             selff = ""
                             bott = ""
 
-                            if performer == re.sub(r"@.*", "", target):
+                            if change["user"] == re.sub(r"@.*", "", target):
                                 selff = "06(self) "
                             if (
                                 "bot" in change["log_params"]["newgroups"]
