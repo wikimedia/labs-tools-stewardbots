@@ -148,7 +148,10 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
         elif event.arguments[0] == "PING" and len(event.arguments) > 1:
             c.ctcp_reply(self.getNick(event.source), "PING " + event.arguments[1])
         elif event.arguments[0] == "SOURCE":
-            c.ctcp_reply(self.getNick(event.source), "git://git.hashbang.ca/SULWatcher")
+            c.ctcp_reply(
+                self.getNick(event.source),
+                "https://gerrit.wikimedia.org/g/labs/tools/stewardbots",
+            )
 
     def on_privmsg(self, c, event):
         """
@@ -869,7 +872,7 @@ class EventstreamsListener:
 
 class EventstreamsThread(threading.Thread):
     def __init__(self, listener):
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self, name="EventsteamsThread")
         self.listener = listener
 
     def run(self):
@@ -883,7 +886,7 @@ class IgnoreErrorsBuffer(buffer.DecodingLineBuffer):
 
 class BotThread(threading.Thread):
     def __init__(self, bot):
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self, name=bot.nickname)
         self.bot = bot
 
     def run(self):
@@ -945,7 +948,7 @@ class SULWatcher:
             ]
 
         for bot in self.irc_bots:
-            logger.info("starting", bot.nickname)
+            logger.info("starting %s", bot.nickname)
             BotThread(bot).start()
 
     def start_eventstreams(self):
