@@ -17,7 +17,7 @@ import requests
 from ib3 import Bot
 from ib3.auth import SASL
 from ib3.connection import SSL
-from ib3.mixins import DisconnectOnError
+from ib3.mixins import DisconnectOnError, PingServer
 from ib3.nick import Ghost
 from irc.bot import Channel
 from irc.client import NickMask
@@ -94,7 +94,7 @@ def modquery(sqlquery):
     db.close()
 
 
-class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
+class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
     def __init__(self):
         self.channel = config.channel
         self.nickname = config.nick
@@ -116,6 +116,8 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             realname=self.nickname,
             ident_password=config.password,
             channels=[self.channel] + self.listened,
+            max_pings=2,
+            ping_interval=300,
         )
 
     def on_ctcp(self, c, event):
