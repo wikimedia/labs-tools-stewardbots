@@ -332,7 +332,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             elif args[1] in ("match", "matches"):
                 string = " ".join(args[2:])
                 matches = []
-                for (idx, bw) in badwords:
+                for idx, bw in badwords:
                     if bw.search(string):
                         matches.append("%s (#%s)" % (bw.pattern, idx))
                 if len(matches) == 0:
@@ -817,7 +817,7 @@ class EventstreamsListener:
                     matches = []
                     botsay = None
 
-                    for (idx, bw) in badwords:  # Use old method for checking badwords
+                    for idx, bw in badwords:  # Use old method for checking badwords
                         if re.search(bw, username):
                             bad = True
                             matches.append(bw.pattern)
@@ -863,9 +863,13 @@ class EventstreamsListener:
                             counter % len(self.sulwatcher.irc_bots)
                         ].msg(botsay)
                         counter += 1
-                except ValueError:  # Sometimes EventStream sends garbage. Catch and throw it away
+                except (
+                    ValueError
+                ):  # Sometimes EventStream sends garbage. Catch and throw it away
                     pass
-                except Exception as e:  # Should be specific about what might happen here
+                except (
+                    Exception
+                ) as e:  # Should be specific about what might happen here
                     logger.exception("RC reader error:", exc_info=e)
                     self.sulwatcher.irc_bots[0].msg(str(e))
 

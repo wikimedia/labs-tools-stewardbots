@@ -1359,7 +1359,6 @@ class RecentChangesBot:
                                     )
                                 )
                             elif change["log_action"] == "setnewtype":
-
                                 bot1.msg(
                                     "03%s changed type of %s from 04%s to 04%s: 07%s"
                                     % (
