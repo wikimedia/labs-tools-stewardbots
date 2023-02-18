@@ -7,9 +7,6 @@ Included Tools
 --------------
 
 - Elections: Breakdown of the steward elections.
-- Delete: Overview of open speedy deletion requests.
-- Projects: Overview of number of admins/crats/CU/OS on Wikimedia projects.
-- Userrights statistics: Number of users with a specific right per project.
 
 Help pages for the bots
 -----------------------
