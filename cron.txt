@@ -1,4 +1,0 @@
-MAILTO=""
-# Ensure continuous jobs are running
-*/10 * * * * jlocal /data/project/stewardbots/bigbrother.sh stewardbot /data/project/stewardbots/stewardbots/StewardBot/StewardBot.py > /data/project/stewardbots/bigbrothe2r.log 2>&1
-*/10 * * * * jlocal /data/project/stewardbots/bigbrother.sh sulwatcher /data/project/stewardbots/stewardbots/SULWatcher/SULWatcher.py > /data/project/stewardbots/bigbrothe2r.log 2>&1
