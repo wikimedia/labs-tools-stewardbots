@@ -202,6 +202,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
                     [
                         "steward",
                         "huggle",
+                        "nyaa",
                         "help",
                         "privileged list",
                         "ignored list",
@@ -308,6 +309,10 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
         elif cmd.lower().startswith("huggle"):
             who = cmd[6:].strip(" ")
             self.connection.action(self.channel, "huggles " + who)
+
+        # nyaa
+        elif cmd.lower().startswith("nyaa"):
+            self.connection.action(self.channel, "=^_^=")
 
         # Kubernetes will restart the process if it exists
         elif cmd.lower() == "restart":
