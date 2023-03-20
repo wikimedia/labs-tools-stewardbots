@@ -235,6 +235,8 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
             if not self.quiet:
                 self.msg("I'll be quiet :(", target)
                 self.quiet = True
+            else:
+                self.msg("I can't be any more quiet :-(", target)
         elif cmd.lower() == "speak":
             if self.quiet:
                 self.msg("Back in action :)", target)
