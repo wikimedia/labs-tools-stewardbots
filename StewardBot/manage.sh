@@ -4,57 +4,41 @@
 
 set -e
 
-DEPLOYMENT=stewardbot
-POD_NAME=stewardbot
-
 TOOL_DIR=/data/project/stewardbots/stewardbots/StewardBot
+JOB_NAME=stewardbot
+JOB_FILE="${TOOL_DIR}/jobs.yaml"
+LOG_FILE="/data/project/stewardbots/logs/stewardbot.log"
 VENV=/data/project/stewardbots/venv-k8s-py39
-if [[ -f ${VENV}/bin/activate ]]; then
-    # Enable virtualenv
-    source ${VENV}/bin/activate
-fi
-
-KUBECTL=/usr/bin/kubectl
-
-_get_pod() {
-    $KUBECTL get pods \
-        --output=jsonpath={.items..metadata.name} \
-        --selector=name=${POD_NAME}
-}
 
 case "$1" in
     start)
         echo "Starting StewardBot k8s deployment..."
-        $KUBECTL create --validate=true -f ${TOOL_DIR}/k8s-deployment.yaml
+        toolforge-jobs load "${JOB_FILE}" --job "${JOB_NAME}"
         ;;
     run)
         date +%Y-%m-%dT%H:%M:%S
-        echo "Running StewardBot..."
+        echo "Starting StewardBot..."
+        source ${VENV}/bin/activate
         cd ${TOOL_DIR}
         exec python StewardBot.py
         ;;
     stop)
         echo "Stopping StewardBot k8s deployment..."
-        $KUBECTL delete deployment ${DEPLOYMENT}
+        toolforge-jobs delete "${JOB_NAME}"
         # FIXME: wait for the pods to stop
         ;;
     restart)
         echo "Restarting StewardBot pod..."
-        exec $KUBECTL delete pod $(_get_pod)
+        toolforge-jobs restart "${JOB_NAME}"
         ;;
     status)
-        echo "Active pods:"
-        exec $KUBECTL get pods -l name=${POD_NAME}
+        toolforge-jobs show "${JOB_NAME}"
         ;;
     tail)
-        exec $KUBECTL logs -f $(_get_pod)
-        ;;
-    attach)
-        echo "Attaching to pod..."
-        exec $KUBECTL exec -i -t $(_get_pod) -- /bin/bash
+        exec tail -f "${LOG_FILE}"
         ;;
     *)
-        echo "Usage: $0 {start|stop|restart|status|tail|attach}"
+        echo "Usage: $0 {start|stop|restart|status|tail}"
         exit 1
         ;;
 esac

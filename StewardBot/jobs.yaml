@@ -1,0 +1,7 @@
+- image: python3.9
+  name: stewardbot
+  command: /data/project/stewardbots/stewardbots/StewardBot/manage.sh run
+  continuous: true
+  emails: onfailure
+  filelog-stdout: /data/project/stewardbots/logs/stewardbot.log
+  filelog-stderr: /data/project/stewardbots/logs/stewardbot.log
