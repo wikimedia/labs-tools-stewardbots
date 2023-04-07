@@ -145,6 +145,8 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
                 command = a[1:]
             else:
                 command = re.sub("(?i)%s:" % self.nickname.lower(), "", a).strip(" ")
+
+            # Die command via PM
             if command.lower() == "die":
                 if self.getcloak(e.source) == self.owner:
                     self.do_command(e.source, command)
@@ -162,6 +164,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
                 self.msg(self.badsyntax, nick)
         elif a.lower().startswith("!steward"):
             # self.attention(nick)
+            # Disallow !steward from PMs
             self.msg(nocando, nick)
         elif self.getcloak(e.source) == self.owner:
             if a[0] == "!":
@@ -268,8 +271,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
         # Notifications
         elif cmd.lower().startswith("steward"):
             self.msg(
-                "Stewards: Attention requested by %s ( %s )"
-                % (nick, " ".join(self.optin))
+                f"Stewards: Attention requested by {nick} ({' '.join(self.optin)})"
             )
 
         # Privileged
@@ -307,8 +309,11 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
 
         # Huggle
         elif cmd.lower().startswith("huggle"):
-            who = cmd[6:].strip(" ")
-            self.connection.action(self.channel, "huggles " + who)
+            if len(cmd.split(" ")) > 1:
+                _huggle, target = cmd.split(" ")
+                self.connection.action(self.channel, f"huggles {target}")
+            else:
+                self.connection.action(self.channel, f"huggles {nick}")
 
         # nyaa
         elif cmd.lower().startswith("nyaa"):
@@ -350,7 +355,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
                     (time.time() - value),
                 )
                 self.msg(
-                    "%s: Sorry, you are on a cooldown for having emergencies." % nick,
+                    f"{nick}: Sorry, you are on a cooldown for having emergencies.",
                     channel,
                 )
                 return
@@ -358,17 +363,15 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
         if self.notify:
             if not channel or channel == self.channel:
                 self.msg(
-                    "Stewards: Emergency attention requested by %s ( %s )"
-                    % (nick, " ".join(self.steward))
+                    f"Stewards: Emergency attention requested by {nick} ({' '.join(self.steward)})"
                 )
             else:
                 self.msg(
-                    "Stewards: Emergency attention requested ( %s )"
-                    % (" ".join(self.steward))
+                    f"Stewards: Emergency attention requested ( {' '.join(self.steward)} )"
                 )
-                messg = "Emergency attention requested by %s on %s" % (nick, channel)
+                messg = f"Emergency attention requested by {nick} on {channel}"
                 if reason:
-                    messg += " with the following reason: " + reason
+                    messg += f" with the following reason: {reason}"
                 self.msg(messg)
             self.emergency_cooldowns[cloak] = time.time()
 
@@ -1124,20 +1127,14 @@ class RecentChangesBot:
                         else:
                             section = ""
                         comment = (
-                            " with the following comment: 07"
-                            + rccomment.strip(" ")
-                            + ""
+                            f"with the following comment: 07{rccomment.strip(' ')}"
                         )
+
                         bot1.msg(
-                            "03%s edited 10[[%s%s]] 02https://meta.wikimedia.org/wiki/Special:Diff/%s%s"
-                            % (
-                                self.dont_ping(change["user"]),
-                                change["title"],
-                                section,
-                                change["revision"]["new"],
-                                comment,
-                            )
+                            f"03{self.dont_ping(change['user'])} edited 10[[{change['title']}{section}]] "
+                            f"02https://meta.wikimedia.org/wiki/Special:Diff/{change['revision']['new']} {comment}"
                         )
+
                     elif change["type"] == "log":
                         if change["log_type"] == "rights":
                             performer = self.dont_ping(change["user"])
@@ -1161,25 +1158,15 @@ class RecentChangesBot:
                             )
 
                             bot1.msg(
-                                "%s%s03%s changed user rights for %s: removed 04%s; added 04%s: 07%s"
-                                % (
-                                    selff,
-                                    bott,
-                                    performer,
-                                    target,
-                                    removed_groups,
-                                    added_groups,
-                                    change["comment"],
-                                )
+                                f"{selff}{bott}03{performer} changed user rights for {target}: "
+                                f"removed 04{removed_groups}; added 04{added_groups}: 07{change['comment']}"
                             )
+
                         elif change["log_type"] == "gblblock":
                             target = change["title"].replace("User:", "")
                             expiry = ""
-                            comment = (
-                                " with the following comment: 7"
-                                + change["comment"].strip(" ")
-                                + ""
-                            )
+                            comment = f"with the following comment: 7{change['comment'].strip(' ')}"
+
                             if change["log_action"] == "gblock2":
                                 expiry = change["log_params"][0]
                                 action_description = "globally blocked"
@@ -1189,14 +1176,8 @@ class RecentChangesBot:
                                 expiry = change["log_params"][0]
                                 action_description = "modified the global block on"
                             bot1.msg(
-                                "03%s %s %s (%s) %s"
-                                % (
-                                    self.dont_ping(change["user"]),
-                                    action_description,
-                                    target,
-                                    expiry,
-                                    comment,
-                                )
+                                f"03{self.dont_ping(change['user'])} {action_description} "
+                                f"{target} ({expiry}) {comment}"
                             )
                         elif change["log_type"] == "globalauth":
                             target = (
@@ -1207,11 +1188,7 @@ class RecentChangesBot:
                             )
                             comment = change["comment"]
                             if comment != "":
-                                comment = (
-                                    "with the following comment: 07"
-                                    + comment.strip(" ")
-                                    + ""
-                                )
+                                comment = f"with the following comment: 07{comment.strip(' ')}"
 
                             action_description = ""
                             if len(change["log_params"]["added"]) > 0:
@@ -1231,28 +1208,24 @@ class RecentChangesBot:
                             action_description += " account"
 
                             bot1.msg(
-                                "03%s %s %s %s"
-                                % (
-                                    self.dont_ping(change["user"]),
-                                    action_description,
-                                    target,
-                                    comment,
-                                )
+                                f"03{self.dont_ping(change['user'])} {action_description} "
+                                f"{target} {comment}"
                             )
+
                             if target in self.stewards:
                                 # Casually look for Steward accounts in lock reports
                                 if self.confirm_steward(target):
                                     # Actively verify Steward account is still a Steward
                                     # If so, set off lots of noise
-                                    msg = "!steward Steward account {} was locked!!".format(
-                                        target
-                                    )
+                                    msg = f"!steward Steward account {target} was locked!!"
                                     pushover = self.send_pushover(msg)
                                     bot1.msg(msg)
+
                                     if pushover is False:
                                         bot1.msg(
                                             "Pushover notification service failed!"
                                         )
+
                         elif change["log_type"] == "gblrights":
                             if change["log_action"] == "usergroups":
                                 target = change["title"].replace("User:", "")
@@ -1265,14 +1238,9 @@ class RecentChangesBot:
                                 )
 
                                 bot1.msg(
-                                    "03%s changed global group membership for %s: removed 04%s; added 04%s: 07%s"
-                                    % (
-                                        self.dont_ping(change["user"]),
-                                        target,
-                                        removed_groups,
-                                        added_groups,
-                                        change["comment"],
-                                    )
+                                    f"03{self.dont_ping(change['user'])} "
+                                    f"changed global group membership for {target}: "
+                                    f"removed 04{removed_groups}; added 04{added_groups}: 07{change['comment']}"
                                 )
                             elif change["log_action"] == "groupprms2":
                                 addedRights = change["log_params"]["addRights"]
@@ -1287,52 +1255,33 @@ class RecentChangesBot:
                                     removedRights = ", ".join(removedRights)
 
                                 bot1.msg(
-                                    "03%s changed global group permissions for %s, added 04%s, removed 04%s: 07%s"
-                                    % (
-                                        self.dont_ping(change["user"]),
-                                        change["title"].replace(
-                                            "Special:GlobalUsers/", ""
-                                        ),
-                                        addedRights,
-                                        removedRights,
-                                        change["comment"],
-                                    )
+                                    f"03{self.dont_ping(change['user'])} "
+                                    f"changed global group permissions for {change['title'].replace('Special:GlobalUsers/', '')}, "
+                                    f"added 04{addedRights}, removed 04{removedRights}: 07{change['comment']}"
                                 )
+
                             elif change["log_action"] == "groupprms3":
                                 oldSet = change["log_params"]["old"]
                                 newSet = change["log_params"]["new"]
                                 bot1.msg(
-                                    "03%s changed group restricted wikis set for %s from 04%s to 04%s: 07%s"
-                                    % (
-                                        self.dont_ping(change["user"]),
-                                        change["title"].replace(
-                                            "Special:GlobalUsers/", ""
-                                        ),
-                                        oldSet,
-                                        newSet,
-                                        change["comment"],
-                                    )
+                                    f"03{self.dont_ping(change['user'])} changed group restricted wikis set for "
+                                    f"{change['title'].replace('Special:GlobalUsers/', '')} from "
+                                    f"04{oldSet} to 04{newSet}: 07{change['comment']}"
                                 )
+
                             elif change["log_action"] == "newset":
                                 wikis = ", ".join(change["log_params"]["wikis"])
                                 bot1.msg(
-                                    "03%s created 12%s wiki set %s containing 04%s: 07%s"
-                                    % (
-                                        self.dont_ping(change["user"]),
-                                        change["log_params"]["type"],
-                                        change["log_params"]["name"],
-                                        wikis,
-                                        change["comment"],
-                                    )
+                                    f"03{self.dont_ping(change['user'])} created "
+                                    f"12{change['log_params']['type']} wiki set "
+                                    f"{change['log_params']['name']} containing "
+                                    f"04{wikis}: 07{change['comment']}"
                                 )
+
                             elif change["log_action"] == "deleteset":
                                 bot1.msg(
-                                    "03%s deleted wiki set %s: 07%s"
-                                    % (
-                                        self.dont_ping(change["user"]),
-                                        change["log_params"]["name"],
-                                        change["comment"],
-                                    )
+                                    f"03{self.dont_ping(change['user'])} deleted wiki set "
+                                    f"{change['log_params']['name']}: 07{change['comment']}"
                                 )
                             elif change["log_action"] == "setchange":
                                 added_wikis = change["log_params"]["added"]
@@ -1346,36 +1295,25 @@ class RecentChangesBot:
                                 else:
                                     removed_wikis = ", ".join(removed_wikis.values())
                                 bot1.msg(
-                                    "03%s changed wikis in %s, added 04%s, removed 04%s: 07%s"
-                                    % (
-                                        self.dont_ping(change["user"]),
-                                        change["log_params"]["name"],
-                                        added_wikis,
-                                        removed_wikis,
-                                        change["comment"],
-                                    )
+                                    f"03{self.dont_ping(change['user'])} changed wikis in "
+                                    f"{change['log_params']['name']}, added 04{added_wikis}, "
+                                    f"removed 04{removed_wikis}: 07{change['comment']}"
                                 )
+
                             elif change["log_action"] == "setrename":
                                 bot1.msg(
-                                    "03%s renamed wiki set %s to 04%s: 07%s"
-                                    % (
-                                        self.dont_ping(change["user"]),
-                                        change["log_params"]["oldName"],
-                                        change["log_params"]["name"],
-                                        change["comment"],
-                                    )
+                                    f"03{self.dont_ping(change['user'])} renamed wiki set "
+                                    f"{change['log_params']['oldName']} to 04{change['log_params']['name']}: "
+                                    f"07{change['comment']}"
                                 )
+
                             elif change["log_action"] == "setnewtype":
                                 bot1.msg(
-                                    "03%s changed type of %s from 04%s to 04%s: 07%s"
-                                    % (
-                                        self.dont_ping(change["user"]),
-                                        change["log_params"]["name"],
-                                        change["log_params"]["oldType"],
-                                        change["log_params"]["type"],
-                                        change["comment"],
-                                    )
+                                    f"03{self.dont_ping(change['user'])} changed type of "
+                                    f"{change['log_params']['name']} from 04{change['log_params']['oldType']} "
+                                    f"to 04{change['log_params']['type']}: 07{change['comment']}"
                                 )
+
             except StopIteration:
                 pass
             except Exception:
