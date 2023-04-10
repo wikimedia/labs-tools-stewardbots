@@ -1041,9 +1041,22 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
             logger.info("<%s/[self]> %s", target, message)
         except irc.client.MessageTooLong:
             logger.warning("Attempted to send a message that is too long: %s", message)
-            self.connection.privmsg(
-                target,
-                "The message is too long. Please fill a task in Phabricator under #stewardbots describing what you tried to do.",
+            # The irc library errors based on byte length, but python strings are UTF-8
+            # (which has multibyte characters), so we can't just slice the string to truncate.
+            # This is the least worst way I found to do this.
+            # irc.client errors at 512b, but we'll truncate slightly shorter for some wiggle room.
+
+            b = self.connection.encode(message)
+            # the raw message is of the format b"PRIVMSG {target} :{message}\r\n"
+            # That's 12 characters, plus 3 for the elipsis, plus 5 as a buffer.
+            target_len = 512 - 20 - len(self.connection.encode(target))
+            try:
+                message = b[:target_len].decode()
+            except UnicodeDecodeError as err:
+                message = b[: err.start].decode()
+
+            self.msg(
+                message + "...",
             )
 
     def getcloak(self, doer):
