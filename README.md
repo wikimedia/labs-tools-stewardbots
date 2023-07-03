@@ -11,6 +11,8 @@ Included Tools
 Help pages for the bots
 -----------------------
 
+Help pages for the bots are stored in the [stewardbots-ui](https://gerrit.wikimedia.org/r/plugins/gitiles/labs/tools/stewardbots-ui/) project.
+
 - SULWatcher
 - StewardBot
 
