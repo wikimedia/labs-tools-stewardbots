@@ -35,12 +35,6 @@ SQL = {
     "db": config.dbname,
 }
 
-# Pushover config
-get_config.read_string(open(os.path.expanduser("~/StewardBot.cnf"), "r").read())
-PUSHOVER = {
-    "bot": get_config["pushover"]["bot"],
-    "group": get_config["pushover"]["group"],
-}
 
 # common queries
 queries = {
@@ -1231,13 +1225,7 @@ class RecentChangesBot:
                                     # Actively verify Steward account is still a Steward
                                     # If so, set off lots of noise
                                     msg = f"!steward Steward account {target} was locked!!"
-                                    pushover = self.send_pushover(msg)
                                     bot1.msg(msg)
-
-                                    if pushover is False:
-                                        bot1.msg(
-                                            "Pushover notification service failed!"
-                                        )
 
                         elif change["log_type"] == "gblrights":
                             if change["log_action"] == "usergroups":
@@ -1412,33 +1400,6 @@ class RecentChangesBot:
             stew_list.add(item["name"])
 
         return target in stew_list
-
-    def send_pushover(self, msg):
-        # Send Pushover notification with highest priority
-        # Set to re-alert every 30 seconds for 5 minutes (10 total notifications)
-        # Unless ack'd by user
-        pushover = "https://api.pushover.net/1/messages.json"
-        header = {
-            "User-Agent": "StewardBot https://wikitech.wikimedia.org/wiki/Tool:Stewardbots"
-        }
-        alert = {
-            "token": PUSHOVER["bot"],
-            "user": PUSHOVER["group"],
-            "title": "Steward Alert!",
-            "message": msg,
-            "priority": 2,
-            "retry": 30,
-            "expire": 180,
-        }
-
-        try:
-            data = requests.post(pushover, headers=header, data=alert).json()
-        except Exception as e:
-            # If the API request fails, log problem and assume Pushover didn't go through
-            logger.exception(str(e))
-            return False
-
-        return data.get("status") == 1
 
 
 class BotThread(threading.Thread):
