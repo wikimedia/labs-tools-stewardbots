@@ -1178,7 +1178,7 @@ class RecentChangesBot:
                                 expiry = change["log_params"][0]
                                 action_description = "globally blocked"
                             elif change["log_action"] == "gunblock":
-                                action_description = "removed global block on"
+                                action_description = "removed the global block on"
                             else:
                                 expiry = change["log_params"][0]
                                 action_description = "modified the global block on"
