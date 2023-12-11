@@ -801,11 +801,14 @@ class EventstreamsListener:
                 try:
                     change = json.loads(event.data)
 
-                    if change["type"] != "log":  # We don't want edits
-                        continue
                     if (
-                        change["log_type"] != "newusers"
-                    ):  # We only want newusers, not blocks or etc
+                        # T266798: Ignore canary events
+                        change["meta"]["domain"] == "canary"
+                        # We don't want edits
+                        or change["type"] != "log"
+                        # We only want newusers, not blocks or etc
+                        or change["log_type"] != "newusers"
+                    ):
                         continue
 
                     # create2 and byemail log_actions set change["user"] to
