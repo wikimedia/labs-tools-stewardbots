@@ -3,7 +3,7 @@ include '../vendor/autoload.php';
 use Symfony\Component\Process\Process;
 
 // Election year
-$year = 2023;
+$year = 2024;
 
 // Get git hash
 $rev = getGitInfo( [ 'rev-parse', '--short' ] );
