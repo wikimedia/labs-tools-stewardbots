@@ -1106,7 +1106,7 @@ class RecentChangesBot:
                     except ValueError:
                         continue
 
-                    if change["wiki"] != "metawiki":
+                    if change["meta"]["domain"] != "meta.wikimedia.org":
                         continue
 
                     if change["bot"]:
