@@ -9,14 +9,14 @@ $rev = getGitInfo( [ 'rev-parse', '--short' ] );
 $lastModified = getGitInfo( [ 'show', '-s', '--format=format:%cD' ] );
 
 function getGitInfo( $command ) {
-$process = new Process( array_merge( [ 'git' ], $command, [ 'HEAD' ] ) );
-$process->run();
+	$process = new Process( array_merge( [ 'git' ], $command, [ 'HEAD' ] ) );
+	$process->run();
 
-if ( !$process->isSuccessful() ) {
-	throw new ProcessFailedException( $process );
-}
+	if ( !$process->isSuccessful() ) {
+		throw new ProcessFailedException( $process );
+	}
 
-return $process->getOutput();
+	return $process->getOutput();
 }
 
 ?>
