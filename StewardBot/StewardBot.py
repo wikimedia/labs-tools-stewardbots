@@ -1175,12 +1175,12 @@ class RecentChangesBot:
                             comment = f"with the following comment: 7{change['comment'].strip(' ')}"
 
                             if change["log_action"] == "gblock2":
-                                expiry = change["log_params"][0]
+                                expiry = change["log_params"]["expiry"]
                                 action_description = "globally blocked"
                             elif change["log_action"] == "gunblock":
                                 action_description = "removed the global block on"
                             else:
-                                expiry = change["log_params"][0]
+                                expiry = change["log_params"]["expiry"]
                                 action_description = "modified the global block on"
                             bot1.msg(
                                 f"03{self.dont_ping(change['user'])} {action_description} "
