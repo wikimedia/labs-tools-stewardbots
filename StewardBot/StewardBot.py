@@ -1175,23 +1175,23 @@ class RecentChangesBot:
                             comment = f"with the following comment: 7{change['comment'].strip(' ')}"
 
                             if change["log_action"] == "gblock":
-                                expiration = datetime.strptime(
-                                    change["log_params"]["expiry"], "%Y%m%d%H%M%S"
+                                expiry = self.format_expiry(
+                                    change["log_params"]["expiry"]
                                 )
-                                expiry = expiration.strftime("%Y-%m-%d %H:%M:%S")
                                 action_description = "globally blocked"
                             elif change["log_action"] == "gunblock":
                                 action_description = "removed the global block on"
                             else:
-                                expiration = datetime.strptime(
-                                    change["log_params"]["expiry"], "%Y%m%d%H%M%S"
+                                expiry = self.format_expiry(
+                                    change["log_params"]["expiry"]
                                 )
-                                expiry = expiration.strftime("%Y-%m-%d %H:%M:%S")
                                 action_description = "modified the global block on"
+
                             bot1.msg(
                                 f"03{self.dont_ping(change['user'])} {action_description} "
                                 f"{target} ({expiry}) {comment}"
                             )
+
                         elif change["log_type"] == "globalauth":
                             target = (
                                 change["title"]
@@ -1375,6 +1375,13 @@ class RecentChangesBot:
     def dont_ping(self, user):
         performer = user[:1] + "\u200B" + user[1:]
         return performer
+
+    def format_expiry(self, expiry):
+        if expiry == "infinity":
+            return "expires: Never"
+
+        expiration = datetime.strptime(expiry, "%Y%m%d%H%M%S")
+        return f"""expires: {expiration.strftime("%Y-%m-%d %H:%M:%S")}"""
 
     def confirm_steward(self, target):
         # Actively get current set of Stewards and verify target in set
