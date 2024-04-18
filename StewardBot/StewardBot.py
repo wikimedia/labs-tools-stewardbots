@@ -8,6 +8,7 @@ import threading
 import time
 from configparser import ConfigParser
 from datetime import datetime
+from pathlib import Path
 from typing import List, Tuple
 
 import config
@@ -1084,6 +1085,7 @@ class RecentChangesBot:
         self.stewards = query(queries["stewardusers"])
         self.should_exit = False
         self.RE_SECTION = re.compile(r"/\* *(?P<section>.+?) *\*/", re.DOTALL)
+        self.heartbeat_file = config.heartbeat_file
 
     def start(self):
         stream = "https://stream.wikimedia.org/v2/stream/recentchange"
@@ -1095,9 +1097,6 @@ class RecentChangesBot:
                         logger.info("Exiting EventStream listener")
                         break
 
-                    if bot1.quiet:
-                        continue
-
                     if event.event != "message":
                         continue
 
@@ -1107,6 +1106,12 @@ class RecentChangesBot:
                         continue
 
                     if change["meta"]["domain"] != "meta.wikimedia.org":
+                        if change["meta"]["domain"] == "canary":
+                            self.heartbeat()
+                        continue
+
+                    # Make sure to still process canary events while quiet
+                    if bot1.quiet:
                         continue
 
                     if change["bot"]:
@@ -1325,6 +1330,10 @@ class RecentChangesBot:
                 pass
             except Exception:
                 logger.exception("Recent changes listener encountered an error")
+
+    def heartbeat(self) -> None:
+        if self.heartbeat_file:
+            Path(self.hearbeat_file).touch()
 
     def get_changed_groups(
         self,

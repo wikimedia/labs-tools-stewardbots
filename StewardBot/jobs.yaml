@@ -5,3 +5,4 @@
   emails: onfailure
   filelog-stdout: /data/project/stewardbots/logs/stewardbot.log
   filelog-stderr: /data/project/stewardbots/logs/stewardbot.log
+  health-check-script: /data/project/stewardbots/stewardbots/StewardBot/watchdog.sh

@@ -10,3 +10,4 @@ server = "irc.libera.chat"
 dbname = "s51541_stewardbot"
 # Set to True to see random invitation message for annual Steward elections
 randmess = False
+heartbeat_file = ""
