@@ -20,7 +20,7 @@ import pymysql
 from ib3 import Bot
 from ib3.auth import SASL
 from ib3.connection import SSL
-from ib3.mixins import DisconnectOnError
+from ib3.mixins import DisconnectOnError, PingServer
 from ib3.nick import Ghost
 
 # Needs irc lib
@@ -84,7 +84,6 @@ class Querier:
 
 
 class SULWatcherException(Exception):
-
     """A single base exception class for all other SULWatcher errors."""
 
     def __init__(self, value):
@@ -95,27 +94,24 @@ class SULWatcherException(Exception):
 
 
 class CommanderError(SULWatcherException):
-
     """This exception is raised when the command parser fails."""
 
     pass
 
 
 class BotConnectionError(SULWatcherException):
-
     """This exception is raised when a bot has some connection error."""
 
     pass
 
 
 class ParseHostMaskError(SULWatcherException):
-
     """This exception is raised when a hostmask can't be parsed."""
 
     pass
 
 
-class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
+class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot, PingServer):
     def __init__(self, sulwatcher, channel, nickname, server, password, port=6697):
         self.sulwatcher = sulwatcher
         self.channel = channel
@@ -128,6 +124,8 @@ class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot):
             realname=nickname,
             ident_password=password,
             channels=[self.channel],
+            max_pings=2,
+            ping_interval=300,
         )
 
     def on_ctcp(self, c, event):
