@@ -111,7 +111,7 @@ class ParseHostMaskError(SULWatcherException):
     pass
 
 
-class LiberaBot(SASL, SSL, DisconnectOnError, Ghost, Bot, PingServer):
+class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
     def __init__(self, sulwatcher, channel, nickname, server, password, port=6697):
         self.sulwatcher = sulwatcher
         self.channel = channel
