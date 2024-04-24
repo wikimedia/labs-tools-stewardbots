@@ -784,6 +784,23 @@ class EventstreamsListener:
     def __init__(self, sulwatcher):
         self.sulwatcher = sulwatcher
         self.stop = threading.Event()
+        self.retries = 0
+
+    def event_stream(self, url):
+        """
+        Handle exceptions thrown by EventStream
+
+        We don't need to actually restart here, the while loop in start() will
+        take care of that.
+        """
+        try:
+            yield from EventStream(url)
+        except Exception as e:
+            logger.exception("RC reader error:", exc_info=e)
+            delay = 10 * 2**self.retires
+            logger.info(f"Sleeping for {delay} seconds")
+            self.retries += 1
+            time.sleep(delay)  # Wait a bit and hope EventStreams likes us
 
     def start(self):
         counter = 0
@@ -792,7 +809,8 @@ class EventstreamsListener:
         while (
             not self.stop.isSet()
         ):  # Thread will die when there isn't anything in the EventStream. Keep alive.
-            for event in EventStream(url):  # Listen to EventStream
+            for event in self.event_stream(url):  # Listen to EventStream
+                self.retries = 0
                 if self.stop.isSet():  # Check flag inside loop
                     break
                 if event.event != "message":
