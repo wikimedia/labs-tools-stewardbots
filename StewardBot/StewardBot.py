@@ -1333,7 +1333,7 @@ class RecentChangesBot:
 
     def heartbeat(self) -> None:
         if self.heartbeat_file:
-            Path(self.hearbeat_file).touch()
+            Path(self.heartbeat_file).touch()
 
     def get_changed_groups(
         self,
