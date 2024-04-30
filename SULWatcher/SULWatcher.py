@@ -795,7 +795,7 @@ class EventstreamsListener:
             yield from EventStream(url)
         except Exception as e:
             logger.exception("RC reader error:", exc_info=e)
-            delay = 10 * 2**self.retires
+            delay = 10 * 2**self.retries
             logger.info(f"Sleeping for {delay} seconds")
             self.retries += 1
             time.sleep(delay)  # Wait a bit and hope EventStreams likes us
