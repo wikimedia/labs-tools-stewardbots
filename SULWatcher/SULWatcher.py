@@ -827,6 +827,15 @@ class EventstreamsListener:
                     ):
                         continue
 
+                    # T388292: restart rc if event is more than 300 seconds old
+                    if (time.time() - change["timestamp"]) > 300:
+                        logger.info(
+                            "Replayed change detected, restarting EventStream: %s, %s",
+                            change["meta"]["dt"],
+                            change.get("notify_url"),
+                        )
+                        break
+
                     # create2 and byemail log_actions set change["user"] to
                     # the acting user, not the created username
                     username = change["title"].partition(":")[2]

@@ -1126,6 +1126,19 @@ class RecentChangesBot:
                         else:
                             continue
 
+                    # T388292: restart rc if event is more than 300 seconds old
+                    # and not a categorization change (T388294)
+                    if (
+                        change["type"] != "categorize"
+                        and (time.time() - change["timestamp"]) > 300
+                    ):
+                        logger.info(
+                            "Replayed change detected, restarting EventStream: %s, %s",
+                            change["meta"]["dt"],
+                            change.get("notify_url"),
+                        )
+                        break
+
                     if change["type"] == "edit":
                         if change["title"] not in self.stalked:
                             continue
@@ -1382,7 +1395,7 @@ class RecentChangesBot:
         return old_groups_text, new_groups_text
 
     def dont_ping(self, user):
-        performer = user[:1] + "\u200B" + user[1:]
+        performer = user[:1] + "\u200b" + user[1:]
         return performer
 
     def format_expiry(self, expiry):
