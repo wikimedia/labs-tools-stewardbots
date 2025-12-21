@@ -6,7 +6,6 @@ import os
 import re
 import threading
 import time
-from configparser import ConfigParser
 from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
@@ -24,15 +23,10 @@ from irc.bot import Channel
 from irc.client import NickMask
 from sseclient import SSEClient as EventSource
 
-# Fetch configuration
-get_config = ConfigParser()
-
-# DB config
-get_config.read_string(open(os.path.expanduser("~/replica.my.cnf"), "r").read())
 SQL = {
-    "user": get_config["client"]["user"].strip("'"),
-    "password": get_config["client"]["password"].strip("'"),
-    "host": "tools-db",
+    "user": os.environ.get("TOOL_TOOLSDB_USER"),
+    "password": os.environ.get("TOOL_TOOLSDB_PASSWORD"),
+    "host": "tools.db.svc.wikimedia.cloud",
     "db": config.dbname,
 }
 
