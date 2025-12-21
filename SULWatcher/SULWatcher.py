@@ -255,7 +255,7 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
         off only valid commands to do_X methods.
         """
         logger.info("do_command(self, e, '%s', '%s')", cmd, target)
-        global badwords, whitelist
+        global whitelist
         nick = nm_to_n(e.source)
         args = cmd.split(" ")  # Should use regex to parse here
         if args[0] == "_":  # I forget why this was needed :(
