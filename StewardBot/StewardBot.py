@@ -1184,7 +1184,7 @@ class RecentChangesBot:
                         elif change["log_type"] == "gblblock":
                             target = change["title"].replace("User:", "")
                             expiry = ""
-                            comment = f"with the following comment: 7{change['comment'].strip(' ')}"
+                            comment = f"with the following comment: 07{change['comment'].strip(' ')}"
 
                             if change["log_action"] == "gblock":
                                 expiry = self.format_expiry(
