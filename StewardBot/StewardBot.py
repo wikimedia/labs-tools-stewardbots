@@ -1199,9 +1199,12 @@ class RecentChangesBot:
                                 )
                                 action_description = "modified the global block on"
 
+                            if expiry:
+                                expiry = f" ({expiry})"
+
                             bot1.msg(
                                 f"03{self.dont_ping(change['user'])} {action_description} "
-                                f"{target} ({expiry}) {comment}"
+                                f"{target}{expiry} {comment}"
                             )
 
                         elif change["log_type"] == "globalauth":
