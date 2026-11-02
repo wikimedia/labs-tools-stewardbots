@@ -7,6 +7,7 @@
 # CREDITS:      Mike.lifeguard, Erwin, Dungodung (Filip Maljkovic)
 #
 import argparse
+import functools
 import json
 import logging
 import os
@@ -126,6 +127,34 @@ class LiberaBot(SASL, SSL, DisconnectOnError, PingServer, Ghost, Bot):
             channels=[self.channel],
             max_pings=2,
             ping_interval=300,
+        )
+        self.connection.add_global_handler(
+            "endofmotd",
+            self._handle_end_of_motd,
+        )
+
+    def _handle_welcome(self, conn, event):
+        """Handle WELCOME message."""
+        # ib3 by default joins channels here. Unfortunately, 001 (RPL_WELCOME)
+        # is sent before 005 (RPL_ISUPPORT), and Libera Chat does not yet support
+        # extended-isupport which would fix that, so in order to process the bot
+        # mode ISUPPORT token before joining channels we need to join channels
+        # a bit later.
+        pass
+
+    def _handle_end_of_motd(self, conn, event):
+        """Handle ENDOFMOTD message."""
+        # By the time the server is up to sending the MOTD, all ISUPPORT lines should
+        # have been sent already, so we can safely check if the bot mode token is there.
+        if "bot" in vars(self.connection.features):
+            self.connection.mode(
+                self.connection.get_nickname(), f"+{self.connection.features.bot}"
+            )
+
+        # Join channels after the server has had time to process us setting the bot mode.
+        self.reactor.scheduler.execute_after(
+            1,
+            functools.partial(self.join_channels, self._channels),
         )
 
     def on_ctcp(self, c, event):
